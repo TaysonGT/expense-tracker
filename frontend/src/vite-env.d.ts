@@ -1,61 +1,17 @@
 /// <reference types="vite/client" />
+/// <reference types="dom-speech-recognition" />
 
 declare module "*.css";
 
-/**
- * Minimal Web Speech API declarations. The DOM lib does not ship these, and
- * they are still vendor-prefixed (webkitSpeechRecognition) in most browsers.
- */
-interface SpeechRecognitionAlternative {
-  readonly transcript: string;
-  readonly confidence: number;
+interface ImportMetaEnv {
+  /** Backend base URL override (defaults to "/api" dev proxy). */
+  readonly VITE_API_BASE_URL?: string;
+  /** Azure Cognitive Services speech key — enables the STT polyfill. */
+  readonly VITE_AZURE_SPEECH_KEY?: string;
+  /** Azure Cognitive Services region (e.g. "eastus") — paired with the key. */
+  readonly VITE_AZURE_SPEECH_REGION?: string;
 }
 
-interface SpeechRecognitionResult {
-  readonly isFinal: boolean;
-  readonly length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionResultList {
-  readonly length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionEvent extends Event {
-  readonly resultIndex: number;
-  readonly results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  readonly error: string;
-  readonly message: string;
-}
-
-interface SpeechRecognition extends EventTarget {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  maxAlternatives: number;
-  start(): void;
-  stop(): void;
-  abort(): void;
-  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null;
-  onerror:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void)
-    | null;
-  onend: ((this: SpeechRecognition, ev: Event) => void) | null;
-  onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
-}
-
-declare var SpeechRecognition: {
-  prototype: SpeechRecognition;
-  new (): SpeechRecognition;
-};
-
-interface Window {
-  SpeechRecognition?: typeof SpeechRecognition;
-  webkitSpeechRecognition?: typeof SpeechRecognition;
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }
