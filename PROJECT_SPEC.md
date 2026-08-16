@@ -110,9 +110,22 @@ Settings (placeholder).
 - Backend: Node.js / Express 5 + TypeScript + TypeORM
 - Database: Postgres (Supabase in dev, SSL-enabled) per schema above
 - STT: client-side (Web Speech API), no audio uploaded
-- Parsing/category-matching LLM: Gemini via the `@google/genai` SDK
-  (structured JSON output with `responseSchema`); default model
-  `gemini-3.5-flash`, overridable via `GEMINI_MODEL`
+- Parsing/category-matching LLM: hybrid, chosen once at startup via a single
+  dispatcher (`backend/src/lib/voiceParser.ts`) so the route is provider-
+  agnostic and both paths return the identical `ParsedEntity[]` shape.
+  - **Groq (preferred)** — used when `GROQ_API_KEY` is set and non-empty.
+    OpenAI-compatible SDK pointed at `https://api.groq.com/openai/v1`, default
+    model `llama-3.3-70b-versatile` (overridable via `GROQ_MODEL`),
+    `response_format: { type: "json_object" }`. Since Groq doesn't enforce a
+    schema, the prompt spells out the exact shape and the parsed JSON is
+    validated in code (array shape, field types, category ids checked against
+    the user's real categories).
+  - **Gemini (fallback)** — used when `GROQ_API_KEY` is unset. `@google/genai`
+    SDK with structured JSON output via `responseSchema`; default model
+    `gemini-3.5-flash`, overridable via `GEMINI_MODEL`.
+  - Fallback rule: provider selection is a stable startup-time decision. If the
+    selected provider's API call fails at request time, the request fails (the
+    client lands on its retry state) — there is no per-request provider switch.
 
 ## Development notes
 - Backend dev runs the compiled output with file watching

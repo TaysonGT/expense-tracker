@@ -3,7 +3,7 @@ import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
 import { Expense } from "../entities/Expense";
 import { getDevUserId } from "../lib/devUser";
-import { parseTranscript } from "../lib/gemini";
+import { parseVoiceEntry } from "../lib/voiceParser";
 
 const router = Router();
 
@@ -29,7 +29,7 @@ router.post("/", async (req: Request, res: Response) => {
 
     const categories = await categoryRepo.find({ where: { userId } });
 
-    const parsed = await parseTranscript(
+    const parsed = await parseVoiceEntry(
       transcript,
       categories.map((c) => ({ id: c.id, name: c.name }))
     );
