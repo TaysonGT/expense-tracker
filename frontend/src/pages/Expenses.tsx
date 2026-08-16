@@ -9,6 +9,16 @@ import ExpenseFilters, {
 import ExpenseInsights from "../components/ExpenseInsights";
 import ExpenseListItem from "../components/ExpenseListItem";
 
+/** A shimmering gray block used as a loading placeholder. */
+function Skeleton({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`animate-pulse rounded-lg bg-gray-200 ${className}`}
+      aria-hidden
+    />
+  );
+}
+
 /**
  * Expenses screen.
  *
@@ -68,11 +78,25 @@ export default function Expenses() {
           />
         </div>
 
-        {/* Loading */}
+        {/* Loading: skeleton animations for insights + list */}
         {isLoading && (
-          <div className="mt-16 flex flex-col items-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900" />
-            <p className="mt-4 text-sm text-gray-400">Loading expenses…</p>
+          <div className="mt-4 space-y-3">
+            {/* Summary strip skeletons */}
+            <div className="grid grid-cols-3 gap-2">
+              <Skeleton className="h-14 rounded-2xl" />
+              <Skeleton className="h-14 rounded-2xl" />
+              <Skeleton className="h-14 rounded-2xl" />
+            </div>
+            {/* Category breakdown skeleton */}
+            <Skeleton className="h-44 rounded-2xl" />
+            {/* Spend-per-day skeleton */}
+            <Skeleton className="h-36 rounded-2xl" />
+            {/* List item skeletons */}
+            <div className="mt-6 space-y-2 pt-2">
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
+            </div>
           </div>
         )}
 
