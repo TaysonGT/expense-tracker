@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, ArrowRightCircleIcon, Mic } from "lucide-react";
+import { ArrowRight, Mic } from "lucide-react";
 import { useExpenses, usePendingExpenses } from "../lib/queries";
 import type { Expense } from "../types";
 import CategoryScroller from "../components/CategoryScroller";

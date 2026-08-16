@@ -186,3 +186,28 @@ export function useApproveExpense() {
     },
   });
 }
+
+export interface UpdateExpenseInput {
+  id: string;
+  title?: string;
+  cost?: number | null;
+  categoryId?: string | null;
+  date?: string;
+}
+
+/**
+ * General field edit for an already-listed expense (does not touch `pending`).
+ * Backed by the general PATCH /expenses/:id endpoint.
+ */
+export function useUpdateExpense() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...body }: UpdateExpenseInput): Promise<Expense> => {
+      const { data } = await api.patch<ExpenseDto>(`/expenses/${id}`, body);
+      return normalizeExpense(data);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["expenses"] });
+    },
+  });
+}

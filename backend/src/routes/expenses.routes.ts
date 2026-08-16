@@ -115,6 +115,76 @@ router.get("/pending", async (_req: Request, res: Response) => {
 });
 
 /**
+ * PATCH /expenses/:id
+ * General field update for an existing expense (title, cost, categoryId,
+ * date). Unlike /approve, this does not change the pending flag — it's for
+ * arbitrary edits to already-listed expenses from the Expenses page.
+ * Body: { title?, cost?, categoryId?, date? }
+ */
+router.patch("/:id", async (req: Request, res: Response) => {
+  try {
+    const userId = await getDevUserId();
+    const id = String(req.params.id);
+    const expenseRepo = AppDataSource.getRepository(Expense);
+
+    const expense = await expenseRepo.findOne({ where: { id, userId } });
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    const { title, cost, categoryId, date } = req.body ?? {};
+
+    if (title !== undefined) {
+      if (typeof title !== "string" || !title.trim()) {
+        return res.status(400).json({ message: "invalid title" });
+      }
+      expense.title = title.trim();
+    }
+
+    if (cost !== undefined) {
+      // Allow explicit null to clear the cost (item becomes cost-pending).
+      if (cost === null) {
+        expense.cost = null;
+      } else {
+        const costNum = typeof cost === "number" ? cost : Number(cost);
+        if (Number.isNaN(costNum) || costNum < 0) {
+          return res.status(400).json({ message: "invalid cost" });
+        }
+        expense.cost = costNum.toFixed(2);
+      }
+    }
+
+    if (categoryId !== undefined) {
+      // Allow explicit null to clear the category.
+      if (categoryId === null) {
+        expense.categoryId = null;
+      } else if (typeof categoryId === "string" && categoryId) {
+        expense.categoryId = categoryId;
+      } else {
+        return res.status(400).json({ message: "invalid categoryId" });
+      }
+    }
+
+    if (date !== undefined) {
+      if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({ message: "invalid date" });
+      }
+      expense.date = date;
+    }
+
+    const saved = await expenseRepo.save(expense);
+    const withCategory = await expenseRepo.findOne({
+      where: { id: saved.id },
+      relations: { category: true },
+    });
+    return res.json(withCategory ?? saved);
+  } catch (err) {
+    console.error("update expense error:", err);
+    return res.status(500).json({ message: "Failed to update expense" });
+  }
+});
+
+/**
  * PATCH /expenses/:id/approve
  * Confirm/edit title, category, and cost, then flip pending to false.
  * Body: { title?, cost?, categoryId? }
