@@ -4,6 +4,7 @@ import ProtectedRoutes from "./routes/ProtectedRoutes"
 import VoiceCapture from "./pages/VoiceCapture"
 import ManualAdd from "./pages/ManualAdd"
 import Expenses from "./pages/Expenses"
+import SettingsPage from "./pages/SettingsPage"
 
 
 const App = () => {
@@ -16,6 +17,7 @@ const App = () => {
           <Route path="voice" element={<VoiceCapture />} />
           <Route path="manual" element={<ManualAdd />} />
           <Route path="expenses" element={<Expenses />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { useCategories, useCreateManualExpense } from "../lib/queries";
+import CategorySelect from "../components/CategorySelect";
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -96,18 +97,11 @@ function ManualAdd() {
 
           {/* Category */}
           <Field label="Category">
-            <select
+            <CategorySelect
+              categories={categories}
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
-            >
-              <option value="">Choose…</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              onChange={setCategoryId}
+            />
           </Field>
 
           {/* Date */}

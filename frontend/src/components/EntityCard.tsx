@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { AlertCircle, Check } from "lucide-react";
+import { AlertCircle, Check, Settings2 } from "lucide-react";
 import type { Category, ParsedEntity } from "../types";
+import CategoryManagementModal from "./CategoryManagementModal";
 
 interface EntityCardProps {
   entity: ParsedEntity;
@@ -25,6 +26,7 @@ function EntityCard({
   const [costText, setCostText] = useState(
     entity.cost != null ? String(entity.cost) : ""
   );
+  const [managingCategories, setManagingCategories] = useState(false);
 
   const missingCost = entity.cost == null;
   const missingCategory = entity.categoryId == null;
@@ -63,11 +65,22 @@ function EntityCard({
       <div className="mt-3 flex gap-3">
         {/* Category */}
         <div className="flex-1">
-          <label className="block text-[11px] font-medium uppercase tracking-wide text-gray-400">
-            Category
-            {entity.categoryUncertain && !approved && (
-              <span className="ml-1 text-amber-500">• confirm</span>
-            )}
+          <label className="flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-gray-400">
+            <span>
+              Category
+              {entity.categoryUncertain && !approved && (
+                <span className="ml-1 text-amber-500">• confirm</span>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={() => setManagingCategories(true)}
+              aria-label="Manage categories"
+              title="Manage categories"
+              className="flex h-5 w-5 items-center justify-center rounded text-gray-400 hover:text-gray-700"
+            >
+              <Settings2 size={13} />
+            </button>
           </label>
           <select
             value={entity.categoryId ?? ""}
@@ -139,6 +152,11 @@ function EntityCard({
           {approved ? "Approved" : "Approve"}
         </button>
       </div>
+
+      <CategoryManagementModal
+        open={managingCategories}
+        onClose={() => setManagingCategories(false)}
+      />
     </div>
   );
 }

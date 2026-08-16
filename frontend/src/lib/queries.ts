@@ -39,6 +39,52 @@ export function useCategories() {
   });
 }
 
+export function useCreateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string): Promise<Category> => {
+      const { data } = await api.post<Category>("/categories", { name });
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.categories });
+    },
+  });
+}
+
+export function useUpdateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      name,
+    }: {
+      id: string;
+      name: string;
+    }): Promise<Category> => {
+      const { data } = await api.patch<Category>(`/categories/${id}`, { name });
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.categories });
+    },
+  });
+}
+
+export function useDeleteCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      await api.delete(`/categories/${id}`);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.categories });
+      // Deleting a category may set some expenses' category to null.
+      void qc.invalidateQueries({ queryKey: ["expenses"] });
+    },
+  });
+}
+
 /* -------------------------------- Expenses ------------------------------- */
 
 export interface ExpenseFilters {
