@@ -1,4 +1,7 @@
 import { Router, Request, Response } from "express";
+import { AppDataSource } from "../data-source";
+import { Category } from "../entities/Category";
+import { getDevUserId } from "../lib/devUser";
 
 const router = Router();
 
@@ -7,23 +10,80 @@ const router = Router();
  */
 
 // GET /categories — list all categories for the user.
-router.get("/", (_req: Request, res: Response) => {
-  res.status(501).json({ message: "Not implemented: list categories" });
+router.get("/", async (_req: Request, res: Response) => {
+  try {
+    const userId = await getDevUserId();
+    const categories = await AppDataSource.getRepository(Category).find({
+      where: { userId },
+      order: { name: "ASC" },
+    });
+    return res.json(categories);
+  } catch (err) {
+    console.error("list categories error:", err);
+    return res.status(500).json({ message: "Failed to list categories" });
+  }
 });
 
 // POST /categories — create a category.
-router.post("/", (_req: Request, res: Response) => {
-  res.status(501).json({ message: "Not implemented: create category" });
+router.post("/", async (req: Request, res: Response) => {
+  try {
+    const { name } = req.body ?? {};
+    if (typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({ message: "name is required" });
+    }
+    const userId = await getDevUserId();
+    const repo = AppDataSource.getRepository(Category);
+    const category = repo.create({
+      userId,
+      name: name.trim(),
+      isDefault: false,
+    });
+    const saved = await repo.save(category);
+    return res.status(201).json(saved);
+  } catch (err) {
+    console.error("create category error:", err);
+    return res.status(500).json({ message: "Failed to create category" });
+  }
 });
 
 // PATCH /categories/:id — edit a category.
-router.patch("/:id", (_req: Request, res: Response) => {
-  res.status(501).json({ message: "Not implemented: update category" });
+router.patch("/:id", async (req: Request, res: Response) => {
+  try {
+    const userId = await getDevUserId();
+    const id = String(req.params.id);
+    const { name } = req.body ?? {};
+    if (typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({ message: "name is required" });
+    }
+    const repo = AppDataSource.getRepository(Category);
+    const category = await repo.findOne({ where: { id, userId } });
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    category.name = name.trim();
+    const saved = await repo.save(category);
+    return res.json(saved);
+  } catch (err) {
+    console.error("update category error:", err);
+    return res.status(500).json({ message: "Failed to update category" });
+  }
 });
 
 // DELETE /categories/:id — delete a category.
-router.delete("/:id", (_req: Request, res: Response) => {
-  res.status(501).json({ message: "Not implemented: delete category" });
+router.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    const userId = await getDevUserId();
+    const id = String(req.params.id);
+    const repo = AppDataSource.getRepository(Category);
+    const result = await repo.delete({ id, userId });
+    if (result.affected === 0) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    return res.status(204).send();
+  } catch (err) {
+    console.error("delete category error:", err);
+    return res.status(500).json({ message: "Failed to delete category" });
+  }
 });
 
 export default router;
