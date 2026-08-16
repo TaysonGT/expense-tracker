@@ -1,6 +1,7 @@
 import { House, Settings, User, Wallet } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import AddMenu from "./AddMenu";
 
 type Page = "home" | "expenses" | "profile" | "settings";
 
@@ -8,10 +9,12 @@ function BottomNav() {
   const nav = useNavigate()
   const onAddPress=()=>{setAddMenuOpen(prev=>!prev)}
   const location = useLocation()
-  const isActive = (path: string)=> location.pathname.split('/')[0] === path
+  const isActive = (path: string)=> location.pathname.split('/')[1] === path
   const onNavigate=(p:Page)=>nav(p)
   const [addMenuOpen, setAddMenuOpen]= useState(false)
   return (
+    <>
+    <AddMenu open={addMenuOpen} onClose={() => setAddMenuOpen(false)} />
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-100 flex items-end justify-around px-2 pt-3 pb-6 z-20"
       style={{ boxShadow: "0 -1px 0 0 #e5e7eb, 0 -8px 24px rgba(0,0,0,0.04)" }}
@@ -43,6 +46,7 @@ function BottomNav() {
       <NavItem icon={<User />} label="Profile" active={isActive('profile')} onClick={() => onNavigate("profile")} />
       <NavItem icon={<Settings />} label="Settings" active={isActive('settings')} onClick={() => onNavigate("settings")} />
     </nav>
+    </>
   );
 }
 
