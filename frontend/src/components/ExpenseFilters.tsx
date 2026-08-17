@@ -54,7 +54,7 @@ export default function ExpenseFilters({
     <div className="space-y-3">
       {/* Category pills */}
       <div>
-        <div className="flex w-full gap-1.5">
+        <div className="flex w-full gap-1.5 pe-4">
           <button
             type="button"
             onClick={() => setManaging(true)}

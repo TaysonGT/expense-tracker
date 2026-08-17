@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft } from "lucide-react";
-import { useCategories, useExpenses } from "../lib/queries";
+import { ArrowLeft, Clock, ChevronRight } from "lucide-react";
+import { useCategories, useExpenses, usePendingExpenses } from "../lib/queries";
 import ExpenseFilters, {
   computeRange,
   type DateRange,
@@ -42,12 +42,16 @@ export default function Expenses() {
       categoryId: categoryId || undefined,
       startDate: range.startDate || undefined,
       endDate: range.endDate || undefined,
+      pending: false, // pending items live on the dedicated /pending page
     }),
     [categoryId, range.startDate, range.endDate]
   );
 
   const { data: expenses = [], isLoading, isError, refetch } =
     useExpenses(filters);
+
+  const { data: pending = [] } = usePendingExpenses();
+  const pendingCount = pending.length;
 
   const hasFilters =
     Boolean(categoryId) || range.key !== "all";
@@ -67,8 +71,41 @@ export default function Expenses() {
       </header>
 
       <main className="mx-auto max-w-md px-4 pb-28">
+        {/* Pending review entry point */}
+        {pendingCount > 0 && (
+          <button
+            onClick={() => nav("/pending")}
+            className="mt-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity hover:opacity-90 cursor-pointer"
+            style={{
+              background: "rgba(245,158,11,0.12)",
+              border: "1px solid rgba(245,158,11,0.3)",
+            }}
+          >
+            <span
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+              style={{ background: "rgba(245,158,11,0.25)", color: "#b45309" }}
+            >
+              <Clock size={18} />
+            </span>
+            <span className="flex flex-col">
+              <span
+                className="text-sm font-semibold"
+                style={{ color: "#b45309" }}
+              >
+                {pendingCount === 1
+                  ? "1 item pending review"
+                  : `${pendingCount} items pending review`}
+              </span>
+              <span className="text-xs" style={{ color: "#d97706" }}>
+                Tap to confirm and file them
+              </span>
+            </span>
+            <ChevronRight size={18} className="ml-auto" style={{ color: "#d97706" }} />
+          </button>
+        )}
+
         {/* Filters */}
-        <div className="mt-2">
+        <div className="mt-4">
           <ExpenseFilters
             categories={categories}
             selectedCategoryId={categoryId}

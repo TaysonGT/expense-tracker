@@ -101,7 +101,7 @@ export default function Home() {
               <PopulatedState
                 recentExpenses={recentExpenses}
                 pendingCount={pendingCount}
-                onReview={() => nav("/voice")}
+                onReview={() => nav("/pending")}
                 onViewAll={() => nav("/expenses")}
               />
             )}
@@ -286,7 +286,7 @@ function PopulatedState({
       {pendingCount > 0 && (
         <button
           onClick={onReview}
-          className="mt-6 flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity hover:opacity-90"
+          className="mt-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity hover:opacity-90"
           style={{
             background: "rgba(245,158,11,0.12)",
             border: "1px solid rgba(245,158,11,0.3)",
@@ -315,7 +315,7 @@ function PopulatedState({
       )}
 
       {/* Recent expenses */}
-      <section className="mt-8">
+      <section className="mt-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Recent</h2>
           <button
