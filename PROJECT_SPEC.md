@@ -75,10 +75,16 @@ scoped to a single seeded dev user (see Out of Scope).
 ## Screens (v1)
 1. **Home** — greeting, today's total spend + expense count in a prominent
    box, pending-items indicator/entry point inside that box, list of recent
-   (non-pending) expenses below, "View all" link to Expenses page.
+   (non-pending) expenses below, "View all" link to Expenses page. Empty vs.
+   populated states distinguished by today's approved expense count; the
+   empty state offers voice/manual input choices. Loading shows shimmer
+   skeletons.
    *Implemented (live data).*
-2. **Expenses** — full list of all expenses, filterable by category and day.
-   *Not yet built.*
+2. **Expenses** — full list of all expenses, filterable by category and day,
+   with inline-editable rows, a reactive insights block (summary strip,
+   category breakdown, per-day chart) computed client-side, and pill-based
+   filters. Backed by the new general PATCH /expenses/:id endpoint.
+   *Implemented (routed at /expenses).*
 3. **Voice Capture** — record button, live partial captions while speaking,
    processing state, failed state with retry, then an editable review of the
    parsed entities (title/category/cost), approve per item or approve later.
@@ -90,12 +96,15 @@ scoped to a single seeded dev user (see Out of Scope).
    screen not yet built.*
 5. **Manual Add** — simple form: title, cost, category, date. Saves directly
    (non-pending). *Implemented (routed at /manual).*
-6. **Category Management** — list + add/edit/delete. *Backend CRUD done; UI
+6. **Profile** — mock page (no auth backend yet): avatar + name/email hero,
+   this-month stats summary, settings-style action list. Routed at /profile.
+   *Implemented (v1 placeholder).*
+7. **Category Management** — list + add/edit/delete. *Backend CRUD done; UI
    not yet built.*
 
 Bottom navigation: Home, Expenses, centered elevated (+) button (opens
-"Record voice" / "Type manually" popup — implemented), Profile (placeholder),
-Settings (placeholder).
+"Record voice" / "Type manually" popup — implemented with appear animation),
+Profile (placeholder), Settings (placeholder).
 
 ## Explicitly Out of Scope for v1
 - Authentication — the backend lazily seeds a single dev user plus default

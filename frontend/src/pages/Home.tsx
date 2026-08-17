@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, Mic } from "lucide-react";
+import { ArrowRight, Mic, PenLine } from "lucide-react";
 import { useExpenses, usePendingExpenses } from "../lib/queries";
 import type { Expense } from "../types";
 import CategoryScroller from "../components/CategoryScroller";
@@ -72,26 +72,40 @@ export default function Home() {
   const loading = todayQuery.isLoading || pendingQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <main className="mx-auto max-w-md px-4 py-8">
+    <div className="min-h-full bg-gray-50 text-gray-900 h-full flex flex-col items-center">
+      <main className="max-w-md w-full px-4 py-8 h-full">
         {loading ? (
           <HomeSkeleton />
-        ) : approvedCount === 0 ? (
-          <EmptyState
-            name={USER_NAME}
-            onRecord={() => nav("/voice")}
-          />
         ) : (
-          <PopulatedState
-            name={USER_NAME}
-            totalToday={totalToday}
-            totalYesterday={totalYesterday}
-            approvedCount={approvedCount}
-            pendingCount={pendingCount}
-            recentExpenses={recentExpenses}
-            onReview={() => nav("/voice")}
-            onViewAll={() => nav("/expenses")}
-          />
+          <div className="flex h-full flex-col">
+            {/* Greeting — shown in every non-loading state */}
+            <h1 className="text-2xl font-semibold">{greetingForNow(USER_NAME)}</h1>
+
+            {/* Total-spend box — always present, even when empty */}
+            <TotalSpendBox
+              totalToday={totalToday}
+              totalYesterday={totalYesterday}
+              approvedCount={approvedCount}
+            />
+
+            {/* Categories */}
+            <CategoryScroller />
+
+            {/* Bottom section: empty vs. populated list */}
+            {approvedCount === 0 ? (
+              <EmptyState
+                onRecord={() => nav("/voice")}
+                onManual={() => nav("/manual")}
+              />
+            ) : (
+              <PopulatedState
+                recentExpenses={recentExpenses}
+                pendingCount={pendingCount}
+                onReview={() => nav("/voice")}
+                onViewAll={() => nav("/expenses")}
+              />
+            )}
+          </div>
         )}
       </main>
     </div>
@@ -132,38 +146,123 @@ function HomeSkeleton() {
 /* --------------------------------- Empty --------------------------------- */
 
 function EmptyState({
-  name,
   onRecord,
+  onManual,
 }: {
-  name: string;
   onRecord: () => void;
+  onManual: () => void;
 }) {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold">{greetingForNow(name)}</h1>
+    <div className="mt-6 grow">
+      <div className="flex h-full flex-col items-center gap-5 text-center">
+        {/* Two attractive input-method choices */}
+        <div className="flex flex-col items-center gap-4">
+          <InputMethodChoice
+            icon={<Mic size={26} />}
+            title="Speak it"
+            subtitle="Tap and narrate your expense"
+            accent="#111827"
+            onClick={onRecord}
+          />
+          <InputMethodChoice
+            icon={<PenLine size={22} />}
+            title="Type it"
+            subtitle="Enter the details manually"
+            accent="#00c48c"
+            onClick={onManual}
+          />
+        </div>
 
-      <div className="mt-10 flex flex-col items-center text-center">
-        <button
-          onClick={onRecord}
-          aria-label="Record a voice expense"
-          className="relative flex h-24 w-24 items-center justify-center rounded-full text-white transition-transform active:scale-95"
-          style={{
-            background: "#111827",
-            boxShadow: "0 8px 30px rgba(17,24,39,0.35)",
-          }}
-        >
-          <Mic size={34} />
-        </button>
-        <p className="mt-6 text-base font-medium text-gray-800">
-          No expenses yet today
-        </p>
-        <p className="mt-1 max-w-xs text-sm text-gray-500">
-          Tap the mic and just say what you bought — we'll sort out the details.
+        <p className="text-sm text-gray-400">
+          No expenses recorded yet — pick a method above to get started.
         </p>
       </div>
+    </div>
+  );
+}
 
-      {/* Categories are not tied to "today" — shown here too. */}
-      <CategoryScroller />
+function InputMethodChoice({
+  icon,
+  title,
+  subtitle,
+  accent,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  accent: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-4 rounded-2xl bg-white px-6 py-4 text-left shadow-sm ring-1 ring-gray-100 transition-all duration-150 hover:shadow-md active:scale-[0.98]"
+    >
+      <span
+        className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-white"
+        style={{ background: accent }}
+      >
+        {icon}
+      </span>
+      <span className="flex flex-col">
+        <span className="text-sm font-semibold text-gray-900">{title}</span>
+        <span className="text-xs text-gray-400">{subtitle}</span>
+      </span>
+    </button>
+  );
+}
+
+/* ----------------------------- Total Spend Box ---------------------------- */
+
+function TotalSpendBox({
+  totalToday,
+  totalYesterday,
+  approvedCount,
+}: {
+  totalToday: number;
+  totalYesterday: number;
+  approvedCount: number;
+}) {
+  return (
+    <div className="mt-5">
+      <div
+        className="relative overflow-hidden rounded-3xl p-6"
+        style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)" }}
+      >
+        <div
+          className="absolute -right-12 -top-12 h-48 w-48 rounded-full opacity-10"
+          style={{ border: "40px solid white" }}
+        />
+        <div
+          className="absolute -right-4 -bottom-16 h-40 w-40 rounded-full opacity-5"
+          style={{ border: "30px solid white" }}
+        />
+
+        <p
+          className="text-xs font-medium uppercase tracking-widest text-gray-400"
+          style={{ letterSpacing: "0.12em" }}
+        >
+          Spent today
+        </p>
+        <div className="mt-2 flex items-end gap-2">
+          <span
+            className="text-5xl font-light text-white"
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            ${totalToday.toFixed(2)}
+          </span>
+        </div>
+        <div className="mt-1 flex items-center gap-2">
+          <p className="text-sm text-gray-400">
+            {approvedCount} {approvedCount === 1 ? "expense" : "expenses"} logged
+          </p>
+          <TrendPill today={totalToday} yesterday={totalYesterday} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -171,72 +270,18 @@ function EmptyState({
 /* ------------------------------- Populated ------------------------------- */
 
 function PopulatedState({
-  name,
-  totalToday,
-  totalYesterday,
-  approvedCount,
-  pendingCount,
   recentExpenses,
+  pendingCount,
   onReview,
   onViewAll,
 }: {
-  name: string;
-  totalToday: number;
-  totalYesterday: number;
-  approvedCount: number;
-  pendingCount: number;
   recentExpenses: Expense[];
+  pendingCount: number;
   onReview: () => void;
   onViewAll: () => void;
 }) {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold">{greetingForNow(name)}</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Here's your spending at a glance.
-      </p>
-
-      {/* Total Spend Card */}
-      <div className="mt-5">
-        <div
-          className="relative overflow-hidden rounded-3xl p-6"
-          style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)" }}
-        >
-          <div
-            className="absolute -right-12 -top-12 h-48 w-48 rounded-full opacity-10"
-            style={{ border: "40px solid white" }}
-          />
-          <div
-            className="absolute -right-4 -bottom-16 h-40 w-40 rounded-full opacity-5"
-            style={{ border: "30px solid white" }}
-          />
-
-          <p
-            className="text-xs font-medium uppercase tracking-widest text-gray-400"
-            style={{ letterSpacing: "0.12em" }}
-          >
-            Spent today
-          </p>
-          <div className="mt-2 flex items-end gap-2">
-            <span
-              className="text-5xl font-light text-white"
-              style={{ fontFamily: "'DM Mono', monospace", letterSpacing: "-0.02em" }}
-            >
-              ${totalToday.toFixed(2)}
-            </span>
-          </div>
-          <div className="mt-1 flex items-center gap-2">
-            <p className="text-sm text-gray-400">
-              {approvedCount} {approvedCount === 1 ? "expense" : "expenses"} logged
-            </p>
-            <TrendPill today={totalToday} yesterday={totalYesterday} />
-          </div>
-        </div>
-      </div>
-
-      {/* Categories directly below the total box */}
-      <CategoryScroller />
-
+    <div className="mt-2">
       {/* Pending nudge — conversational, only when items exist */}
       {pendingCount > 0 && (
         <button
@@ -248,7 +293,7 @@ function PopulatedState({
           }}
         >
           <span
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold border border-[#d97706]"
             style={{ background: "rgba(245,158,11,0.25)", color: "#b45309" }}
           >
             {pendingCount}
@@ -263,8 +308,8 @@ function PopulatedState({
               Tap to confirm and file them
             </span>
           </span>
-          <span className="ml-auto text-lg" style={{ color: "#d97706" }}>
-            <ArrowRightCircleIcon/>
+          <span className="ml-auto text-lg rounded-full bg-[#1f1f1f] p-1 border-white border-2 shadow-sm shadow-black/30 text-white">
+            <ArrowRight />
           </span>
         </button>
       )}
