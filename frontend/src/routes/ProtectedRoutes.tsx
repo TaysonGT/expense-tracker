@@ -4,9 +4,7 @@ import BottomNav from "../layout/BottomNav"
 
 const ProtectedRoutes = () => {
   return (
-    <div className="h-full w-full flex flex-col">
-      {/* <div className='flex grow'> */}
-      {/* </div> */}
+    <div className="relative h-svh w-screen overflow-y-auto">
       <Outlet/>
       <BottomNav 
       />

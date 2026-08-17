@@ -119,9 +119,9 @@ function VoiceCapture() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div className="min-h-full flex-col items-center flex bg-gray-50 pb-28">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+      <header className="sticky top-0 z-10 self-stretch flex items-center gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
         <button
           onClick={() => nav(-1)}
           aria-label="Back"
@@ -132,7 +132,7 @@ function VoiceCapture() {
         <h1 className="text-lg font-semibold">Voice capture</h1>
       </header>
 
-      <main className="mx-auto max-w-md px-4">
+      <main className="max-w-md w-full px-4 grow flex flex-col justify-center">
         {!supported && (
           <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-100">
             Speech recognition isn't supported in this browser. Try Chrome, or

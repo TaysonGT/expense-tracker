@@ -19,7 +19,7 @@ export default function CategoryScroller() {
   return (
     <section className="mt-6">
       <h2 className="mb-3 text-sm font-medium text-gray-500">Categories</h2>
-      <div className="flex w-full -mx-4 px-4 pb-1 gap-1">
+      <div className="flex w-full -mx-4 ps-4 pb-1 gap-1">
         <div className="pe-1 border-e border-[#d3d3d3]">
           <button
             type="button"
