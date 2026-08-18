@@ -2,10 +2,12 @@ import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
 import { Expense } from "../entities/Expense";
-import { getDevContext } from "../lib/devUser";
+import { requireAuth, requireActiveGroup, getRequestContext } from "../middleware/auth";
 import { parseVoiceEntry } from "../lib/voiceParser";
 
 const router = Router();
+
+router.use(requireAuth, requireActiveGroup);
 
 /**
  * POST /voice-entry
@@ -23,7 +25,7 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ message: "transcript is required" });
     }
 
-    const { groupId, userId } = await getDevContext();
+    const { groupId, userId } = getRequestContext(req)!;
     const categoryRepo = AppDataSource.getRepository(Category);
     const expenseRepo = AppDataSource.getRepository(Expense);
 

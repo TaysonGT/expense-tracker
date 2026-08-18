@@ -2,9 +2,12 @@ import { Router, Request, Response } from "express";
 import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { Expense } from "../entities/Expense";
-import { getDevContext } from "../lib/devUser";
+import { requireAuth, requireActiveGroup, getRequestContext } from "../middleware/auth";
 
 const router = Router();
+
+// Every expense route requires a logged-in user with an active group.
+router.use(requireAuth, requireActiveGroup);
 
 /**
  * GET /expenses
@@ -14,7 +17,7 @@ const router = Router();
  */
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const { startDate, endDate, categoryId, pending } = req.query;
 
     const where: Record<string, unknown> = { groupId };
@@ -73,7 +76,8 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ message: "categoryId is required" });
     }
 
-    const { groupId, userId } = await getDevContext();
+    const ctx = getRequestContext(req)!;
+    const { groupId, userId } = ctx;
     const expenseRepo = AppDataSource.getRepository(Expense);
 
     const expense = expenseRepo.create({
@@ -100,9 +104,9 @@ router.post("/", async (req: Request, res: Response) => {
  * GET /expenses/pending
  * Powers the approval queue — returns expenses where pending = true.
  */
-router.get("/pending", async (_req: Request, res: Response) => {
+router.get("/pending", async (req: Request, res: Response) => {
   try {
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const expenses = await AppDataSource.getRepository(Expense).find({
       where: { groupId, pending: true },
       order: { createdAt: "DESC" },
@@ -124,7 +128,7 @@ router.get("/pending", async (_req: Request, res: Response) => {
  */
 router.patch("/:id", async (req: Request, res: Response) => {
   try {
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const id = String(req.params.id);
     const expenseRepo = AppDataSource.getRepository(Expense);
 
@@ -192,7 +196,7 @@ router.patch("/:id", async (req: Request, res: Response) => {
  */
 router.patch("/:id/approve", async (req: Request, res: Response) => {
   try {
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const id = String(req.params.id);
     const expenseRepo = AppDataSource.getRepository(Expense);
 

@@ -4,6 +4,16 @@ import { Category } from "../entities/Category";
 import { GroupMembership, GroupRole } from "../entities/GroupMembership";
 import { BASE_CATEGORIES } from "./baseCategories";
 
+export class GroupError extends Error {
+  constructor(
+    message: string,
+    public status: number
+  ) {
+    super(message);
+    this.name = "GroupError";
+  }
+}
+
 /**
  * Group creation and join-code utilities.
  */
@@ -85,3 +95,73 @@ export async function createGroup(
     return savedGroup;
   });
 }
+
+export interface GroupWithRole {
+  group: Group;
+  role: GroupRole;
+}
+
+/**
+ * List the groups a user belongs to, along with their role in each. Newest
+ * membership first.
+ */
+export async function listUserGroups(
+  userId: string
+): Promise<GroupWithRole[]> {
+  const memberships = await AppDataSource.getRepository(GroupMembership).find({
+    where: { userId },
+    relations: { group: true },
+    order: { joinedAt: "DESC" },
+  });
+  return memberships
+    .filter((m) => m.group)
+    .map((m) => ({ group: m.group, role: m.role }));
+}
+
+/** Return the user's membership in a group, or null if not a member. */
+export async function getMembership(
+  userId: string,
+  groupId: string
+): Promise<GroupMembership | null> {
+  return AppDataSource.getRepository(GroupMembership).findOne({
+    where: { userId, groupId },
+  });
+}
+
+/**
+ * Join a group by its 8-char join code. Creates a `viewer` membership. If the
+ * user is already a member, returns the existing membership (idempotent).
+ * Throws GroupError(404) for an unknown code.
+ */
+export async function joinGroupByCode(
+  userId: string,
+  rawCode: string
+): Promise<GroupWithRole> {
+  const code = rawCode.trim().toUpperCase();
+  if (code.length !== JOIN_CODE_LENGTH) {
+    throw new GroupError("Invalid join code", 400);
+  }
+
+  const groupRepo = AppDataSource.getRepository(Group);
+  const membershipRepo = AppDataSource.getRepository(GroupMembership);
+
+  const group = await groupRepo.findOne({ where: { joinCode: code } });
+  if (!group) {
+    throw new GroupError("No group found for that code", 404);
+  }
+
+  let membership = await membershipRepo.findOne({
+    where: { userId, groupId: group.id },
+  });
+  if (!membership) {
+    membership = membershipRepo.create({
+      groupId: group.id,
+      userId,
+      role: "viewer" as GroupRole,
+    });
+    membership = await membershipRepo.save(membership);
+  }
+
+  return { group, role: membership.role };
+}
+

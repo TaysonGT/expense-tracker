@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import BodyParser from 'body-parser'
 import * as dotenv from "dotenv";
 import { AppDataSource } from "./data-source";
@@ -17,6 +18,7 @@ app.use(cors({
   credentials: true,
   origin: allowedOrigins
 }))
+app.use(cookieParser())
 app.use(express.json())
 app.use(BodyParser.json())
 app.use(express.urlencoded({ extended: true }))

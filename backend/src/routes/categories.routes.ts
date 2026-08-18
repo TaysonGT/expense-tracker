@@ -1,18 +1,20 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
-import { getDevContext } from "../lib/devUser";
+import { requireAuth, requireActiveGroup, getRequestContext } from "../middleware/auth";
 
 const router = Router();
+
+router.use(requireAuth, requireActiveGroup);
 
 /**
  * CRUD /categories — add / edit / delete categories.
  */
 
 // GET /categories — list all categories for the user.
-router.get("/", async (_req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const categories = await AppDataSource.getRepository(Category).find({
       where: { groupId },
       order: { name: "ASC" },
@@ -31,7 +33,7 @@ router.post("/", async (req: Request, res: Response) => {
     if (typeof name !== "string" || !name.trim()) {
       return res.status(400).json({ message: "name is required" });
     }
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const repo = AppDataSource.getRepository(Category);
     const category = repo.create({
       groupId,
@@ -49,7 +51,7 @@ router.post("/", async (req: Request, res: Response) => {
 // PATCH /categories/:id — edit a category.
 router.patch("/:id", async (req: Request, res: Response) => {
   try {
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const id = String(req.params.id);
     const { name } = req.body ?? {};
     if (typeof name !== "string" || !name.trim()) {
@@ -72,7 +74,7 @@ router.patch("/:id", async (req: Request, res: Response) => {
 // DELETE /categories/:id — delete a category.
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const { groupId } = await getDevContext();
+    const { groupId } = getRequestContext(req)!;
     const id = String(req.params.id);
     const repo = AppDataSource.getRepository(Category);
     const result = await repo.delete({ id, groupId });
