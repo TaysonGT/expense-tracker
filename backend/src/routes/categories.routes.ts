@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
-// import { AppDataSource } from "../data-source";
-import { getDatabase } from "../lib/db";
+import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
 import { getDevUserId } from "../lib/devUser";
 
@@ -14,7 +13,6 @@ const router = Router();
 router.get("/", async (_req: Request, res: Response) => {
   try {
     const userId = await getDevUserId();
-    const AppDataSource = await getDatabase()
     const categories = await AppDataSource.getRepository(Category).find({
       where: { userId },
       order: { name: "ASC" },
@@ -33,7 +31,6 @@ router.post("/", async (req: Request, res: Response) => {
     if (typeof name !== "string" || !name.trim()) {
       return res.status(400).json({ message: "name is required" });
     }
-    const AppDataSource = await getDatabase()
     const userId = await getDevUserId();
     const repo = AppDataSource.getRepository(Category);
     const category = repo.create({
@@ -58,7 +55,6 @@ router.patch("/:id", async (req: Request, res: Response) => {
     if (typeof name !== "string" || !name.trim()) {
       return res.status(400).json({ message: "name is required" });
     }
-    const AppDataSource = await getDatabase()
     const repo = AppDataSource.getRepository(Category);
     const category = await repo.findOne({ where: { id, userId } });
     if (!category) {
@@ -78,7 +74,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const userId = await getDevUserId();
     const id = String(req.params.id);
-    const AppDataSource = await getDatabase()
     const repo = AppDataSource.getRepository(Category);
     const result = await repo.delete({ id, userId });
     if (result.affected === 0) {

@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
 import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
-// import { AppDataSource } from "../data-source";
-import { getDatabase } from "../lib/db";
+import { AppDataSource } from "../data-source";
 import { Expense } from "../entities/Expense";
 import { getDevUserId } from "../lib/devUser";
 
@@ -40,7 +39,6 @@ router.get("/", async (req: Request, res: Response) => {
       where.date = LessThanOrEqual(end);
     }
 
-    const AppDataSource = await getDatabase()
     const expenses = await AppDataSource.getRepository(Expense).find({
       where,
       order: { date: "DESC", createdAt: "DESC" },
@@ -76,7 +74,6 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const userId = await getDevUserId();
-    const AppDataSource = await getDatabase()
     const expenseRepo = AppDataSource.getRepository(Expense);
 
     const expense = expenseRepo.create({
@@ -105,7 +102,6 @@ router.post("/", async (req: Request, res: Response) => {
 router.get("/pending", async (_req: Request, res: Response) => {
   try {
     const userId = await getDevUserId();
-    const AppDataSource = await getDatabase()
     const expenses = await AppDataSource.getRepository(Expense).find({
       where: { userId, pending: true },
       order: { createdAt: "DESC" },
@@ -129,7 +125,6 @@ router.patch("/:id", async (req: Request, res: Response) => {
   try {
     const userId = await getDevUserId();
     const id = String(req.params.id);
-    const AppDataSource = await getDatabase()
     const expenseRepo = AppDataSource.getRepository(Expense);
 
     const expense = await expenseRepo.findOne({ where: { id, userId } });
@@ -198,7 +193,6 @@ router.patch("/:id/approve", async (req: Request, res: Response) => {
   try {
     const userId = await getDevUserId();
     const id = String(req.params.id);
-    const AppDataSource = await getDatabase()
     const expenseRepo = AppDataSource.getRepository(Expense);
 
     const expense = await expenseRepo.findOne({ where: { id, userId } });
