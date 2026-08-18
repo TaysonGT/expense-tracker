@@ -29,7 +29,8 @@ function Skeleton({ className = "" }: { className?: string }) {
  */
 export default function Expenses() {
   const nav = useNavigate();
-  const { data: categories = [] } = useCategories();
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useCategories();
 
   const [categoryId, setCategoryId] = useState("");
   const [range, setRange] = useState<DateRange>(() => ({
@@ -108,6 +109,7 @@ export default function Expenses() {
         <div className="mt-4">
           <ExpenseFilters
             categories={categories}
+            categoriesLoading={categoriesLoading}
             selectedCategoryId={categoryId}
             onSelectCategory={setCategoryId}
             range={range}

@@ -1,7 +1,5 @@
-import { useState } from "react";
-import { Settings2 } from "lucide-react";
 import type { Category } from "../types";
-import CategoryManagementModal from "./CategoryManagementModal";
+import CategoryStrip from "./CategoryStrip";
 
 export type DateRangeKey = "all" | "today" | "week" | "month" | "custom";
 
@@ -13,6 +11,8 @@ export interface DateRange {
 
 interface ExpenseFiltersProps {
   categories: Category[];
+  /** Show skeleton chips while the categories query is in flight. */
+  categoriesLoading?: boolean;
   selectedCategoryId: string; // "" = all
   onSelectCategory: (id: string) => void;
   range: DateRange;
@@ -35,13 +35,12 @@ const RANGE_CHIPS: { key: DateRangeKey; label: string }[] = [
  */
 export default function ExpenseFilters({
   categories,
+  categoriesLoading = false,
   selectedCategoryId,
   onSelectCategory,
   range,
   onChangeRange,
 }: ExpenseFiltersProps) {
-  const [managing, setManaging] = useState(false);
-
   const selectRangeKey = (key: DateRangeKey) => {
     if (key === "custom") {
       onChangeRange({ key: "custom", ...computeRange("custom", range) });
@@ -53,37 +52,23 @@ export default function ExpenseFilters({
   return (
     <div className="space-y-3">
       {/* Category pills */}
-      <div>
-        <div className="flex w-full gap-1.5 pe-4">
-          <button
-            type="button"
-            onClick={() => setManaging(true)}
-            aria-label="Manage categories"
-            title="Manage categories"
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#1f1f1f] text-gray-300 ring-1 ring-gray-200"
+      <CategoryStrip isLoading={categoriesLoading} className="pe-4">
+        <Pill
+          active={selectedCategoryId === ""}
+          onClick={() => onSelectCategory("")}
+        >
+          All
+        </Pill>
+        {categories.map((c) => (
+          <Pill
+            key={c.id}
+            active={selectedCategoryId === c.id}
+            onClick={() => onSelectCategory(c.id)}
           >
-            <Settings2 size={16} />
-          </button>
-
-          <div className="flex grow min-w-0 gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
-            <Pill
-              active={selectedCategoryId === ""}
-              onClick={() => onSelectCategory("")}
-            >
-              All
-            </Pill>
-            {categories.map((c) => (
-              <Pill
-                key={c.id}
-                active={selectedCategoryId === c.id}
-                onClick={() => onSelectCategory(c.id)}
-              >
-                {c.name}
-              </Pill>
-            ))}
-          </div>
-        </div>
-      </div>
+            {c.name}
+          </Pill>
+        ))}
+      </CategoryStrip>
 
       {/* Date range chips */}
       <div className="flex flex-wrap gap-1.5">
@@ -122,11 +107,6 @@ export default function ExpenseFilters({
           />
         </div>
       )}
-
-      <CategoryManagementModal
-        open={managing}
-        onClose={() => setManaging(false)}
-      />
     </div>
   );
 }
