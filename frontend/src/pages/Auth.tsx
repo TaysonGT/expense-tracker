@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { useOAuthLogin } from "../lib/authQueries";
+import { useOAuthLogin, useRegisterUser, useLoginUser } from "../lib/authQueries";
 import {
   loadGoogleScript,
   loadFacebookScript,
@@ -8,27 +8,38 @@ import {
   type FacebookAuthResponse,
 } from "../lib/oauthClient";
 
+type AuthMode = "login" | "register";
+
 /**
  * Auth screen (`/auth`).
  *
- * Presents Google + Facebook sign-in. Each provider runs its client-side OAuth
- * flow, then hands the resulting token to POST /auth/:provider/callback, which
- * verifies it server-side and sets the session cookie. On success we send the
- * user into the app; the route guard then routes them to onboarding if they
- * have no active group.
+ * Modern, welcoming interface supporting both OAuth (Google / Facebook) and
+ * classic email/password auth.
  *
- * If a provider's client id isn't configured, a dev-only mock button is shown
- * so the flow can still be exercised end-to-end (the backend verifies real
- * tokens, so the mock only works when the backend also accepts dev tokens).
+ *   - "Sign in with Google/Facebook" for existing OAuth users.
+ *   - Email/password form with toggle between Login and Register.
+ *
+ * Edge case: if a user registered via OAuth tries to log in with email +
+ * password, the backend returns 401 with `Use OAuth to log in`. We surface
+ * that as a user-friendly error prompting them to use their provider instead.
  */
 export default function Auth() {
   const nav = useNavigate();
   const login = useOAuthLogin();
+  const register = useRegisterUser();
+  const loginPwd = useLoginUser();
   const [error, setError] = useState<string | null>(null);
-  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<AuthMode>("login");
 
+  // Form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+
+  const googleBtnRef = useRef<HTMLDivElement>(null);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const facebookAppId = import.meta.env.VITE_FACEBOOK_APP_ID;
+  const anyProviderConfigured = !!googleClientId || !!facebookAppId;
 
   const onToken = useCallback(
     (provider: "google" | "facebook", token: string) => {
@@ -92,11 +103,65 @@ export default function Auth() {
       .catch(() => setError("Couldn't load Facebook sign-in."));
   }, [facebookAppId, onToken]);
 
-  const anyProviderConfigured = !!googleClientId || !!facebookAppId;
+  // --- Form handlers ---
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    register.mutate(
+      { email, password, name },
+      {
+        onSuccess: () => nav("/", { replace: true }),
+        onError: (err: unknown) => {
+          const status =
+            typeof err === "object" && err && "response" in err
+              ? (err as { response?: { status?: number } }).response?.status
+              : null;
+          if (status === 409) {
+            setError("That email is already registered. Switch to Sign in.");
+            setMode("login");
+          } else {
+            setError("Registration failed. Please try again.");
+          }
+        },
+      }
+    );
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    loginPwd.mutate(
+      { email, password },
+      {
+        onSuccess: () => nav("/", { replace: true }),
+        onError: (err: unknown) => {
+          const respData =
+            typeof err === "object" && err && "response" in err
+              ? (err as { response?: { data?: { message?: string } } }).response?.data
+              : null;
+          const msg = respData?.message || "";
+          if (msg.includes("OAuth") || msg.includes("oauth")) {
+            setError(
+              "You signed up with Google or Facebook. Use that provider button to log in."
+            );
+          } else {
+            setError("Invalid email or password.");
+          }
+        },
+      }
+    );
+  };
+
+  const isSubmitting = register.isPending || loginPwd.isPending;
+  const toggleMode = () => {
+    setMode((m) => (m === "login" ? "register" : "login"));
+    setError(null);
+    setName("");
+  };
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-gray-50 px-6 text-gray-900">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-md">
         {/* Brand */}
         <div className="mb-10 text-center">
           <div
@@ -111,37 +176,133 @@ export default function Auth() {
           </p>
         </div>
 
-        <div className="space-y-3">
-          {/* Google */}
-          {googleClientId ? (
-            <div ref={googleBtnRef} className="flex justify-center" />
-          ) : (
+        <div className="space-y-4">
+          {/* OAuth buttons */}
+          <div className="space-y-3">
+            {googleClientId ? (
+              <div ref={googleBtnRef} className="flex justify-center" />
+            ) : (
+              <ProviderButton
+                label="Continue with Google"
+                onClick={() =>
+                  setError("Google client id not configured.")
+                }
+                disabled
+              />
+            )}
             <ProviderButton
-              label="Continue with Google"
-              onClick={() => setError("Google client id not configured.")}
-              disabled
+              label="Continue with Facebook"
+              onClick={handleFacebook}
+              disabled={!facebookAppId || login.isPending}
+              style={{
+                background: "#1877F2",
+                color: "#fff",
+                borderColor: "#1877F2",
+              }}
             />
-          )}
+          </div>
 
-          {/* Facebook */}
-          <ProviderButton
-            label="Continue with Facebook"
-            onClick={handleFacebook}
-            disabled={!facebookAppId || login.isPending}
-            style={{ background: "#1877F2", color: "#fff", borderColor: "#1877F2" }}
-          />
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-gray-50 px-2 text-gray-400">or</span>
+            </div>
+          </div>
+
+          {/* Email/password form */}
+          <form onSubmit={mode === "register" ? handleRegister : handleLogin}>
+            {mode === "register" && (
+              <div className="mb-3">
+                <label
+                  htmlFor="name"
+                  className="block text-xs font-medium text-gray-700"
+                >
+                  Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            )}
+
+            <div className="mb-3">
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label
+                htmlFor="password"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={mode === "register" ? 8 : 1}
+                className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-gray-900 py-2.5 text-sm font-medium text-white transition-opacity hover:bg-gray-800 disabled:opacity-60"
+            >
+              {mode === "register"
+                ? isSubmitting
+                  ? "Creating account…"
+                  : "Create account"
+                : isSubmitting
+                  ? "Signing in…"
+                  : "Sign in"}
+            </button>
+          </form>
+
+          {/* Toggle login / register */}
+          <div className="text-center text-sm">
+            <button
+              onClick={toggleMode}
+              className="font-medium text-gray-700 underline-offset-2 hover:underline"
+            >
+              {mode === "login"
+                ? "Need an account? Register"
+                : "Already have an account? Sign in"}
+            </button>
+          </div>
         </div>
 
         {!anyProviderConfigured && (
           <p className="mt-6 rounded-xl bg-amber-50 p-3 text-center text-xs text-amber-700 ring-1 ring-amber-100">
             No OAuth providers are configured. Set VITE_GOOGLE_CLIENT_ID and/or
-            VITE_FACEBOOK_APP_ID to enable sign-in.
+            VITE_FACEBOOK_APP_ID to enable social sign-in.
           </p>
         )}
 
-        {login.isPending && (
-          <p className="mt-4 text-center text-sm text-gray-400">Signing in…</p>
-        )}
         {error && (
           <p className="mt-4 text-center text-sm text-red-500">{error}</p>
         )}
@@ -149,6 +310,8 @@ export default function Auth() {
     </div>
   );
 }
+
+type ProviderButtonStyle = React.CSSProperties;
 
 function ProviderButton({
   label,
@@ -159,7 +322,7 @@ function ProviderButton({
   label: string;
   onClick: () => void;
   disabled?: boolean;
-  style?: React.CSSProperties;
+  style?: ProviderButtonStyle;
 }) {
   return (
     <button

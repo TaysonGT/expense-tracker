@@ -92,6 +92,54 @@ export function useOAuthLogin() {
   });
 }
 
+export interface RegisterInput {
+  email: string;
+  password: string;
+  name: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+/**
+ * POST /auth/register — creates a local-password user and logs them in.
+ * The session has no active group yet; onboarding follows.
+ * On 409 (email already registered), the caller should prompt the user to
+ * switch to the login tab.
+ */
+export function useRegisterUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: RegisterInput) => {
+      const { data } = await api.post<SessionInfo>("/auth/register", input);
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: authKeys.session });
+    },
+  });
+}
+
+/**
+ * POST /auth/login — verifies a local password and logs the user in.
+ * On 401 (invalid credentials or user has no password — i.e. they registered
+ * via OAuth), the caller should inform the user to sign in with their provider.
+ */
+export function useLoginUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: LoginInput) => {
+      const { data } = await api.post<SessionInfo>("/auth/login", input);
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: authKeys.session });
+    },
+  });
+}
+
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
