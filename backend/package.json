@@ -9,9 +9,9 @@
     "vercel-build": "tsc -p tsconfig.json",
     "start": "node dist/app.js",
     "typecheck": "tsc --noEmit",
-    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
-    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
-    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/data-source.ts"
+    "migration:run": "npx tsx ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
+    "migration:revert": "npx tsx ./node_modules/typeorm/cli.js migration:revert -d src/data-source.ts",
+    "migration:generate": "npx tsx ./node_modules/typeorm/cli.js migration:generate -d src/data-source.ts"
   },
   "dependencies": {
     "@google/genai": "^2.17.1",
@@ -33,6 +33,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
-    "typescript": "^5.7.2"
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
   }
 }
