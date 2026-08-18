@@ -14,5 +14,8 @@
       "src": "/(.*)",
       "dest": "src/app.ts"
     }
-  ]
+  ],
+  "config": {
+    "includeFiles": ["src/**", "node_modules/pg/**", "node_modules/pg-*/**"]
+  }
 }
