@@ -1,51 +1,93 @@
 import { AppDataSource } from "../data-source";
 import { User } from "../entities/User";
-import { Category } from "../entities/Category";
+import { Group } from "../entities/Group";
+import { GroupMembership } from "../entities/GroupMembership";
+import { createGroup } from "./groups";
 
 /**
  * v1 has no authentication (see PROJECT_SPEC.md — Out of Scope). To keep the
- * schema's user scoping intact, we lazily seed a single "dev" user plus a set
- * of default categories, and treat every request as that user.
+ * new group-scoped schema intact, we lazily seed a single "dev" user, a dev
+ * group (with base categories cloned in), and an admin membership linking
+ * them. Every request is then scoped to that user + group.
  *
- * Replace with real auth/session lookup later.
+ * Replace with real OAuth/session lookup + group selection later.
  */
 
+const DEV_PROVIDER = "dev";
+const DEV_PROVIDER_ID = "dev-user";
 const DEV_EMAIL = "dev@example.com";
+const DEV_GROUP_NAME = "Dev Group";
 
-const DEFAULT_CATEGORY_NAMES = [
-  "Groceries",
-  "Dining",
-  "Transport",
-  "Household",
-  "Health",
-  "Other",
-];
+export interface DevContext {
+  userId: string;
+  groupId: string;
+}
 
-let cachedUserId: string | null = null;
+let cached: DevContext | null = null;
 
-export async function getDevUserId(): Promise<string> {
-  if (cachedUserId) return cachedUserId;
+/**
+ * Returns the seeded dev user id + group id, creating them on first call.
+ */
+export async function getDevContext(): Promise<DevContext> {
+  if (cached) return cached;
 
   const userRepo = AppDataSource.getRepository(User);
-  const categoryRepo = AppDataSource.getRepository(Category);
+  const membershipRepo = AppDataSource.getRepository(GroupMembership);
+  const groupRepo = AppDataSource.getRepository(Group);
 
+  // Seed the dev user.
   let user = await userRepo.findOne({ where: { email: DEV_EMAIL } });
   if (!user) {
-    user = userRepo.create({ name: "Dev User", email: DEV_EMAIL });
+    user = userRepo.create({
+      provider: DEV_PROVIDER,
+      providerId: DEV_PROVIDER_ID,
+      email: DEV_EMAIL,
+      name: "Dev User",
+      avatarUrl: null,
+    });
     user = await userRepo.save(user);
   }
 
-  // Seed default categories once, if none exist for this user.
-  const existingCount = await categoryRepo.count({
+  // Find an existing membership (and thus a group) for the dev user, else
+  // create a dev group (which clones base categories + adds admin membership).
+  let membership = await membershipRepo.findOne({
     where: { userId: user.id },
   });
-  if (existingCount === 0) {
-    const categories = DEFAULT_CATEGORY_NAMES.map((name) =>
-      categoryRepo.create({ userId: user!.id, name, isDefault: true })
-    );
-    await categoryRepo.save(categories);
+
+  let groupId: string;
+  if (membership) {
+    groupId = membership.groupId;
+  } else {
+    const existingGroup = await groupRepo.findOne({
+      where: { name: DEV_GROUP_NAME },
+    });
+    if (existingGroup) {
+      groupId = existingGroup.id;
+      const created = membershipRepo.create({
+        groupId,
+        userId: user.id,
+        role: "admin",
+      });
+      await membershipRepo.save(created);
+    } else {
+      const group = await createGroup({
+        name: DEV_GROUP_NAME,
+        ownerUserId: user.id,
+      });
+      groupId = group.id;
+    }
   }
 
-  cachedUserId = user.id;
-  return user.id;
+  cached = { userId: user.id, groupId };
+  return cached;
+}
+
+/** Convenience: the dev user's id. */
+export async function getDevUserId(): Promise<string> {
+  return (await getDevContext()).userId;
+}
+
+/** Convenience: the dev group's id (tenant scope for all v1 requests). */
+export async function getDevGroupId(): Promise<string> {
+  return (await getDevContext()).groupId;
 }

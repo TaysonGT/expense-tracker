@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { Expense } from "../entities/Expense";
-import { getDevUserId } from "../lib/devUser";
+import { getDevContext } from "../lib/devUser";
 
 const router = Router();
 
@@ -14,10 +14,10 @@ const router = Router();
  */
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const { startDate, endDate, categoryId, pending } = req.query;
 
-    const where: Record<string, unknown> = { userId };
+    const where: Record<string, unknown> = { groupId };
 
     if (typeof categoryId === "string" && categoryId) {
       where.categoryId = categoryId;
@@ -73,11 +73,12 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ message: "categoryId is required" });
     }
 
-    const userId = await getDevUserId();
+    const { groupId, userId } = await getDevContext();
     const expenseRepo = AppDataSource.getRepository(Expense);
 
     const expense = expenseRepo.create({
-      userId,
+      groupId,
+      createdBy: userId,
       categoryId,
       title: title.trim(),
       cost: costNum.toFixed(2),
@@ -101,9 +102,9 @@ router.post("/", async (req: Request, res: Response) => {
  */
 router.get("/pending", async (_req: Request, res: Response) => {
   try {
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const expenses = await AppDataSource.getRepository(Expense).find({
-      where: { userId, pending: true },
+      where: { groupId, pending: true },
       order: { createdAt: "DESC" },
       relations: { category: true },
     });
@@ -123,11 +124,11 @@ router.get("/pending", async (_req: Request, res: Response) => {
  */
 router.patch("/:id", async (req: Request, res: Response) => {
   try {
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const id = String(req.params.id);
     const expenseRepo = AppDataSource.getRepository(Expense);
 
-    const expense = await expenseRepo.findOne({ where: { id, userId } });
+    const expense = await expenseRepo.findOne({ where: { id, groupId } });
     if (!expense) {
       return res.status(404).json({ message: "Expense not found" });
     }
@@ -191,11 +192,11 @@ router.patch("/:id", async (req: Request, res: Response) => {
  */
 router.patch("/:id/approve", async (req: Request, res: Response) => {
   try {
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const id = String(req.params.id);
     const expenseRepo = AppDataSource.getRepository(Expense);
 
-    const expense = await expenseRepo.findOne({ where: { id, userId } });
+    const expense = await expenseRepo.findOne({ where: { id, groupId } });
     if (!expense) {
       return res.status(404).json({ message: "Expense not found" });
     }

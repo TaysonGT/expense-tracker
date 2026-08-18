@@ -18,7 +18,7 @@ that a purchase happened is much harder to recover than remembering its cost.
    (Gemini, structured JSON output via `responseSchema`) parses it into
    separate `{title, cost, categoryId, categoryUncertain}` entities —
    splitting multi-item sentences, leaving `cost` null when unspoken.
-5. The same LLM call matches each parsed item against the user's *existing*
+5. The same LLM call matches each parsed item against the *group's* existing
    categories (not a free/blind guess) — flags as uncertain if no good match.
    Hallucinated category ids are discarded server-side.
 6. Each parsed item becomes an `expense` record. If cost is missing or
@@ -30,17 +30,49 @@ that a purchase happened is much harder to recover than remembering its cost.
 8. If upload/parsing fails, the user lands on a failed state with a retry
    button that re-runs the last transcript — nothing is lost.
 
-## Database Schema
+## Database Schema (Group-Based Multi-Tenant)
 
-**users**
-- id, name, email, created_at
+Expenses and categories belong to a **group** (the tenant boundary). A user
+participates in groups via `group_memberships` with a role. All data access is
+scoped by `group_id` for tenant isolation.
 
-**categories**
-- id, user_id (FK), name, is_default (bool), created_at
+**users** (OAuth identities; no direct expense/category ownership)
+- id (uuid)
+- provider (varchar) — e.g. "google", "github"
+- provider_id (varchar) — unique id at the provider
+- email (varchar, unique)
+- name (varchar)
+- avatar_url (varchar, nullable)
+- created_at
+- (unique provider/provider_id pair)
 
-**expenses**
-- id, user_id (FK)
-- category_id (FK, nullable — null = pending category)
+**groups** (tenant boundary)
+- id (uuid)
+- name (varchar)
+- currency (varchar(3), default 'USD')
+- show_balance (boolean, default true)
+- join_code (varchar(8), unique, auto-generated via Postgres `gen_join_code()`)
+- created_at, updated_at
+
+**group_memberships** (junction)
+- id (uuid)
+- group_id (FK -> groups, ON DELETE CASCADE)
+- user_id (FK -> users, ON DELETE CASCADE)
+- role (enum: 'admin' | 'viewer', default 'viewer')
+- joined_at
+- (unique [group_id, user_id])
+
+**categories** (group-scoped)
+- id, group_id (FK -> groups, required), name
+- color (varchar, nullable), icon (varchar, nullable)
+- is_base (boolean, default false) — seeded base categories cloned on group creation
+- created_at
+- (index on group_id)
+
+**expenses** (group-scoped, created_by for audit)
+- id, group_id (FK -> groups, required)
+- created_by (FK -> users, non-nullable, ON DELETE RESTRICT — audit ref, not tenant owner)
+- category_id (FK -> categories, nullable — null = pending category)
 - title
 - cost (nullable — null = pending cost; numeric(12,2), serialized as a
   string by Postgres)
@@ -49,13 +81,37 @@ that a purchase happened is much harder to recover than remembering its cost.
 - original_transcript (nullable text — voice-sourced items only)
 - date
 - created_at
+- (index on group_id; index on created_by)
+
+### Base categories
+A fixed set of base categories is cloned into each new group on creation
+(`is_base = true`). New custom categories within a group have `is_base = false`.
+See `backend/src/lib/baseCategories.ts`.
+
+### Group lifecycle
+- `backend/src/lib/groups.ts` — `createGroup()` creates a group in a single
+  transaction: generates a unique 8-char `join_code`, clones the base
+  categories into it (`is_base = true`), and adds the creator as an `admin`
+  member. `generateUniqueJoinCode()` / `generateJoinCode()` back the join
+  codes (app-side); the DB also defaults `join_code` via a `gen_join_code()`
+  function so raw inserts get a code.
+
+### Migration
+- `1700000000001-GroupBasedSchema.ts` drops the v1 user-centric tables and
+  creates the group-based schema. v1 had no auth and only a seeded dev user, so
+  no data backfill is performed.
+- Indexes: `IDX_expenses_group_id`, `IDX_categories_group_id`,
+  `IDX_group_memberships_group_user` on `[group_id, user_id]`,
+  `IDX_groups_join_code`, plus existing category_id/created_by/pending/date
+  indexes on expenses.
 
 ## API Endpoints
 All implemented (Express 5 + TypeORM). No auth in v1 — every request is
-scoped to a single seeded dev user (see Out of Scope).
+scoped to a single seeded dev user + dev group, and all queries are filtered
+by `group_id` (tenant isolation, see Out of Scope).
 
 - `POST /voice-entry` — body `{ transcript, date? }`. Runs Gemini parsing +
-  category-matching against the user's categories, creates one expense per
+  category-matching against the group's categories, creates one expense per
   parsed item (`source: voice`), pending when cost or category is missing/
   uncertain. Returns the created expenses.
 - `POST /expenses` — manual add, body `{ title, cost, categoryId, date? }`.
@@ -66,8 +122,8 @@ scoped to a single seeded dev user (see Out of Scope).
 - `GET /expenses/pending` — powers the approval queue.
 - `PATCH /expenses/:id/approve` — body `{ title?, cost?, categoryId? }`.
   Requires cost and category; flips `pending` to false.
-- `GET /categories` — list categories (used by the client for dropdowns and
-  by Gemini for matching).
+- `GET /categories` — list the group's categories (used by the client for
+  dropdowns and by Gemini for matching).
 - `POST /categories` — create category, body `{ name }`.
 - `PATCH /categories/:id` — rename category, body `{ name }`.
 - `DELETE /categories/:id` — delete category.
@@ -107,10 +163,12 @@ Bottom navigation: Home, Expenses, centered elevated (+) button (opens
 Profile (placeholder), Settings (placeholder).
 
 ## Explicitly Out of Scope for v1
-- Authentication — the backend lazily seeds a single dev user plus default
-  categories on first run and scopes all requests to it
-  (`backend/src/lib/devUser.ts`). **Must be replaced before any production
-  exposure.**
+- Authentication / authorization — the backend lazily seeds a single dev user
+  plus a dev group (with base categories cloned in) and an admin membership
+  linking them, then scopes every request to that user + group via
+  `backend/src/lib/devUser.ts`. Group/role access control (e.g. restricting
+  write access to admins only) is not enforced yet. **Must be replaced with
+  real OAuth/session + group selection before any production exposure.**
 - Analytics / spending insights
 
 ## Tech Stack

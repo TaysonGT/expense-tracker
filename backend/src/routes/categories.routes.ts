@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
-import { getDevUserId } from "../lib/devUser";
+import { getDevContext } from "../lib/devUser";
 
 const router = Router();
 
@@ -12,9 +12,9 @@ const router = Router();
 // GET /categories — list all categories for the user.
 router.get("/", async (_req: Request, res: Response) => {
   try {
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const categories = await AppDataSource.getRepository(Category).find({
-      where: { userId },
+      where: { groupId },
       order: { name: "ASC" },
     });
     return res.json(categories);
@@ -31,12 +31,12 @@ router.post("/", async (req: Request, res: Response) => {
     if (typeof name !== "string" || !name.trim()) {
       return res.status(400).json({ message: "name is required" });
     }
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const repo = AppDataSource.getRepository(Category);
     const category = repo.create({
-      userId,
+      groupId,
       name: name.trim(),
-      isDefault: false,
+      isBase: false,
     });
     const saved = await repo.save(category);
     return res.status(201).json(saved);
@@ -49,14 +49,14 @@ router.post("/", async (req: Request, res: Response) => {
 // PATCH /categories/:id — edit a category.
 router.patch("/:id", async (req: Request, res: Response) => {
   try {
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const id = String(req.params.id);
     const { name } = req.body ?? {};
     if (typeof name !== "string" || !name.trim()) {
       return res.status(400).json({ message: "name is required" });
     }
     const repo = AppDataSource.getRepository(Category);
-    const category = await repo.findOne({ where: { id, userId } });
+    const category = await repo.findOne({ where: { id, groupId } });
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
@@ -72,10 +72,10 @@ router.patch("/:id", async (req: Request, res: Response) => {
 // DELETE /categories/:id — delete a category.
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const userId = await getDevUserId();
+    const { groupId } = await getDevContext();
     const id = String(req.params.id);
     const repo = AppDataSource.getRepository(Category);
-    const result = await repo.delete({ id, userId });
+    const result = await repo.delete({ id, groupId });
     if (result.affected === 0) {
       return res.status(404).json({ message: "Category not found" });
     }
