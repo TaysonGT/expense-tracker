@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "app_id": "app_cfba57da-5f4d-47a9-ad12-4aaac69963d4",
+      "org_id": "user_3ebafbb2-2b1f-44a0-8438-89316ff2554e",
+      "deploy_url": "https://github.com/TaysonGT/expense-tracker.git",
+      "git_ssh_url": "https://github.com/TaysonGT/expense-tracker.git",
+      "name": "expense-tracker",
+      "alias": "expense-tracker"
+    }
+  ]
+}
