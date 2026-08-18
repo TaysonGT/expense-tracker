@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import cors from "cors";
+import BodyParser from 'body-parser'
 import * as dotenv from "dotenv";
 import { AppDataSource } from "./data-source";
 import apiRoutes from "./routes";
@@ -8,10 +9,18 @@ import "pg";
 
 dotenv.config();
 
-const app = express();
+const allowedOrigins = process.env.NODE_ENV == 'production' ? process.env.FRONTEND_URL : true
 
-app.use(cors());
-app.use(express.json());
+const app = express()
+
+app.use(cors({
+  credentials: true,
+  origin: allowedOrigins
+}))
+app.use(express.json())
+app.use(BodyParser.json())
+app.use(express.urlencoded({ extended: true }))
+
 
 // Ensure DB is initialized before any route runs
 let dbInitPromise: Promise<typeof AppDataSource> | null = null;
