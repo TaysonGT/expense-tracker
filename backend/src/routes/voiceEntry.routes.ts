@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
-import { AppDataSource } from "../data-source";
+// import { AppDataSource } from "../data-source";
+import { getDatabase } from "../lib/db";
 import { Category } from "../entities/Category";
 import { Expense } from "../entities/Expense";
 import { getDevUserId } from "../lib/devUser";
@@ -24,6 +25,7 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const userId = await getDevUserId();
+    const AppDataSource = await getDatabase()
     const categoryRepo = AppDataSource.getRepository(Category);
     const expenseRepo = AppDataSource.getRepository(Expense);
 
