@@ -106,11 +106,31 @@ See `backend/src/lib/baseCategories.ts`.
   indexes on expenses.
 
 ## API Endpoints
-All implemented (Express 5 + TypeORM). No auth in v1 — every request is
-scoped to a single seeded dev user + dev group, and all queries are filtered
-by `group_id` (tenant isolation, see Out of Scope).
+All implemented (Express 5 + TypeORM). Authentication is enforced via a signed
+JWT session cookie; data routes are scoped to the session's active group
+(tenant isolation).
 
-- `POST /voice-entry` — body `{ transcript, date? }`. Runs Gemini parsing +
+### Auth & Groups
+- `POST /auth/:provider/callback` — provider ∈ {google, facebook}. Body
+  `{ token }` (Google ID token or Facebook access token). Verifies the token
+  server-side, find-or-creates the user, issues the session cookie (no active
+  group yet). Returns `{ user, activeGroupId: null }`.
+- `GET /auth/me` — current `{ user, activeGroupId, activeRole }`. Re-validates
+  the session's active group is still a group the user belongs to; clears it
+  otherwise. Requires auth.
+- `POST /auth/logout` — clears the session cookie.
+- `GET /groups` — list the user's groups (My Groups) with role. Requires auth.
+- `POST /groups` — create a group `{ name, currency?, showBalance? }`. Auto
+  join_code, clones base categories, creator is admin, sets it active in the
+  session. Requires auth.
+- `POST /groups/join` — `{ joinCode }` (8-char). Creates a `viewer` membership
+  (idempotent), sets it active. 404 for an unknown code. Requires auth.
+- `POST /groups/:groupId/activate` — switch active group; requires membership
+  (403 otherwise). Sets active_group_id + active_role in the session.
+- `GET /groups/:groupId` — group details; requires membership (403 otherwise).
+
+### Data (require valid session + active group)
+- `POST /voice-entry` — body `{ transcript, date? }`. Runs Gemini/Groq parsing +
   category-matching against the group's categories, creates one expense per
   parsed item (`source: voice`), pending when cost or category is missing/
   uncertain. Returns the created expenses.
@@ -120,13 +140,30 @@ by `group_id` (tenant isolation, see Out of Scope).
   `startDate`, `endDate`, `pending` ("true"|"false"). Includes joined
   category.
 - `GET /expenses/pending` — powers the approval queue.
+- `PATCH /expenses/:id` — general field edit (title/cost/categoryId/date).
 - `PATCH /expenses/:id/approve` — body `{ title?, cost?, categoryId? }`.
   Requires cost and category; flips `pending` to false.
-- `GET /categories` — list the group's categories (used by the client for
-  dropdowns and by Gemini for matching).
+- `GET /categories` — list the group's categories.
 - `POST /categories` — create category, body `{ name }`.
 - `PATCH /categories/:id` — rename category, body `{ name }`.
 - `DELETE /categories/:id` — delete category.
+
+### Auth implementation notes
+- `backend/src/lib/jwt.ts` — signs/verifies the session JWT (`userId`, `email`,
+  and after group selection `activeGroupId` + `activeRole`). `JWT_SECRET`
+  required in production.
+- `backend/src/lib/session.ts` — httpOnly session cookie (Secure + SameSite=None
+  in prod), also accepts `Authorization: Bearer` for non-cookie clients.
+- `backend/src/lib/oauth.ts` — verifies Google (tokeninfo, audience check vs
+  `GOOGLE_CLIENT_ID`) and Facebook (Graph API) tokens → normalized profile.
+- `backend/src/lib/users.ts` — `findOrCreateUser()` by (provider, providerId).
+- `backend/src/middleware/auth.ts` — `requireAuth`, `requireActiveGroup`,
+  `requireGroupMembership` (403 non-members), `requireAdmin`, and
+  `getRequestContext()` (resolves `{ userId, groupId }` for data routes).
+- Frontend: `context/AuthContext.tsx` exposes `currentUser`, `currentGroup`,
+  `currentRole`, `isAdmin`; `routes/ProtectedRoutes.tsx` redirects
+  unauthenticated → `/auth` and authenticated-without-group →
+  `/onboarding/groups`. `last_active_group` is persisted to localStorage.
 
 ## Screens (v1)
 1. **Home** — greeting, today's total spend + expense count in a prominent
@@ -163,13 +200,13 @@ Bottom navigation: Home, Expenses, centered elevated (+) button (opens
 Profile (placeholder), Settings (placeholder).
 
 ## Explicitly Out of Scope for v1
-- Authentication / authorization — the backend lazily seeds a single dev user
-  plus a dev group (with base categories cloned in) and an admin membership
-  linking them, then scopes every request to that user + group via
-  `backend/src/lib/devUser.ts`. Group/role access control (e.g. restricting
-  write access to admins only) is not enforced yet. **Must be replaced with
-  real OAuth/session + group selection before any production exposure.**
-- Analytics / spending insights
+- Analytics / spending insights beyond the client-computed Expenses insights.
+
+### Auth & onboarding (implemented)
+OAuth (Google + Facebook) sign-in at `/auth`, then a mandatory group
+onboarding step at `/onboarding/groups` (Create / Join / My Groups) before any
+expense data is reachable. `backend/src/lib/devUser.ts` remains only as a
+fallback seed helper and is no longer wired into the data routes.
 
 ## Tech Stack
 - Frontend: React 19 + Vite + Tailwind CSS 4 + TypeScript 7 + react-router 8;
