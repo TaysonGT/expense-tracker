@@ -1,0 +1,12 @@
+[
+  { "code": "USD", "name": "US Dollar", "namePlural": "US dollars", "symbol": "$", "symbolNative": "$" },
+  { "code": "EUR", "name": "Euro", "namePlural": "euros", "symbol": "€", "symbolNative": "€" },
+  { "code": "GBP", "name": "British Pound Sterling", "namePlural": "British pounds sterling", "symbol": "£", "symbolNative": "£" },
+  { "code": "EGP", "name": "Egyptian Pound", "namePlural": "Egyptian pounds", "symbol": "EGP", "symbolNative": "ج.م.‏" },
+  { "code": "JPY", "name": "Japanese Yen", "namePlural": "Japanese yen", "symbol": "¥", "symbolNative": "￥" },
+  { "code": "CAD", "name": "Canadian Dollar", "namePlural": "Canadian dollars", "symbol": "CA$", "symbolNative": "$" },
+  { "code": "AUD", "name": "Australian Dollar", "namePlural": "Australian dollars", "symbol": "AU$", "symbolNative": "$" },
+  { "code": "INR", "name": "Indian Rupee", "namePlural": "Indian rupees", "symbol": "₹", "symbolNative": "₹" },
+  { "code": "SAR", "name": "Saudi Riyal", "namePlural": "Saudi riyals", "symbol": "SR", "symbolNative": "ر.س.‏" },
+  { "code": "AED", "name": "United Arab Emirates Dirham", "namePlural": "UAE dirhams", "symbol": "AED", "symbolNative": "د.إ.‏" }
+]

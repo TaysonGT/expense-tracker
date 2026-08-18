@@ -4,6 +4,7 @@ import { ArrowRight, Mic, PenLine } from "lucide-react";
 import { useExpenses, usePendingExpenses } from "../lib/queries";
 import type { Expense } from "../types";
 import CategoryScroller from "../components/CategoryScroller";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * Home screen.
@@ -15,8 +16,8 @@ import CategoryScroller from "../components/CategoryScroller";
  *                categories + optional pending nudge + recent expenses
  */
 
-// No auth/user endpoint in v1 — the greeting name is a placeholder for now.
-const USER_NAME = "Mohamed";
+// Greeting falls back to a generic label until the user's name resolves.
+const FALLBACK_NAME = "there";
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -41,6 +42,7 @@ function sumCost(expenses: Expense[]): number {
 
 export default function Home() {
   const nav = useNavigate();
+  const { currentUser } = useAuth();
   const today = todayIso();
   const yesterday = isoDaysAgo(1);
 
@@ -79,7 +81,7 @@ export default function Home() {
         ) : (
           <div className="flex h-full flex-col">
             {/* Greeting — shown in every non-loading state */}
-            <h1 className="text-2xl font-semibold">{greetingForNow(USER_NAME)}</h1>
+            <h1 className="text-2xl font-semibold">{greetingForNow(currentUser?.name?.split(" ")[0] ?? FALLBACK_NAME)}</h1>
 
             {/* Total-spend box — always present, even when empty */}
             <TotalSpendBox
@@ -197,17 +199,18 @@ function InputMethodChoice({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-4 rounded-2xl bg-white px-6 py-4 text-left shadow-sm ring-1 ring-gray-100 transition-all duration-150 hover:shadow-md active:scale-[0.98]"
+      className="flex items-center gap-4 rounded-2xl px-6 py-4 text-left border transition-all duration-150 hover:shadow-md active:scale-[0.98] shadow-sm shadow-black/35 text-white"
+      style={{ backgroundColor: accent}}
     >
       <span
-        className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-white"
-        style={{ background: accent }}
+        className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
+        style={{ background: 'white', color: accent }}
       >
         {icon}
       </span>
       <span className="flex flex-col">
-        <span className="text-sm font-semibold text-gray-900">{title}</span>
-        <span className="text-xs text-gray-400">{subtitle}</span>
+        <span className="text-sm font-semibold text-white">{title}</span>
+        <span className="text-xs text-gray-100">{subtitle}</span>
       </span>
     </button>
   );

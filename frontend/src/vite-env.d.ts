@@ -10,6 +10,10 @@ interface ImportMetaEnv {
   readonly VITE_AZURE_SPEECH_KEY?: string;
   /** Azure Cognitive Services region (e.g. "eastus") — paired with the key. */
   readonly VITE_AZURE_SPEECH_REGION?: string;
+  /** Google OAuth client id (for Google Identity Services). */
+  readonly VITE_GOOGLE_CLIENT_ID?: string;
+  /** Facebook App id (for the Facebook JS SDK). */
+  readonly VITE_FACEBOOK_APP_ID?: string;
 }
 
 interface ImportMeta {

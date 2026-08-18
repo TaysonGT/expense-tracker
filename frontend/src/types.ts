@@ -40,3 +40,39 @@ export interface ParsedEntity {
   categoryId: string | null;
   categoryUncertain: boolean;
 }
+
+/* ------------------------------ Auth / Groups ----------------------------- */
+
+export type GroupRole = "admin" | "viewer";
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  currency: string;
+  showBalance: boolean;
+  joinCode: string;
+  role: GroupRole;
+}
+
+/** Response shape of GET /auth/me and the OAuth callback. */
+export interface SessionInfo {
+  user: User;
+  activeGroupId: string | null;
+  activeRole: GroupRole | null;
+}
+
+/** A currency entry from currencies.json. */
+export interface Currency {
+  code: string;
+  name: string;
+  namePlural: string;
+  symbol: string;
+  symbolNative: string;
+}

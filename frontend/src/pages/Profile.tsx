@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router";
 import {
   Bell,
   ChevronRight,
@@ -12,22 +13,26 @@ import {
   LogOut,
 } from "lucide-react";
 import { useExpenses } from "../lib/queries";
+import { useAuth } from "../context/AuthContext";
+import { useLogout } from "../lib/authQueries";
 
 /**
- * Mock profile page (v1 placeholder — there's no real auth/user backend yet).
+ * Profile page.
  *
- * Layout: a hero card with a large avatar and the user's name/email, a
- * "Your stats" summary pulled from the existing expenses query (total
- * spending, expense count this month, categories used), and a settings-style
- * action list. Styled in the same soft-white / rounded-2xl language as the
- * rest of the app.
+ * Hero card with the signed-in user's name/email/avatar (from AuthContext), a
+ * "Your stats" summary pulled from the expenses query (total spending, expense
+ * count this month, top category), the active group, and a settings-style
+ * action list including a working Log out.
  */
 
-// No auth/user endpoint in v1 — these are hardcoded placeholders.
-const USER_NAME = "Mohamed";
-const USER_EMAIL = "mohamed@example.com";
-
 export default function Profile() {
+  const nav = useNavigate();
+  const { currentUser, currentGroup } = useAuth();
+  const logout = useLogout();
+
+  const userName = currentUser?.name ?? "—";
+  const userEmail = currentUser?.email ?? "";
+
   const now = new Date();
   const monthStart = new Date(
     now.getFullYear(),
@@ -80,22 +85,29 @@ export default function Profile() {
         <div className="space-y-6">
           {/* Hero: avatar + name */}
           <section className="flex flex-col items-center rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
-            <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gray-100 text-gray-500 ring-2 ring-gray-200">
-              <User size={56} />
+            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-500 ring-2 ring-gray-200">
+              {currentUser?.avatarUrl ? (
+                <img
+                  src={currentUser.avatarUrl}
+                  alt={userName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User size={56} />
+              )}
             </div>
             <div className="mt-4">
-              <h2 className="text-xl font-semibold">{USER_NAME}</h2>
+              <h2 className="text-xl font-semibold">{userName}</h2>
               <p className="mt-0.5 flex items-center justify-center gap-1.5 text-sm text-gray-500">
                 <Mail size={14} />
-                {USER_EMAIL}
+                {userEmail}
               </p>
+              {currentGroup && (
+                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                  {currentGroup.name} · {currentGroup.role}
+                </p>
+              )}
             </div>
-            <button
-              aria-label="Edit profile"
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 ring-1 ring-gray-200"
-            >
-              Edit profile
-            </button>
           </section>
 
           {/* Stats summary */}
@@ -129,7 +141,7 @@ export default function Profile() {
             <ActionItem
               icon={<Settings size={18} />}
               label="Settings"
-              onClick={() => {}}
+              onClick={() => nav("/settings")}
             />
             <ActionItem
               icon={<Shield size={18} />}
@@ -144,15 +156,14 @@ export default function Profile() {
             <ActionItem
               icon={<LogOut size={18} />}
               label="Log out"
-              onClick={() => {}}
+              onClick={() =>
+                logout.mutate(undefined, {
+                  onSuccess: () => nav("/auth", { replace: true }),
+                })
+              }
               danger
             />
           </section>
-
-          {/* Footer note / placeholder marker */}
-          <p className="text-center text-[10px] text-gray-400">
-            Profile screen is a v1 mock — no backend auth wired yet.
-          </p>
         </div>
       </main>
     </div>
