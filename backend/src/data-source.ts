@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import "pg";
 import { DataSource } from "typeorm";
 import * as dotenv from "dotenv";
 import { User } from "./entities/User";

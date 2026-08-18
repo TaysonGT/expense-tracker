@@ -4,6 +4,7 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 import { AppDataSource } from "./data-source";
 import apiRoutes from "./routes";
+import "pg";
 
 dotenv.config();
 
