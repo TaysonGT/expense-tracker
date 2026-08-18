@@ -4,6 +4,7 @@ import type { Category, Expense } from "../types";
 import { useUpdateExpense } from "../lib/queries";
 import {
   colorForCategory,
+  currencySymbol,
   formatCurrency,
   formatRelativeDate,
 } from "../lib/expenseFormat";
@@ -11,6 +12,8 @@ import {
 interface ExpenseListItemProps {
   expense: Expense;
   categories: Category[];
+  /** ISO currency code for formatting the cost value. */
+  currencyCode?: string;
 }
 
 /**
@@ -22,6 +25,7 @@ interface ExpenseListItemProps {
 export default function ExpenseListItem({
   expense,
   categories,
+  currencyCode,
 }: ExpenseListItemProps) {
   const [editing, setEditing] = useState(false);
 
@@ -29,18 +33,21 @@ export default function ExpenseListItem({
     <EditRow
       expense={expense}
       categories={categories}
+      currencyCode={currencyCode}
       onDone={() => setEditing(false)}
     />
   ) : (
-    <DisplayRow expense={expense} onEdit={() => setEditing(true)} />
+    <DisplayRow expense={expense} currencyCode={currencyCode} onEdit={() => setEditing(true)} />
   );
 }
 
 function DisplayRow({
   expense,
+  currencyCode,
   onEdit,
 }: {
   expense: Expense;
+  currencyCode?: string;
   onEdit: () => void;
 }) {
   const color = colorForCategory(expense.categoryId);
@@ -81,7 +88,7 @@ function DisplayRow({
       {/* Cost (prominent, right-aligned) or pending badge */}
       {expense.cost != null ? (
         <span className="mono flex-shrink-0 text-base font-semibold text-gray-900">
-          {formatCurrency(expense.cost)}
+          {formatCurrency(expense.cost, currencyCode)}
         </span>
       ) : (
         <span
@@ -106,10 +113,12 @@ function DisplayRow({
 function EditRow({
   expense,
   categories,
+  currencyCode,
   onDone,
 }: {
   expense: Expense;
   categories: Category[];
+  currencyCode?: string;
   onDone: () => void;
 }) {
   const updateExpense = useUpdateExpense();
@@ -159,7 +168,7 @@ function EditRow({
 
         <div className="flex gap-2">
           <div className="flex flex-1 items-center rounded-lg border border-gray-200 px-2 focus-within:border-gray-900">
-            <span className="text-sm text-gray-400">$</span>
+            <span className="text-sm text-gray-400">{currencySymbol(currencyCode)}</span>
             <input
               value={cost}
               onChange={(e) => setCost(e.target.value)}

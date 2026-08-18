@@ -8,6 +8,8 @@ import {
 } from "../lib/queries";
 import type { Expense, ParsedEntity } from "../types";
 import EntityCard from "../components/EntityCard";
+import GroupSelector from "../components/GroupSelector";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * Pending Expenses screen.
@@ -29,6 +31,8 @@ function toParsedEntity(e: Expense): ParsedEntity {
 
 export default function PendingExpenses() {
   const nav = useNavigate();
+  const { currentGroup } = useAuth();
+  const currencyCode = currentGroup?.currency;
   const { data: categories = [] } = useCategories();
   const {
     data: pending = [],
@@ -75,15 +79,18 @@ export default function PendingExpenses() {
   return (
     <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
-        <button
-          onClick={() => nav(-1)}
-          aria-label="Back"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <h1 className="text-lg font-semibold">Pending review</h1>
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => nav(-1)}
+            aria-label="Back"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-lg font-semibold">Pending review</h1>
+        </div>
+        <GroupSelector currencyCode={currencyCode} />
       </header>
 
       <main className="mx-auto max-w-md px-4">
@@ -146,6 +153,7 @@ export default function PendingExpenses() {
                   key={e.id}
                   entity={entityFor(e)}
                   categories={categories}
+                  currencyCode={currencyCode}
                   onChange={updateEntity}
                   onApprove={approveEntity}
                 />

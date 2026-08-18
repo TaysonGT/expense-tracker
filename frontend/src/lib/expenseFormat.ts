@@ -1,3 +1,6 @@
+import currencies from "../data/currencies.json";
+import type { Currency } from "../types";
+
 /**
  * Small presentational helpers shared by the Expenses page and its pieces.
  */
@@ -26,8 +29,44 @@ export function colorForCategory(id: string | null | undefined): string {
   return PALETTE[hash % PALETTE.length];
 }
 
-export function formatCurrency(value: number): string {
-  return `$${value.toFixed(2)}`;
+/**
+ * Look up a Currency object from currencies.json by ISO code (e.g. "EUR").
+ * Falls back to USD when the code isn't found.
+ */
+const CURRENCY_MAP = new Map(
+  (currencies as Currency[]).map((c) => [c.code.toUpperCase(), c])
+);
+
+export function getCurrency(code?: string | null): Currency {
+  if (code) {
+    const found = CURRENCY_MAP.get(code.toUpperCase());
+    if (found) return found;
+  }
+  // Default to USD.
+  return CURRENCY_MAP.get("USD")!;
+}
+
+/**
+ * Format a number as a currency string using the group's currency.
+ * Defaults to USD when no currency is provided.
+ */
+export function formatCurrency(value: number, currencyCode?: string): string {
+  const currency = getCurrency(currencyCode);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.code,
+    minimumFractionDigits: currency.decimalDigits,
+    maximumFractionDigits: currency.decimalDigits,
+  }).format(value);
+}
+
+/**
+ * Return the native symbol for a currency code (e.g. "€" for EUR).
+ * Used for input field prefixes where we want the symbol, not a full
+ * formatted amount.
+ */
+export function currencySymbol(currencyCode?: string): string {
+  return getCurrency(currencyCode).symbolNative;
 }
 
 /**

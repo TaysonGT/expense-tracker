@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { useCategories, useCreateManualExpense } from "../lib/queries";
+import { currencySymbol } from "../lib/expenseFormat";
+import { useAuth } from "../context/AuthContext";
 import CategorySelect from "../components/CategorySelect";
 
 function todayIso(): string {
@@ -16,6 +18,8 @@ function todayIso(): string {
  */
 function ManualAdd() {
   const nav = useNavigate();
+  const { currentGroup } = useAuth();
+  const currencyCode = currentGroup?.currency;
   const { data: categories = [] } = useCategories();
   const createExpense = useCreateManualExpense();
 
@@ -84,7 +88,7 @@ function ManualAdd() {
           {/* Cost */}
           <Field label="Cost">
             <div className="flex items-center rounded-lg border border-gray-200 px-3 focus-within:border-gray-900">
-              <span className="text-sm text-gray-400">$</span>
+               <span className="text-sm text-gray-400">{currencySymbol(currencyCode)}</span>
               <input
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}

@@ -8,6 +8,8 @@ import ExpenseFilters, {
 } from "../components/ExpenseFilters";
 import ExpenseInsights from "../components/ExpenseInsights";
 import ExpenseListItem from "../components/ExpenseListItem";
+import GroupSelector from "../components/GroupSelector";
+import { useAuth } from "../context/AuthContext";
 
 /** A shimmering gray block used as a loading placeholder. */
 function Skeleton({ className = "" }: { className?: string }) {
@@ -29,6 +31,8 @@ function Skeleton({ className = "" }: { className?: string }) {
  */
 export default function Expenses() {
   const nav = useNavigate();
+  const { currentGroup } = useAuth();
+  const currencyCode = currentGroup?.currency;
   const { data: categories = [], isLoading: categoriesLoading } =
     useCategories();
 
@@ -60,15 +64,18 @@ export default function Expenses() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Sticky header */}
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
-        <button
-          onClick={() => nav(-1)}
-          aria-label="Back"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <h1 className="text-lg font-semibold">Expenses</h1>
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => nav(-1)}
+            aria-label="Back"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-lg font-semibold">Expenses</h1>
+        </div>
+        <GroupSelector currencyCode={currencyCode} />
       </header>
 
       <main className="mx-auto max-w-md px-4 pb-28">
@@ -162,6 +169,7 @@ export default function Expenses() {
               expenses={expenses}
               startDate={range.startDate}
               endDate={range.endDate}
+              currencyCode={currencyCode}
             />
 
             {/* List */}
@@ -179,6 +187,7 @@ export default function Expenses() {
                       key={e.id}
                       expense={e}
                       categories={categories}
+                      currencyCode={currencyCode}
                     />
                   ))}
                 </ul>

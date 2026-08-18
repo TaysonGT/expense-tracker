@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, Mic, PenLine } from "lucide-react";
+import { ArrowRight, Clock, Mic, PenLine } from "lucide-react";
 import { useExpenses, usePendingExpenses } from "../lib/queries";
 import type { Expense } from "../types";
 import CategoryScroller from "../components/CategoryScroller";
+import GroupSelector from "../components/GroupSelector";
 import { useAuth } from "../context/AuthContext";
+import { formatCurrency } from "../lib/expenseFormat";
 
 /**
  * Home screen.
@@ -42,7 +44,8 @@ function sumCost(expenses: Expense[]): number {
 
 export default function Home() {
   const nav = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, currentGroup } = useAuth();
+  const currencyCode = currentGroup?.currency;
   const today = todayIso();
   const yesterday = isoDaysAgo(1);
 
@@ -80,14 +83,20 @@ export default function Home() {
           <HomeSkeleton />
         ) : (
           <div className="flex h-full flex-col">
-            {/* Greeting — shown in every non-loading state */}
-            <h1 className="text-2xl font-semibold">{greetingForNow(currentUser?.name?.split(" ")[0] ?? FALLBACK_NAME)}</h1>
+            {/* Header: greeting + group selector */}
+            <div className="mb-6 flex items-center justify-between">
+              <h1 className="text-2xl font-semibold">
+                {greetingForNow(currentUser?.name?.split(" ")[0] ?? FALLBACK_NAME)}
+              </h1>
+              <GroupSelector currencyCode={currencyCode} />
+            </div>
 
             {/* Total-spend box — always present, even when empty */}
             <TotalSpendBox
               totalToday={totalToday}
               totalYesterday={totalYesterday}
               approvedCount={approvedCount}
+              currencyCode={currencyCode}
             />
 
             {/* Categories */}
@@ -105,6 +114,7 @@ export default function Home() {
                 pendingCount={pendingCount}
                 onReview={() => nav("/pending")}
                 onViewAll={() => nav("/expenses")}
+                currencyCode={currencyCode}
               />
             )}
           </div>
@@ -119,9 +129,11 @@ export default function Home() {
 function HomeSkeleton() {
   return (
     <div className="animate-pulse">
-      {/* Greeting */}
-      <div className="h-7 w-52 rounded-lg bg-gray-200" />
-      <div className="mt-2 h-4 w-36 rounded bg-gray-200" />
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="h-7 w-40 rounded-lg bg-gray-200" />
+        <div className="h-8 w-32 rounded-xl bg-gray-200" />
+      </div>
 
       {/* Total box */}
       <div className="mt-5 h-40 rounded-3xl bg-gray-200" />
@@ -200,11 +212,11 @@ function InputMethodChoice({
     <button
       onClick={onClick}
       className="flex items-center gap-4 rounded-2xl px-6 py-4 text-left border transition-all duration-150 hover:shadow-md active:scale-[0.98] shadow-sm shadow-black/35 text-white"
-      style={{ backgroundColor: accent}}
+      style={{ backgroundColor: accent }}
     >
       <span
         className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
-        style={{ background: 'white', color: accent }}
+        style={{ background: "white", color: accent }}
       >
         {icon}
       </span>
@@ -222,10 +234,12 @@ function TotalSpendBox({
   totalToday,
   totalYesterday,
   approvedCount,
+  currencyCode,
 }: {
   totalToday: number;
   totalYesterday: number;
   approvedCount: number;
+  currencyCode?: string;
 }) {
   return (
     <div className="mt-5">
@@ -256,7 +270,7 @@ function TotalSpendBox({
               letterSpacing: "-0.02em",
             }}
           >
-            ${totalToday.toFixed(2)}
+            {formatCurrency(totalToday, currencyCode)}
           </span>
         </div>
         <div className="mt-1 flex items-center gap-2">
@@ -277,11 +291,13 @@ function PopulatedState({
   pendingCount,
   onReview,
   onViewAll,
+  currencyCode,
 }: {
   recentExpenses: Expense[];
   pendingCount: number;
   onReview: () => void;
   onViewAll: () => void;
+  currencyCode?: string;
 }) {
   return (
     <div className="mt-2">
@@ -289,20 +305,23 @@ function PopulatedState({
       {pendingCount > 0 && (
         <button
           onClick={onReview}
-          className="mt-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity hover:opacity-90"
+          className="mt-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity hover:opacity-90 cursor-pointer"
           style={{
             background: "rgba(245,158,11,0.12)",
             border: "1px solid rgba(245,158,11,0.3)",
           }}
         >
           <span
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold border border-[#d97706]"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
             style={{ background: "rgba(245,158,11,0.25)", color: "#b45309" }}
           >
-            {pendingCount}
+            <Clock size={18} />
           </span>
           <span className="flex flex-col">
-            <span className="text-sm font-semibold" style={{ color: "#b45309" }}>
+            <span
+              className="text-sm font-semibold"
+              style={{ color: "#b45309" }}
+            >
               {pendingCount === 1
                 ? "1 item needs a quick review"
                 : `${pendingCount} items need a quick review`}
@@ -311,9 +330,7 @@ function PopulatedState({
               Tap to confirm and file them
             </span>
           </span>
-          <span className="ml-auto text-lg rounded-full bg-[#1f1f1f] p-1 border-white border-2 shadow-sm shadow-black/30 text-white">
-            <ArrowRight />
-          </span>
+          <ArrowRight size={18} className="ml-auto" style={{ color: "#d97706" }} />
         </button>
       )}
 
@@ -343,7 +360,7 @@ function PopulatedState({
                 </span>
               </div>
               <span className="mono flex-shrink-0 font-medium text-gray-900">
-                {e.cost != null ? `$${e.cost.toFixed(2)}` : "—"}
+                {e.cost != null ? formatCurrency(e.cost, currencyCode) : "—"}
               </span>
             </li>
           ))}

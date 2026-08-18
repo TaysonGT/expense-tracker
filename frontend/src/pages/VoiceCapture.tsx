@@ -5,6 +5,8 @@ import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
 import { useCategories, useVoiceEntry, useApproveExpense } from "../lib/queries";
 import type { Expense, ParsedEntity } from "../types";
 import EntityCard from "../components/EntityCard";
+import GroupSelector from "../components/GroupSelector";
+import { useAuth } from "../context/AuthContext";
 
 type Phase = "idle" | "recording" | "processing" | "review" | "failed";
 
@@ -18,6 +20,8 @@ type Phase = "idle" | "recording" | "processing" | "review" | "failed";
  */
 function VoiceCapture() {
   const nav = useNavigate();
+  const { currentGroup } = useAuth();
+  const currencyCode = currentGroup?.currency;
   const {
     supported,
     listening,
@@ -121,15 +125,18 @@ function VoiceCapture() {
   return (
     <div className="min-h-full flex-col items-center flex bg-gray-50 pb-28">
       {/* Header */}
-      <header className="sticky top-0 z-10 self-stretch flex items-center gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
-        <button
-          onClick={() => nav(-1)}
-          aria-label="Back"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <h1 className="text-lg font-semibold">Voice capture</h1>
+      <header className="sticky top-0 z-10 self-stretch flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => nav(-1)}
+            aria-label="Back"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-lg font-semibold">Voice capture</h1>
+        </div>
+        <GroupSelector currencyCode={currencyCode} />
       </header>
 
       <main className="max-w-md w-full px-4 grow flex flex-col justify-center">
@@ -248,6 +255,7 @@ function VoiceCapture() {
                   key={entity.id}
                   entity={entity}
                   categories={categories}
+                  currencyCode={currencyCode}
                   onChange={updateEntity}
                   onApprove={approveEntity}
                   approved={approvedIds.has(entity.id)}

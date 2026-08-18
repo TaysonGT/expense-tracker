@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AlertCircle, Check, Settings2 } from "lucide-react";
 import type { Category, ParsedEntity } from "../types";
+import { currencySymbol } from "../lib/expenseFormat";
 import CategoryManagementModal from "./CategoryManagementModal";
 
 interface EntityCardProps {
@@ -9,6 +10,8 @@ interface EntityCardProps {
   onChange: (updated: ParsedEntity) => void;
   onApprove: (entity: ParsedEntity) => void;
   approved?: boolean;
+  /** ISO currency code for the cost input prefix. */
+  currencyCode?: string;
 }
 
 /**
@@ -22,6 +25,7 @@ function EntityCard({
   onChange,
   onApprove,
   approved = false,
+  currencyCode,
 }: EntityCardProps) {
   const [costText, setCostText] = useState(
     entity.cost != null ? String(entity.cost) : ""
@@ -115,7 +119,7 @@ function EntityCard({
             className="mt-1 flex items-center rounded-lg border px-2"
             style={{ borderColor: missingCost ? "#f59e0b" : "#e5e7eb" }}
           >
-            <span className="text-sm text-gray-400">$</span>
+            <span className="text-sm text-gray-400">{currencySymbol(currencyCode)}</span>
             <input
               value={costText}
               onChange={(e) => commitCost(e.target.value)}

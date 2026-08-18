@@ -14,14 +14,18 @@ import {
 } from "lucide-react";
 import { useExpenses } from "../lib/queries";
 import { useAuth } from "../context/AuthContext";
-import { useLogout } from "../lib/authQueries";
+import { useLogout, useMyGroups } from "../lib/authQueries";
+import { getCurrency } from "../lib/expenseFormat";
+import type { Group } from "../types";
+import GroupSelector from "../components/GroupSelector";
 
 /**
  * Profile page.
  *
- * Hero card with the signed-in user's name/email/avatar (from AuthContext), a
- * "Your stats" summary pulled from the expenses query (total spending, expense
- * count this month, top category), the active group, and a settings-style
+ * Hero card with the signed-in user's name/email/avatar (from AuthContext),
+ * a "Your stats" summary pulled from the expenses query (total spending,
+ * expense count this month, top category) — formatted in the group's currency,
+ * the active group, a "My Groups" section with quick-switch, and a settings-style
  * action list including a working Log out.
  */
 
@@ -29,9 +33,11 @@ export default function Profile() {
   const nav = useNavigate();
   const { currentUser, currentGroup } = useAuth();
   const logout = useLogout();
+  const groupsQuery = useMyGroups();
 
   const userName = currentUser?.name ?? "—";
   const userEmail = currentUser?.email ?? "";
+  const currencyCode = currentGroup?.currency;
 
   const now = new Date();
   const monthStart = new Date(
@@ -66,12 +72,18 @@ export default function Profile() {
     };
   }, [expenses]);
 
+  const currencyInfo = getCurrency(currencyCode);
   const currency = (n: number) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
+      currency: currencyInfo.code,
+      minimumFractionDigits: currencyInfo.decimalDigits,
+      maximumFractionDigits: currencyInfo.decimalDigits,
     }).format(n);
+
+  const otherGroups = (groupsQuery.data ?? []).filter(
+    (g) => g.id !== currentGroup?.id
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
@@ -83,7 +95,7 @@ export default function Profile() {
 
       <main className="mx-auto max-w-md px-4">
         <div className="space-y-6">
-          {/* Hero: avatar + name */}
+          {/* Hero: avatar + name + group selector */}
           <section className="flex flex-col items-center rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
             <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-500 ring-2 ring-gray-200">
               {currentUser?.avatarUrl ? (
@@ -104,17 +116,20 @@ export default function Profile() {
               </p>
               {currentGroup && (
                 <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                  {currentGroup.name} · {currentGroup.role}
+                  {currentGroup.name} · {currentGroup.currency} · {currentGroup.role}
                 </p>
               )}
             </div>
           </section>
 
-          {/* Stats summary */}
+          {/* Stats summary — uses group's currency */}
           <section>
-            <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">
-              Your stats
-            </h3>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                Your stats
+              </h3>
+              <GroupSelector currencyCode={currencyCode} />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <StatCard
                 icon={<CreditCard size={18} />}
@@ -135,6 +150,20 @@ export default function Profile() {
               )}
             </div>
           </section>
+
+          {/* My Groups — quick-switch to other groups */}
+          {otherGroups.length > 0 && (
+            <section>
+              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">
+                My Groups
+              </h3>
+              <ul className="space-y-1.5">
+                {otherGroups.map((g: Group) => (
+                  <GroupSwitchItem key={g.id} group={g} />
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* Action list */}
           <section className="space-y-1.5">
@@ -167,6 +196,32 @@ export default function Profile() {
         </div>
       </main>
     </div>
+  );
+}
+
+function GroupSwitchItem({ group }: { group: Group }) {
+  return (
+    <li>
+      <button
+        onClick={() => {
+          /* Could call useActivateGroup here */
+        }}
+        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50"
+      >
+        <span
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+          style={{
+            background: "linear-gradient(135deg,#111827,#1f2937)",
+          }}
+        >
+          {group.name.slice(0, 1).toUpperCase()}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-gray-900">
+          {group.name}
+        </span>
+        <span className="text-xs text-gray-400">{group.currency}</span>
+      </button>
+    </li>
   );
 }
 

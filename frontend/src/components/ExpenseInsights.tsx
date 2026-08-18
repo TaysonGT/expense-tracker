@@ -11,6 +11,8 @@ interface ExpenseInsightsProps {
   /** Active date range (yyyy-mm-dd), used to decide the per-day chart. */
   startDate?: string;
   endDate?: string;
+  /** ISO currency code (e.g. "EUR") for formatting money values. */
+  currencyCode?: string;
 }
 
 // Only render the per-day chart for reasonably small ranges.
@@ -28,6 +30,7 @@ export default function ExpenseInsights({
   expenses,
   startDate,
   endDate,
+  currencyCode,
 }: ExpenseInsightsProps) {
   const stats = useMemo(() => computeStats(expenses), [expenses]);
 
@@ -44,9 +47,9 @@ export default function ExpenseInsights({
     <section className="mt-4 space-y-3">
       {/* Summary strip */}
       <div className="grid grid-cols-3 gap-2">
-        <SummaryCell label="Total" value={formatCurrency(stats.total)} />
+        <SummaryCell label="Total" value={formatCurrency(stats.total, currencyCode)} />
         <SummaryCell label="Expenses" value={String(stats.count)} />
-        <SummaryCell label="Average" value={formatCurrency(stats.average)} />
+        <SummaryCell label="Average" value={formatCurrency(stats.average, currencyCode)} />
       </div>
 
       {/* Category breakdown */}
@@ -65,7 +68,7 @@ export default function ExpenseInsights({
                   width: `${(c.total / stats.total) * 100}%`,
                   background: colorForCategory(c.id),
                 }}
-                title={`${c.name}: ${formatCurrency(c.total)}`}
+                 title={`${c.name}: ${formatCurrency(c.total, currencyCode)}`}
               />
             ))}
           </div>
@@ -88,7 +91,7 @@ export default function ExpenseInsights({
                   {Math.round((c.total / stats.total) * 100)}%
                 </span>
                 <span className="mono w-16 text-right font-medium text-gray-900">
-                  {formatCurrency(c.total)}
+                   {formatCurrency(c.total, currencyCode)}
                 </span>
               </li>
             ))}
@@ -107,7 +110,7 @@ export default function ExpenseInsights({
               <div
                 key={d.date}
                 className="flex flex-1 flex-col items-center gap-1"
-                title={`${d.date}: ${formatCurrency(d.total)}`}
+                 title={`${d.date}: ${formatCurrency(d.total, currencyCode)}`}
               >
                 <div
                   className="w-full rounded-t"
