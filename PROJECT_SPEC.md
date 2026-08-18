@@ -119,6 +119,14 @@ JWT session cookie; data routes are scoped to the session's active group
   the session's active group is still a group the user belongs to; clears it
   otherwise. Requires auth.
 - `POST /auth/logout` — clears the session cookie.
+- `POST /auth/register` — body `{ email, password, name }`. Creates a local
+  password user account and immediately logs them in. The session has no active
+  group yet; the client then proceeds to group onboarding. 409 if the email is
+  already registered.
+- `POST /auth/login` — body `{ email, password }`. Verifies the local password
+  against the stored hash. On success, sets the session cookie and returns user
+  info. 401 for invalid credentials or when the user has no password hash
+  (OAuth-only account).
 - `GET /groups` — list the user's groups (My Groups) with role. Requires auth.
 - `POST /groups` — create a group `{ name, currency?, showBalance? }`. Auto
   join_code, clones base categories, creator is admin, sets it active in the
@@ -156,7 +164,8 @@ JWT session cookie; data routes are scoped to the session's active group
   in prod), also accepts `Authorization: Bearer` for non-cookie clients.
 - `backend/src/lib/oauth.ts` — verifies Google (tokeninfo, audience check vs
   `GOOGLE_CLIENT_ID`) and Facebook (Graph API) tokens → normalized profile.
-- `backend/src/lib/users.ts` — `findOrCreateUser()` by (provider, providerId).
+- `backend/src/lib/users.ts` — `findOrCreateUser()`, `findUserByEmail()`,
+  `hashPassword()`, `verifyPassword()`, `setUserPassword()`.
 - `backend/src/middleware/auth.ts` — `requireAuth`, `requireActiveGroup`,
   `requireGroupMembership` (403 non-members), `requireAdmin`, and
   `getRequestContext()` (resolves `{ userId, groupId }` for data routes).
