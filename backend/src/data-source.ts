@@ -8,6 +8,7 @@ import { Category } from "./entities/Category";
 import { Expense } from "./entities/Expense";
 import { InitSchema1700000000000 } from "./migrations/1700000000000-InitSchema";
 import { GroupBasedSchema1700000000001 } from "./migrations/1700000000001-GroupBasedSchema";
+import { AddPasswordHash1700000000002 } from "./migrations/1700000000002-AddPasswordHash";
 
 dotenv.config();
 
@@ -21,9 +22,9 @@ export const AppDataSource = new DataSource({
   ssl: {
     rejectUnauthorized: false // Set to true if you are passing a valid CA certificate
   },
-  //Migrations manage the schema; never auto-sync in any environment. 
+  //Migrations manage the schema; never auto-sync in any environment.
   synchronize: false,
   logging: false,
   entities: [User, Group, GroupMembership, Category, Expense],
-  migrations: [InitSchema1700000000000, GroupBasedSchema1700000000001],
+  migrations: [InitSchema1700000000000, GroupBasedSchema1700000000001, AddPasswordHash1700000000002],
 });
