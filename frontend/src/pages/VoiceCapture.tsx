@@ -40,6 +40,7 @@ function VoiceCapture() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [entities, setEntities] = useState<ParsedEntity[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const [lastTranscript, setLastTranscript] = useState("");
 
   // Map a persisted Expense (from /voice-entry) into an editable ParsedEntity.
@@ -102,6 +103,7 @@ function VoiceCapture() {
 
   const approveEntity = useCallback(
     async (entity: ParsedEntity) => {
+      setLoadingIds((prev)=> new Set(prev).add(entity.id)) 
       try {
         await approveExpense.mutateAsync({
           id: entity.id,
@@ -112,6 +114,12 @@ function VoiceCapture() {
         setApprovedIds((prev) => new Set(prev).add(entity.id));
       } catch {
         // Leave it un-approved so the user can retry.
+      } finally {
+        setLoadingIds((prev)=> {
+          const updated = new Set(prev)
+          updated.delete(entity.id)
+          return updated
+        }) 
       }
     },
     [approveExpense]
@@ -254,6 +262,7 @@ function VoiceCapture() {
                 <EntityCard
                   key={entity.id}
                   entity={entity}
+                  isLoading={loadingIds.has(entity.id)}
                   categories={categories}
                   currencyCode={currencyCode}
                   onChange={updateEntity}

@@ -33,7 +33,7 @@ const ProtectedRoutes = () => {
   }
 
   return (
-    <div className="relative h-svh w-screen overflow-y-auto">
+    <div className="relative h-svh w-screen overflow-x-hidden overflow-y-auto">
       <Outlet/>
       <BottomNav
       />

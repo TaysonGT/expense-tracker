@@ -12,6 +12,7 @@ interface EntityCardProps {
   approved?: boolean;
   /** ISO currency code for the cost input prefix. */
   currencyCode?: string;
+  isLoading?: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ function EntityCard({
   onApprove,
   approved = false,
   currencyCode,
+  isLoading
 }: EntityCardProps) {
   const [costText, setCostText] = useState(
     entity.cost != null ? String(entity.cost) : ""
@@ -150,10 +152,10 @@ function EntityCard({
           onClick={() => onApprove(entity)}
           disabled={approved}
           className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
-          style={{ background: approved ? "#9ca3af" : "#00c48c" }}
+          style={{ background: isLoading? '#d9d9d9' : approved ? "#9ca3af" : "#00c48c" }}
         >
           <Check size={14} />
-          {approved ? "Approved" : "Approve"}
+          {isLoading? 'Approving...' : approved ? "Approved" : "Approve"}
         </button>
       </div>
 

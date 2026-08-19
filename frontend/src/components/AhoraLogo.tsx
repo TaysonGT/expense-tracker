@@ -10,14 +10,14 @@ import { Sparkles } from "lucide-react";
 export default function AhoraLogo({
   size = "default",
 }: {
-  size?: "compact" | "default";
+  size?: "lg" | "compact" | "default";
 }) {
-  const text = size === "compact" ? "text-base" : "text-xl";
-  const icon = size === "compact" ? 14 : 18;
+  const text = size === "compact" ? "text-base" : size === 'lg'? 'text-3xl' : "text-xl";
+  const icon = size === "compact" ? 14 : size === 'lg'? 26 : 18;
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-semibold ${text}
-        bg-gradient-to-l from-gray-900 via-emerald-800 to-emerald-600 bg-clip-text
+        bg-gradient-to-l from-gray-900 via-emerald-600 to-emerald-400 bg-clip-text
         text-transparent`}
     >
       <Sparkles
@@ -26,7 +26,7 @@ export default function AhoraLogo({
         aria-hidden
       />
       <span>Ahora</span>
-      <span className="text-xs font-normal opacity-70">AI</span>
+      <span className="text-xs font-normal opacity-70 text-black">AI</span>
     </span>
   );
 }

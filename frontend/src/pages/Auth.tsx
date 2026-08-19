@@ -166,9 +166,9 @@ export default function Auth() {
         {/* Brand */}
         <div className="mb-10 text-center">
           <div className="mx-auto mb-4">
-            <AhoraLogo size="default" />
+            <AhoraLogo size="lg" />
           </div>
-          <h1 className="text-2xl font-semibold">Ahora — Expense Tracker with AI</h1>
+          <h1 className="text-2xl font-semibold">Expense Tracker with AI</h1>
           <p className="mt-1 text-sm text-gray-500">
             Sign in to track your group's spending.
           </p>
