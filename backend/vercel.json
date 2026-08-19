@@ -1,14 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "dist/app.js": {
+    "src/app.ts": {
       "includeFiles": "node_modules/pg/**"
     }
   },
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/app.js"
+      "dest": "src/app.ts"
     }
   ]
 }
