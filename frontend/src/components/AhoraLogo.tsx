@@ -17,7 +17,7 @@ export default function AhoraLogo({
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-semibold ${text}
-        bg-gradient-to-r from-gray-900 via-gray-800 to-emerald-700 bg-clip-text
+        bg-gradient-to-l from-gray-900 via-emerald-800 to-emerald-600 bg-clip-text
         text-transparent`}
     >
       <Sparkles

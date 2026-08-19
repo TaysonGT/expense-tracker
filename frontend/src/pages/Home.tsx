@@ -7,6 +7,7 @@ import CategoryScroller from "../components/CategoryScroller";
 import GroupSelector from "../components/GroupSelector";
 import { useAuth } from "../context/AuthContext";
 import { formatCurrency } from "../lib/expenseFormat";
+import AhoraLogo from "../components/AhoraLogo";
 
 /**
  * Home screen.
@@ -68,13 +69,16 @@ export default function Home() {
 
   return (
     <div className="min-h-full bg-gray-50 text-gray-900 h-full flex flex-col items-center">
-      <main className="max-w-md w-full px-4 py-4 h-full">
+      <main className="max-w-md w-full px-4 py-4 grow">
         {loading ? (
           <HomeSkeleton />
         ) : (
-                     <div className="flex h-full flex-col">
+          <div className="flex h-full flex-col">
             {/* Header: greeting + group selector */}
-            <GroupSelector currencyCode={currencyCode} />
+              <div className="flex w-full justify-between items-center">
+                <GroupSelector currencyCode={currencyCode} />
+                <AhoraLogo/>
+              </div>
 
             {/* Total-spend box — always present, even when empty */}
             <TotalSpendBox

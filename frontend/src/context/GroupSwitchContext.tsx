@@ -17,8 +17,20 @@ interface GroupSwitchState {
 }
 
 interface GroupSwitchContextValue {
-  /** Trigger a group switch with the animated overlay. */
-  switchToGroup: (group: Pick<Group, "id" | "name">) => void;
+  /**
+   * Trigger the group-switch overlay. Shows "Switching to {name}" (spinner),
+   * then "Successfully switched" (✓), then resolves.
+   *
+   * - For selecting an *existing* group (My Groups, GroupSelector dropdown),
+   *   omit `skipActivate`: the provider runs the activate mutation itself.
+   * - For create / join flows where the backend has *already* set the group
+   *   active in the session, pass `skipActivate: true` so we just present the
+   *   overlay + navigate without another POST.
+   */
+  switchToGroup: (
+    group: Pick<Group, "id" | "name">,
+    opts?: { skipActivate?: boolean },
+  ) => void;
 }
 
 const GroupSwitchContext = createContext<GroupSwitchContextValue>({
@@ -36,11 +48,11 @@ export function useGroupSwitch() {
  * `useGroupSwitch().switchToGroup(group)` instead of invoking
  * `useActivateGroup` directly. The provider runs the activate mutation,
  * displays an animated fullscreen overlay ("Switching to {name}" →
- * "Successfully switched"), then closes.
+ * "Successfully switched"), then closes and navigates to /home.
  *
  * The overlay is rendered once here (one layer for the whole app) so it can
  * be invoked from anywhere: Profile "My Groups", the GroupSelector dropdown,
- * OnboardingGroups, etc. After a successful switch it navigates to /home.
+ * OnboardingGroups, GroupJoin, etc.
  */
 export function GroupSwitchProvider({ children }: { children: ReactNode }) {
   const nav = useNavigate();
@@ -51,25 +63,41 @@ export function GroupSwitchProvider({ children }: { children: ReactNode }) {
     groupName: "",
   });
 
+  const finish = useCallback(
+    (groupName: string) => {
+      setState({ open: true, status: "success", groupName });
+      setTimeout(() => {
+        setState((s) => ({ ...s, open: false }));
+        nav("/home", { replace: true });
+      }, 900);
+    },
+    [nav],
+  );
+
   const switchToGroup = useCallback(
-    (group: Pick<Group, "id" | "name">) => {
+    (
+      group: Pick<Group, "id" | "name">,
+      opts: { skipActivate?: boolean } = {},
+    ) => {
       setState({ open: true, status: "switching", groupName: group.name });
+
+      if (opts.skipActivate) {
+        // Server already activated the session; just present the overlay flow.
+        finish(group.name);
+        return;
+      }
 
       activate.mutate(group.id, {
         onSuccess: (g: Group) => {
           setLastActiveGroup(g.id);
-          setState({ open: true, status: "success", groupName: group.name });
-          setTimeout(() => {
-            setState((s) => ({ ...s, open: false }));
-            nav("/home", { replace: true });
-          }, 900);
+          finish(group.name);
         },
         onError: () => {
           setState((s) => ({ ...s, open: false }));
         },
       });
     },
-    [activate, nav],
+    [activate, finish],
   );
 
   return (

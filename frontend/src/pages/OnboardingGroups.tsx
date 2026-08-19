@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Check, LogOut, Plus, Users } from "lucide-react";
+import {
+  Check,
+  LogOut,
+  Plus,
+  Users,
+} from "lucide-react";
 import currencies from "../data/currencies.json";
 import type { Currency } from "../types";
 import {
   useMyGroups,
   useCreateGroup,
   useJoinGroup,
-  useActivateGroup,
   useLogout,
 } from "../lib/authQueries";
 import { useAuth } from "../context/AuthContext";
+import { useGroupSwitch } from "../context/GroupSwitchContext";
 
 type Tab = "mine" | "create" | "join";
 
@@ -26,6 +31,7 @@ export default function OnboardingGroups() {
   const { currentUser } = useAuth();
   const myGroups = useMyGroups();
   const logout = useLogout();
+  const { switchToGroup } = useGroupSwitch();
 
   const hasGroups = (myGroups.data?.length ?? 0) > 0;
   const [tab, setTab] = useState<Tab>("mine");
@@ -33,7 +39,12 @@ export default function OnboardingGroups() {
   // Default to the Create tab when the user has no groups yet.
   const activeTab: Tab = myGroups.isSuccess && !hasGroups && tab === "mine" ? "create" : tab;
 
-  const enterApp = () => nav("/", { replace: true });
+  // Create / Join flows: the backend already activated the session, so we
+  // just present the switch overlay (skipActivate) and navigate.
+  const onCreated = (group: { id: string; name: string }) =>
+    switchToGroup(group, { skipActivate: true });
+  const onJoined = (group: { id: string; name: string }) =>
+    switchToGroup(group, { skipActivate: true });
 
   return (
     <div className="min-h-svh bg-gray-50 text-gray-900">
@@ -70,12 +81,11 @@ export default function OnboardingGroups() {
         {activeTab === "mine" && (
           <MyGroupsPanel
             loading={myGroups.isLoading}
-            onEntered={enterApp}
             onCreate={() => setTab("create")}
           />
         )}
-        {activeTab === "create" && <CreateGroupPanel onCreated={enterApp} />}
-        {activeTab === "join" && <JoinGroupPanel onJoined={enterApp} />}
+        {activeTab === "create" && <CreateGroupPanel onCreated={onCreated} />}
+        {activeTab === "join" && <JoinGroupPanel onJoined={onJoined} />}
       </main>
     </div>
   );
@@ -109,23 +119,21 @@ function TabButton({
 
 function MyGroupsPanel({
   loading,
-  onEntered,
   onCreate,
 }: {
   loading: boolean;
-  onEntered: () => void;
   onCreate: () => void;
 }) {
   const { data: groups = [] } = useMyGroups();
-  const activate = useActivateGroup();
-  const [pendingId, setPendingId] = useState<string | null>(null);
+  const { switchToGroup } = useGroupSwitch();
+  const [switchingId, setSwitchingId] = useState<string | null>(null);
 
-  const enter = (groupId: string) => {
-    setPendingId(groupId);
-    activate.mutate(groupId, {
-      onSuccess: onEntered,
-      onSettled: () => setPendingId(null),
-    });
+  const enter = (g: { id: string; name: string }) => {
+    setSwitchingId(g.id);
+    // Selecting an existing group runs the activate mutation (skipActivate
+    // omitted), presented via the shared overlay. The provider navigates to
+    // /home on success.
+    switchToGroup(g);
   };
 
   if (loading) {
@@ -163,8 +171,8 @@ function MyGroupsPanel({
       {groups.map((g) => (
         <li key={g.id}>
           <button
-            onClick={() => enter(g.id)}
-            disabled={activate.isPending}
+            onClick={() => enter(g)}
+            disabled={switchingId === g.id}
             className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left ring-1 ring-gray-100 transition-transform active:scale-[0.99] disabled:opacity-60"
           >
             <span
@@ -179,9 +187,6 @@ function MyGroupsPanel({
                 {g.currency} · {g.role}
               </span>
             </span>
-            {pendingId === g.id && (
-              <span className="text-xs text-gray-400">Entering…</span>
-            )}
           </button>
         </li>
       ))}
@@ -191,7 +196,7 @@ function MyGroupsPanel({
 
 /* ------------------------------ Create Group ----------------------------- */
 
-function CreateGroupPanel({ onCreated }: { onCreated: () => void }) {
+function CreateGroupPanel({ onCreated }: { onCreated: (g: { id: string; name: string }) => void }) {
   const create = useCreateGroup();
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("USD");
@@ -209,7 +214,7 @@ function CreateGroupPanel({ onCreated }: { onCreated: () => void }) {
     create.mutate(
       { name: name.trim(), currency, showBalance },
       {
-        onSuccess: onCreated,
+        onSuccess: (g) => onCreated({ id: g.id, name: g.name }),
         onError: () => setError("Couldn't create the group. Try again."),
       }
     );
@@ -284,7 +289,7 @@ function CreateGroupPanel({ onCreated }: { onCreated: () => void }) {
 
 /* ------------------------------- Join Group ------------------------------ */
 
-function JoinGroupPanel({ onJoined }: { onJoined: () => void }) {
+function JoinGroupPanel({ onJoined }: { onJoined: (g: { id: string; name: string }) => void }) {
   const join = useJoinGroup();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -297,7 +302,7 @@ function JoinGroupPanel({ onJoined }: { onJoined: () => void }) {
     }
     setError(null);
     join.mutate(trimmed, {
-      onSuccess: onJoined,
+      onSuccess: (g) => onJoined({ id: g.id, name: g.name }),
       onError: (err: unknown) => {
         const status =
           typeof err === "object" && err && "response" in err
