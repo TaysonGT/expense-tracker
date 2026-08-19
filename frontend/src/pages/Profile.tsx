@@ -12,9 +12,9 @@ import {
   HelpCircle,
   LogOut,
 } from "lucide-react";
-import { useExpenses } from "../lib/queries";
 import { useAuth } from "../context/AuthContext";
-import { useLogout, useMyGroups } from "../lib/authQueries";
+import { useExpenses } from "../lib/queries";
+import { useLogout, useMyGroups, useActivateGroup } from "../lib/authQueries";
 import { getCurrency } from "../lib/expenseFormat";
 import type { Group } from "../types";
 import GroupSelector from "../components/GroupSelector";
@@ -151,19 +151,49 @@ export default function Profile() {
             </div>
           </section>
 
-          {/* My Groups — quick-switch to other groups */}
-          {otherGroups.length > 0 && (
-            <section>
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">
+          {/* My Groups — quick-switch to other groups + manage current */}
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400">
                 My Groups
               </h3>
-              <ul className="space-y-1.5">
-                {otherGroups.map((g: Group) => (
-                  <GroupSwitchItem key={g.id} group={g} />
-                ))}
-              </ul>
-            </section>
-          )}
+              {currentGroup && (
+                <button
+                  onClick={() => nav("/group")}
+                  className="flex items-center gap-1 text-xs font-medium text-blue-600"
+                >
+                  <Settings size={13} />
+                  Manage
+                </button>
+              )}
+            </div>
+            <ul className="space-y-1.5">
+              {currentGroup && (
+                <li>
+                  <button
+                    onClick={() => nav("/group")}
+                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
+                  >
+                    <span
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                      style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
+                    >
+                      {currentGroup.name.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-medium text-gray-900">
+                      {currentGroup.name}
+                    </span>
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+                      Active
+                    </span>
+                  </button>
+                </li>
+              )}
+              {otherGroups.map((g: Group) => (
+                <GroupSwitchItem key={g.id} group={g} />
+              ))}
+            </ul>
+          </section>
 
           {/* Action list */}
           <section className="space-y-1.5">
@@ -200,18 +230,18 @@ export default function Profile() {
 }
 
 function GroupSwitchItem({ group }: { group: Group }) {
+  const activate = useActivateGroup();
   return (
     <li>
       <button
-        onClick={() => {
-          /* Could call useActivateGroup here */
-        }}
-        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50"
+        onClick={() => activate.mutate(group.id)}
+        disabled={activate.isPending}
+        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50 disabled:opacity-60"
       >
         <span
           className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
           style={{
-            background: "linear-gradient(135deg,#111827,#1f2937)",
+            background: "#d1d5db",
           }}
         >
           {group.name.slice(0, 1).toUpperCase()}
@@ -219,7 +249,9 @@ function GroupSwitchItem({ group }: { group: Group }) {
         <span className="min-w-0 flex-1 truncate text-gray-900">
           {group.name}
         </span>
-        <span className="text-xs text-gray-400">{group.currency}</span>
+        <span className="text-xs text-gray-400">
+          {activate.isPending ? "Switching…" : "Switch"}
+        </span>
       </button>
     </li>
   );

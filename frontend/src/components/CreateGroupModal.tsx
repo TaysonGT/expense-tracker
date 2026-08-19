@@ -124,8 +124,8 @@ export default function CreateGroupModal({
                 className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
                 style={{
                   transform: showBalance
-                    ? "translateX(22px)"
-                    : "translateX(2px)",
+                    ? "translateX(0px)"
+                    : "translateX(-20px)",
                 }}
               />
             </button>

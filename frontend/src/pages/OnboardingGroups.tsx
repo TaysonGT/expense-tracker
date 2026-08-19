@@ -240,7 +240,7 @@ function CreateGroupPanel({ onCreated }: { onCreated: () => void }) {
         >
           {list.map((c) => (
             <option key={c.code} value={c.code}>
-              {c.symbolNative} — {c.name} ({c.code})
+              {c.code} — {c.name} ({c.symbolNative})
             </option>
           ))}
         </select>
@@ -263,7 +263,7 @@ function CreateGroupPanel({ onCreated }: { onCreated: () => void }) {
         >
           <span
             className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
-            style={{ transform: showBalance ? "translateX(22px)" : "translateX(2px)" }}
+            style={{ transform: showBalance ? "translateX(-20px)" : "translateX(0px)" }}
           />
         </button>
       </label>

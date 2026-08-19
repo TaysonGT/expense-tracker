@@ -68,6 +68,26 @@ export interface SessionInfo {
   activeRole: GroupRole | null;
 }
 
+/** A member of a group (GET /groups/:id/members). */
+export interface GroupMember {
+  userId: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  role: GroupRole;
+  joinedAt: string;
+}
+
+/** Preview of a group by join code (GET /groups/preview/:code). */
+export interface GroupPreview {
+  id: string;
+  name: string;
+  currency: string;
+  memberCount: number;
+  adminName: string | null;
+  alreadyMember: boolean;
+}
+
 /** A currency entry from currencies.json. */
 export interface Currency {
   code: string;

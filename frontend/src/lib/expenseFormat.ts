@@ -54,6 +54,7 @@ export function formatCurrency(value: number, currencyCode?: string): string {
   const currency = getCurrency(currencyCode);
   return new Intl.NumberFormat("en-US", {
     style: "currency",
+    currencyDisplay: 'narrowSymbol',
     currency: currency.code,
     minimumFractionDigits: currency.decimalDigits,
     maximumFractionDigits: currency.decimalDigits,

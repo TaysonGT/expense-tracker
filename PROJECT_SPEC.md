@@ -95,6 +95,12 @@ See `backend/src/lib/baseCategories.ts`.
   member. `generateUniqueJoinCode()` / `generateJoinCode()` back the join
   codes (app-side); the DB also defaults `join_code` via a `gen_join_code()`
   function so raw inserts get a code.
+  - `getGroupMembers(groupId)` returns `[{ userId, name, email, avatarUrl,
+    role, joinedAt }]` ordered admin-first.
+  - `updateGroup(groupId, patch)` applies name/currency/showBalance edits.
+  - `getGroupPreviewByCode(code)` returns `{ name, currency, memberCount,
+    adminName }` with an `alreadyMember` flag when the session user is in the
+    group.
 
 ### Migration
 - `1700000000001-GroupBasedSchema.ts` drops the v1 user-centric tables and
@@ -136,6 +142,12 @@ JWT session cookie; data routes are scoped to the session's active group
 - `POST /groups/:groupId/activate` — switch active group; requires membership
   (403 otherwise). Sets active_group_id + active_role in the session.
 - `GET /groups/:groupId` — group details; requires membership (403 otherwise).
+- `GET /groups/:groupId/members` — ordered member list with roles (admin first);
+  requires membership.
+- `PATCH /groups/:groupId` — { name?, currency?, showBalance? }; admin only, 403
+  otherwise. Validates currency against the currencies list.
+- `GET /groups/preview/:joinCode` — public-by-code preview of name, currency,
+  member count and admin name. Requires auth to populate `alreadyMember`.
 
 ### Data (require valid session + active group)
 - `POST /voice-entry` — body `{ transcript, date? }`. Runs Gemini/Groq parsing +

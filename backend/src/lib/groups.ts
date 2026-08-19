@@ -128,6 +128,112 @@ export async function getMembership(
   });
 }
 
+export interface GroupMemberInfo {
+  userId: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  role: GroupRole;
+  joinedAt: Date;
+}
+
+/**
+ * List all members of a group with their user info + role. Admins first,
+ * then by join date.
+ */
+export async function getGroupMembers(
+  groupId: string
+): Promise<GroupMemberInfo[]> {
+  const memberships = await AppDataSource.getRepository(GroupMembership).find({
+    where: { groupId },
+    relations: { user: true },
+    order: { joinedAt: "ASC" },
+  });
+  return memberships
+    .filter((m) => m.user)
+    .map((m) => ({
+      userId: m.userId,
+      name: m.user.name,
+      email: m.user.email,
+      avatarUrl: m.user.avatarUrl,
+      role: m.role,
+      joinedAt: m.joinedAt,
+    }))
+    .sort((a, b) => {
+      // Admins first, then by join date.
+      if (a.role !== b.role) return a.role === "admin" ? -1 : 1;
+      return a.joinedAt.getTime() - b.joinedAt.getTime();
+    });
+}
+
+export interface UpdateGroupOptions {
+  name?: string;
+  currency?: string;
+  showBalance?: boolean;
+}
+
+/**
+ * Update a group's editable fields (name / currency / showBalance). Only the
+ * provided fields are changed. Returns the updated group.
+ */
+export async function updateGroup(
+  groupId: string,
+  options: UpdateGroupOptions
+): Promise<Group> {
+  const groupRepo = AppDataSource.getRepository(Group);
+  const group = await groupRepo.findOne({ where: { id: groupId } });
+  if (!group) {
+    throw new GroupError("Group not found", 404);
+  }
+  if (options.name !== undefined) group.name = options.name;
+  if (options.currency !== undefined) group.currency = options.currency;
+  if (options.showBalance !== undefined) group.showBalance = options.showBalance;
+  return groupRepo.save(group);
+}
+
+/**
+ * Preview a group by its join code without joining. Returns basic public info
+ * plus the admin's display name. Throws GroupError(404) for an unknown code.
+ */
+export interface GroupPreview {
+  id: string;
+  name: string;
+  currency: string;
+  memberCount: number;
+  adminName: string | null;
+  alreadyMember: boolean;
+}
+
+export async function getGroupPreviewByCode(
+  rawCode: string,
+  viewerUserId: string
+): Promise<GroupPreview> {
+  const code = rawCode.trim().toUpperCase();
+  if (code.length !== JOIN_CODE_LENGTH) {
+    throw new GroupError("Invalid join code", 400);
+  }
+
+  const group = await AppDataSource.getRepository(Group).findOne({
+    where: { joinCode: code },
+  });
+  if (!group) {
+    throw new GroupError("No group found for that code", 404);
+  }
+
+  const members = await getGroupMembers(group.id);
+  const admin = members.find((m) => m.role === "admin");
+  const alreadyMember = members.some((m) => m.userId === viewerUserId);
+
+  return {
+    id: group.id,
+    name: group.name,
+    currency: group.currency,
+    memberCount: members.length,
+    adminName: admin ? admin.name : null,
+    alreadyMember,
+  };
+}
+
 /**
  * Join a group by its 8-char join code. Creates a `viewer` membership. If the
  * user is already a member, returns the existing membership (idempotent).

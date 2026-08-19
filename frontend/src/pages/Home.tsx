@@ -84,11 +84,11 @@ export default function Home() {
         ) : (
           <div className="flex h-full flex-col">
             {/* Header: greeting + group selector */}
-            <div className="mb-6 flex items-center justify-between">
+            <GroupSelector currencyCode={currencyCode} />
+            <div className="mt-4 flex items-center justify-between">
               <h1 className="text-2xl font-semibold">
                 {greetingForNow(currentUser?.name?.split(" ")[0] ?? FALLBACK_NAME)}
               </h1>
-              <GroupSelector currencyCode={currencyCode} />
             </div>
 
             {/* Total-spend box — always present, even when empty */}

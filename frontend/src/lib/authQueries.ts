@@ -4,7 +4,13 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { api } from "./api";
-import type { Group, GroupRole, SessionInfo } from "../types";
+import type {
+  Group,
+  GroupRole,
+  SessionInfo,
+  GroupMember,
+  GroupPreview,
+} from "../types";
 
 /**
  * Auth + group session hooks.
@@ -215,6 +221,73 @@ export function useActivateGroup() {
       void qc.invalidateQueries({ queryKey: ["expenses"] });
       void qc.invalidateQueries({ queryKey: ["categories"] });
     },
+  });
+}
+
+/** A single group's details (GET /groups/:groupId). */
+export function useGroup(groupId: string | undefined) {
+  return useQuery({
+    queryKey: ["group", groupId],
+    queryFn: async (): Promise<Group> => {
+      const { data } = await api.get<Group>(`/groups/${groupId}`);
+      return data;
+    },
+    enabled: !!groupId,
+  });
+}
+
+/** Members of a group (GET /groups/:groupId/members). */
+export function useGroupMembers(groupId: string | undefined) {
+  return useQuery({
+    queryKey: ["group", groupId, "members"],
+    queryFn: async (): Promise<GroupMember[]> => {
+      const { data } = await api.get<GroupMember[]>(
+        `/groups/${groupId}/members`
+      );
+      return data;
+    },
+    enabled: !!groupId,
+  });
+}
+
+export interface UpdateGroupInput {
+  groupId: string;
+  name?: string;
+  currency?: string;
+  showBalance?: boolean;
+}
+
+/** Update a group's editable fields (admin only). PATCH /groups/:groupId. */
+export function useUpdateGroup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      ...body
+    }: UpdateGroupInput): Promise<Group> => {
+      const { data } = await api.patch<Group>(`/groups/${groupId}`, body);
+      return data;
+    },
+    onSuccess: (group) => {
+      void qc.invalidateQueries({ queryKey: authKeys.session });
+      void qc.invalidateQueries({ queryKey: authKeys.groups });
+      void qc.invalidateQueries({ queryKey: ["group", group.id] });
+    },
+  });
+}
+
+/** Preview a group by join code (GET /groups/preview/:code) — for join links. */
+export function useGroupPreview(code: string | undefined) {
+  return useQuery({
+    queryKey: ["group-preview", code],
+    queryFn: async (): Promise<GroupPreview> => {
+      const { data } = await api.get<GroupPreview>(
+        `/groups/preview/${code}`
+      );
+      return data;
+    },
+    enabled: !!code,
+    retry: false,
   });
 }
 

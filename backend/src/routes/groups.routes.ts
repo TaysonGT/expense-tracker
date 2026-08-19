@@ -1,10 +1,12 @@
 import { Router, Request, Response } from "express";
-import { requireAuth, requireGroupMembership } from "../middleware/auth";
+import { requireAuth, requireGroupMembership, requireAdmin } from "../middleware/auth";
 import {
   createGroup,
   joinGroupByCode,
   listUserGroups,
-  getMembership,
+  getGroupMembers,
+  updateGroup,
+  getGroupPreviewByCode,
   GroupError,
 } from "../lib/groups";
 import { setSessionCookie } from "../lib/session";
@@ -125,6 +127,26 @@ router.post("/join", async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /groups/preview/:code
+ * Preview a group by join code without joining — used by the shareable join
+ * link page. Returns name, currency, member count, admin name, and whether the
+ * viewer is already a member. 404 for an unknown code.
+ */
+router.get("/preview/:code", async (req: Request, res: Response) => {
+  try {
+    const code = String(req.params.code);
+    const preview = await getGroupPreviewByCode(code, req.session!.userId);
+    return res.json(preview);
+  } catch (err) {
+    if (err instanceof GroupError) {
+      return res.status(err.status).json({ message: err.message });
+    }
+    console.error("group preview error:", err);
+    return res.status(500).json({ message: "Failed to load group preview" });
+  }
+});
+
+/**
  * POST /groups/:groupId/activate
  * Switch the active group. Requires membership; sets active_group_id +
  * active_role in the session.
@@ -191,6 +213,76 @@ router.get(
     } catch (err) {
       console.error("get group error:", err);
       return res.status(500).json({ message: "Failed to load group" });
+    }
+  }
+);
+
+/**
+ * GET /groups/:groupId/members
+ * List all members of a group (with role) — used by the group management page.
+ * Requires membership.
+ */
+router.get(
+  "/:groupId/members",
+  requireGroupMembership,
+  async (req: Request, res: Response) => {
+    try {
+      const groupId = String(req.params.groupId);
+      const members = await getGroupMembers(groupId);
+      return res.json(members);
+    } catch (err) {
+      console.error("list members error:", err);
+      return res.status(500).json({ message: "Failed to list members" });
+    }
+  }
+);
+
+/**
+ * PATCH /groups/:groupId
+ * Update a group's name / currency / showBalance. Admin only.
+ */
+router.patch(
+  "/:groupId",
+  requireGroupMembership,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const groupId = String(req.params.groupId);
+      const { name, currency, showBalance } = req.body ?? {};
+
+      if (name !== undefined && (typeof name !== "string" || !name.trim())) {
+        return res.status(400).json({ message: "name must be a non-empty string" });
+      }
+      if (
+        currency !== undefined &&
+        (typeof currency !== "string" || currency.length !== 3)
+      ) {
+        return res.status(400).json({ message: "currency must be a 3-letter code" });
+      }
+      if (showBalance !== undefined && typeof showBalance !== "boolean") {
+        return res.status(400).json({ message: "showBalance must be a boolean" });
+      }
+
+      const group = await updateGroup(groupId, {
+        name: typeof name === "string" ? name.trim() : undefined,
+        currency: typeof currency === "string" ? currency.toUpperCase() : undefined,
+        showBalance: typeof showBalance === "boolean" ? showBalance : undefined,
+      });
+
+      return res.json({
+        id: group.id,
+        name: group.name,
+        currency: group.currency,
+        showBalance: group.showBalance,
+        joinCode: group.joinCode,
+        role: req.groupRole,
+      });
+    } catch (err) {
+      if (err instanceof GroupError) {
+        return res.status(err.status).json({ message: err.message });
+      }
+      console.error("update group error:", err);
+      return res.status(500).json({ message: "Failed to update group" });
     }
   }
 );

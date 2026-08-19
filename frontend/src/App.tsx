@@ -9,8 +9,11 @@ import Profile from "./pages/Profile"
 import SettingsPage from "./pages/SettingsPage"
 import Auth from "./pages/Auth"
 import OnboardingGroups from "./pages/OnboardingGroups"
+import GroupManagement from "./pages/GroupManagement"
+import GroupJoin from "./pages/GroupJoin"
 import AuthGuard from "./routes/AuthGuard"
 import OnboardingGuard from "./routes/OnboardingGuard"
+import RequireAuth from "./routes/RequireAuth"
 import { AuthProvider } from "./context/AuthContext"
 
 const App = () => {
@@ -38,6 +41,17 @@ const App = () => {
             }
           />
 
+          {/* Shareable group join link — reachable without an active group
+              (auth required). Lets an invited user preview + join. */}
+          <Route
+            path="/join/:code"
+            element={
+              <RequireAuth>
+                <GroupJoin />
+              </RequireAuth>
+            }
+          />
+
           {/* Protected app */}
           <Route path="/" element={<ProtectedRoutes/>}>
             <Route path="/" element={<Navigate to="/home" replace />} />
@@ -48,6 +62,7 @@ const App = () => {
             <Route path="pending" element={<PendingExpenses />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="group" element={<GroupManagement />} />
           </Route>
         </Routes>
       </AuthProvider>
