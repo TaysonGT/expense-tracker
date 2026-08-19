@@ -18,9 +18,6 @@ import { formatCurrency } from "../lib/expenseFormat";
  *                categories + optional pending nudge + recent expenses
  */
 
-// Greeting falls back to a generic label until the user's name resolves.
-const FALLBACK_NAME = "there";
-
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -31,20 +28,13 @@ function isoDaysAgo(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function greetingForNow(name: string): string {
-  const hour = new Date().getHours();
-  const part =
-    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  return `${part}, ${name}`;
-}
-
 function sumCost(expenses: Expense[]): number {
   return expenses.reduce((total, e) => total + (e.cost ?? 0), 0);
 }
 
 export default function Home() {
   const nav = useNavigate();
-  const { currentUser, currentGroup } = useAuth();
+  const { currentGroup } = useAuth();
   const currencyCode = currentGroup?.currency;
   const today = todayIso();
   const yesterday = isoDaysAgo(1);
@@ -82,14 +72,9 @@ export default function Home() {
         {loading ? (
           <HomeSkeleton />
         ) : (
-          <div className="flex h-full flex-col">
+                     <div className="flex h-full flex-col">
             {/* Header: greeting + group selector */}
             <GroupSelector currencyCode={currencyCode} />
-            {/* <div className="mt-4 flex items-center justify-between"> */}
-            {/*   <h1 className="text-2xl font-semibold"> */}
-            {/*     {greetingForNow(currentUser?.name?.split(" ")[0] ?? FALLBACK_NAME)} */}
-            {/*   </h1> */}
-            {/* </div> */}
 
             {/* Total-spend box — always present, even when empty */}
             <TotalSpendBox

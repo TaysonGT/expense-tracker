@@ -194,10 +194,11 @@ JWT session cookie; data routes are scoped to the session's active group
    empty state offers voice/manual input choices. Loading shows shimmer
    skeletons.
    *Implemented (live data).*
-2. **Expenses** — full list of all expenses, filterable by category and day,
-   with inline-editable rows, a reactive insights block (summary strip,
-   category breakdown, per-day chart) computed client-side, and pill-based
-   filters. Backed by the new general PATCH /expenses/:id endpoint.
+2. **Expenses** — full list of all expenses, filterable by category (pill strip)
+   and a date range (selected via a header button that opens DateFilterModal:
+   presets All/Today/This Week/This Month + custom start/end). Inline-editable
+   rows, a reactive insights block (summary strip, category breakdown, per-day
+   chart) computed client-side. Backed by PATCH /expenses/:id.
    *Implemented (routed at /expenses).*
 3. **Voice Capture** — record button, live partial captions while speaking,
    processing state, failed state with retry, then an editable review of the
@@ -211,14 +212,42 @@ JWT session cookie; data routes are scoped to the session's active group
 5. **Manual Add** — simple form: title, cost, category, date. Saves directly
    (non-pending). *Implemented (routed at /manual).*
 6. **Profile** — mock page (no auth backend yet): avatar + name/email hero,
-   this-month stats summary, settings-style action list. Routed at /profile.
-   *Implemented (v1 placeholder).*
-7. **Category Management** — list + add/edit/delete. *Backend CRUD done; UI
+   this-month stats summary, My Groups quick-switch (activates via the shared
+   group-switch overlay), Settings-style action list. Routed at /profile.
+   *Implemented (v1).*
+7. **Group Management** (`/group`) — shows the active group's members (role
+   badges; admin-first ordering) and an edit form for name, currency, and
+   show-balance toggle. Includes the group's join code + a shareable direct
+   link (`/join/:code`). Admin-only for edits.
+   *Implemented.*
+8. **Group Join** (`/join/:code`) — shareable direct-link page: previews a
+   group by join code (name, currency, member count, admin name) and offers a
+   Join button (or "already a member"). Auth required; the route is reachable
+   without an active group (uses RequireAuth guard) so invitees land here,
+   sign in, then join. Redirect after success goes to /home.
+   *Implemented.*
+9. **Settings** (`/settings`) — appearance + account actions stub.
+   *Implemented.*
+10. **Category Management** — list + add/edit/delete. *Backend CRUD done; UI
    not yet built.*
 
-Bottom navigation: Home, Expenses, centered elevated (+) button (opens
-"Record voice" / "Type manually" popup — implemented with appear animation),
-Profile (placeholder), Settings (placeholder).
+**Shared group-switch overlay.** Switching the active group (via Profile's My
+Groups list, the GroupSelector dropdown, or OnboardingGroups' enter button)
+triggers a fullscreen animated overlay from `GroupSwitchProvider`:
+"Switching to \<name\>" (spinner) → "Successfully switched" (checkmark) →
+navigates to `/home`. The provider also invalidates the session query and
+TanStack Query caches for `['expenses']`/`['categories']`, so the home page
+refetches fresh data on arrival. OnboardingGroups additionally uses a direct
+activate call so its own modal flow (`onEntered`) can run after the switch.
+
+### Bottom navigation & header
+- Bottom nav: Home, Expenses, centered elevated (+) button (opens "Record voice"
+/ "Type manually" popup — implemented with appear animation), Pending, Profile.
+- `GroupSelector` sits in page headers (Home/Profile/Expenses): shows the
+  active group's name + currency, opens a dropdown with My Groups (with the
+  shared switch overlay), a "Manage group" link to `/group`, and Create/Join
+  buttons. Dropdown closes on outside click / Escape and animates with a
+  scale + translate-y transition matching the `AddMenu` pattern.
 
 ## Explicitly Out of Scope for v1
 - Analytics / spending insights beyond the client-computed Expenses insights.
@@ -226,12 +255,23 @@ Profile (placeholder), Settings (placeholder).
 ### Auth & onboarding (implemented)
 OAuth (Google + Facebook) sign-in at `/auth`, then a mandatory group
 onboarding step at `/onboarding/groups` (Create / Join / My Groups) before any
-expense data is reachable. `backend/src/lib/devUser.ts` remains only as a
-fallback seed helper and is no longer wired into the data routes.
+expense data is reachable. The onboarding UI is split into reusable
+`CreateGroupModal` and `JoinGroupModal` components. `AuthGuard` preserves a
+`location.state.from` so a visitor bounced from a protected URL (e.g. a share-
+able join link at `/join/:code`) returns to it after signing in.
+`RequireAuth` guards routes that need authentication but not an active group;
+`OnboardingGuard` guards the group-onboarding step. `backend/src/lib/devUser.ts`
+is no longer wired into the data routes.
+
+## Brand
+Product name: **Ahora — Expense Tracker with AI**. The logo/name appears in the
+auth screen hero and in the Group Management header; no standalone logo asset,
+so a styled wordmark (gradient + AI accent) is used inline.
 
 ## Tech Stack
-- Frontend: React 19 + Vite + Tailwind CSS 4 + TypeScript 7 + react-router 8;
-  data fetching via axios + TanStack Query (QueryClientProvider in main.tsx)
+- Frontend: React 19 + Vite 8 + Tailwind CSS 4 + TypeScript 7 + react-router 8;
+  data fetching via axios + TanStack Query (QueryClientProvider in main.tsx).
+  Currency symbols/digits come from `frontend/src/data/currencies.json`.
 - Backend: Node.js / Express 5 + TypeScript + TypeORM
 - Database: Postgres (Supabase in dev, SSL-enabled) per schema above
 - STT: client-side (Web Speech API), no audio uploaded

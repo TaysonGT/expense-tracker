@@ -7,6 +7,7 @@ import {
   type GoogleCredentialResponse,
   type FacebookAuthResponse,
 } from "../lib/oauthClient";
+import AhoraLogo from "../components/AhoraLogo";
 
 type AuthMode = "login" | "register";
 
@@ -164,13 +165,10 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="mb-10 text-center">
-          <div
-            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-bold text-white"
-            style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
-          >
-            ₵
+          <div className="mx-auto mb-4">
+            <AhoraLogo size="default" />
           </div>
-          <h1 className="text-2xl font-semibold">Expense Tracker</h1>
+          <h1 className="text-2xl font-semibold">Ahora — Expense Tracker with AI</h1>
           <p className="mt-1 text-sm text-gray-500">
             Sign in to track your group's spending.
           </p>

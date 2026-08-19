@@ -14,6 +14,7 @@ import currencies from "../data/currencies.json";
 import type { Currency, GroupMember } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useGroupMembers, useUpdateGroup } from "../lib/authQueries";
+import AhoraLogo from "../components/AhoraLogo";
 
 /**
  * Group management page (`/group`).
@@ -37,16 +38,19 @@ export default function GroupManagement() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
-        <button
-          onClick={() => nav(-1)}
-          aria-label="Back"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <h1 className="text-lg font-semibold">Group settings</h1>
-      </header>
+       <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+         <div className="flex items-center gap-3">
+           <button
+             onClick={() => nav(-1)}
+             aria-label="Back"
+             className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+           >
+             <ArrowLeft size={18} />
+           </button>
+           <h1 className="text-lg font-semibold">Group settings</h1>
+         </div>
+         <AhoraLogo size="compact" />
+       </header>
 
       <main className="mx-auto max-w-md space-y-6 px-4 pt-2">
         {/* Group info / edit */}
