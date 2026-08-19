@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { ChevronDown, Plus, Settings, Users } from "lucide-react";
 import type { Group } from "../types";
-import { useMyGroups, useActivateGroup } from "../lib/authQueries";
+import { useMyGroups } from "../lib/authQueries";
 import { useAuth } from "../context/AuthContext";
+import { useGroupSwitch } from "../context/GroupSwitchContext";
 import CreateGroupModal from "./CreateGroupModal";
 import JoinGroupModal from "./JoinGroupModal";
 
@@ -126,19 +127,15 @@ function GroupDropdown({
   const nav = useNavigate();
   const { currentGroup } = useAuth();
   const groupsQuery = useMyGroups();
-  const activate = useActivateGroup();
-  const [activatingId, setActivatingId] = useState<string | null>(null);
+  const { switchToGroup } = useGroupSwitch();
 
-  const handleActivate = (groupId: string) => {
-    if (groupId === currentGroup?.id) {
+  const handleActivate = (group: Group) => {
+    if (group.id === currentGroup?.id) {
       onClose();
       return;
     }
-    setActivatingId(groupId);
-    activate.mutate(groupId, {
-      onSuccess: () => onClose(),
-      onSettled: () => setActivatingId(null),
-    });
+    onClose();
+    switchToGroup(group);
   };
 
   return (
@@ -158,39 +155,34 @@ function GroupDropdown({
           <div className="p-3 text-center text-sm text-gray-400">Loading…</div>
         ) : (
           <ul className="max-h-56 space-y-1 overflow-y-auto">
-            {(groupsQuery.data ?? []).map((g: Group) => (
-              <li key={g.id}>
-                <button
-                  onClick={() => handleActivate(g.id)}
-                  disabled={activatingId === g.id}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-                    g.id === currentGroup?.id
-                      ? "bg-gray-100 font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <span
-                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-                    style={{
-                      background:
-                        g.id === currentGroup?.id
-                          ? "linear-gradient(135deg,#111827,#1f2937)"
-                          : "#d1d5db",
-                    }}
-                  >
-                    {g.name.slice(0, 1).toUpperCase()}
-                  </span>
-                  <span className="truncate">{g.name}</span>
-                  {activatingId === g.id ? (
-                    <span className="ml-auto text-xs text-gray-400">…</span>
-                  ) : (
-                    <span className="ml-auto text-xs text-gray-400">
-                      {g.currency}
-                    </span>
-                  )}
-                </button>
-              </li>
-            ))}
+             {(groupsQuery.data ?? []).map((g: Group) => (
+               <li key={g.id}>
+                 <button
+                   onClick={() => handleActivate(g)}
+                   className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
+                     g.id === currentGroup?.id
+                       ? "bg-gray-100 font-medium"
+                       : "text-gray-700 hover:bg-gray-50"
+                   }`}
+                 >
+                   <span
+                     className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                     style={{
+                       background:
+                         g.id === currentGroup?.id
+                           ? "linear-gradient(135deg,#111827,#1f2937)"
+                           : "#d1d5db",
+                     }}
+                   >
+                     {g.name.slice(0, 1).toUpperCase()}
+                   </span>
+                   <span className="truncate">{g.name}</span>
+                   <span className="ml-auto text-xs text-gray-400">
+                     {g.currency}
+                   </span>
+                 </button>
+               </li>
+             ))}
           </ul>
         )}
       </div>

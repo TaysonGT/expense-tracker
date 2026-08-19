@@ -99,9 +99,6 @@ export default function Home() {
               currencyCode={currencyCode}
             />
 
-            {/* Categories */}
-            <CategoryScroller />
-
             {/* Bottom section: empty vs. populated list */}
             {approvedCount === 0 ? (
               <EmptyState
@@ -168,16 +165,13 @@ function EmptyState({
 }) {
   return (
     <div className="mt-6 grow">
+      <hr className=" border-t border-[#d3d3d3] mb-4 w-7/10 mx-auto"/>
       <div className="flex h-full flex-col items-center gap-5 text-center">
+        <p className="text-sm text-gray-400">
+          No expenses recorded yet — pick a method above to get started.
+        </p>
         {/* Two attractive input-method choices */}
         <div className="flex flex-col items-center gap-4">
-          <InputMethodChoice
-            icon={<Mic size={26} />}
-            title="Speak it"
-            subtitle="Tap and narrate your expense"
-            accent="#111827"
-            onClick={onRecord}
-          />
           <InputMethodChoice
             icon={<PenLine size={22} />}
             title="Type it"
@@ -185,11 +179,15 @@ function EmptyState({
             accent="#00c48c"
             onClick={onManual}
           />
+          <InputMethodChoice
+            icon={<Mic size={26} />}
+            title="Speak it"
+            subtitle="Tap and narrate your expense"
+            accent="#111827"
+            onClick={onRecord}
+          />
         </div>
 
-        <p className="text-sm text-gray-400">
-          No expenses recorded yet — pick a method above to get started.
-        </p>
       </div>
     </div>
   );
@@ -211,7 +209,7 @@ function InputMethodChoice({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-4 rounded-2xl px-6 py-4 text-left border transition-all duration-150 hover:shadow-md active:scale-[0.98] shadow-sm shadow-black/35 text-white"
+      className="flex items-center gap-4 rounded-2xl px-6 py-4 text-left border transition-all duration-150 hover:shadow-md hover:shadow-black/20 active:scale-[0.98] shadow-sm shadow-black/35 text-white"
       style={{ backgroundColor: accent }}
     >
       <span
@@ -333,6 +331,9 @@ function PopulatedState({
           <ArrowRight size={18} className="ml-auto" style={{ color: "#d97706" }} />
         </button>
       )}
+
+      {/* Categories */}
+      <CategoryScroller />
 
       {/* Recent expenses */}
       <section className="mt-4">

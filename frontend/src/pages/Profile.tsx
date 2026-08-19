@@ -14,10 +14,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useExpenses } from "../lib/queries";
-import { useLogout, useMyGroups, useActivateGroup } from "../lib/authQueries";
+import { useLogout, useMyGroups } from "../lib/authQueries";
 import { getCurrency } from "../lib/expenseFormat";
 import type { Group } from "../types";
 import GroupSelector from "../components/GroupSelector";
+import { useGroupSwitch } from "../context/GroupSwitchContext";
 
 /**
  * Profile page.
@@ -128,7 +129,7 @@ export default function Profile() {
               <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400">
                 Your stats
               </h3>
-              <GroupSelector currencyCode={currencyCode} />
+              <GroupSelector currencyCode={currencyCode} dir="left" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <StatCard
@@ -237,13 +238,12 @@ export default function Profile() {
 }
 
 function GroupSwitchItem({ group }: { group: Group }) {
-  const activate = useActivateGroup();
+  const { switchToGroup } = useGroupSwitch();
   return (
     <li>
       <button
-        onClick={() => activate.mutate(group.id)}
-        disabled={activate.isPending}
-        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50 disabled:opacity-60"
+        onClick={() => switchToGroup(group)}
+        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50"
       >
         <span
           className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
@@ -256,9 +256,7 @@ function GroupSwitchItem({ group }: { group: Group }) {
         <span className="min-w-0 flex-1 truncate text-gray-900">
           {group.name}
         </span>
-        <span className="rounded-full border border-[#989898] px-2 py-0.5 text-xs text-[#989898]">
-          {activate.isPending ? "Switching…" : "Switch"}
-        </span>
+        <span className="text-xs text-gray-400">{group.currency}</span>
       </button>
     </li>
   );

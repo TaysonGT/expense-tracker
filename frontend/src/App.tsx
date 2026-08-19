@@ -15,56 +15,58 @@ import AuthGuard from "./routes/AuthGuard"
 import OnboardingGuard from "./routes/OnboardingGuard"
 import RequireAuth from "./routes/RequireAuth"
 import { AuthProvider } from "./context/AuthContext"
+import { GroupSwitchProvider } from "./context/GroupSwitchContext"
 
 const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          {/* Public auth screen */}
-          <Route
-            path="/auth"
-            element={
-              <AuthGuard>
-                <Auth />
-              </AuthGuard>
-            }
-          />
+        <GroupSwitchProvider>
+          <Routes>            {/* Public auth screen */}
+            <Route
+              path="/auth"
+              element={
+                <AuthGuard>
+                  <Auth />
+                </AuthGuard>
+              }
+            />
 
-          {/* Group onboarding (authenticated, no active group) */}
-          <Route
-            path="/onboarding/groups"
-            element={
-              <OnboardingGuard>
-                <OnboardingGroups />
-              </OnboardingGuard>
-            }
-          />
+            {/* Group onboarding (authenticated, no active group) */}
+            <Route
+              path="/onboarding/groups"
+              element={
+                <OnboardingGuard>
+                  <OnboardingGroups />
+                </OnboardingGuard>
+              }
+            />
 
-          {/* Shareable group join link — reachable without an active group
-              (auth required). Lets an invited user preview + join. */}
-          <Route
-            path="/join/:code"
-            element={
-              <RequireAuth>
-                <GroupJoin />
-              </RequireAuth>
-            }
-          />
+            {/* Shareable group join link — reachable without an active group
+                  (auth required). Lets an invited user preview + join. */}
+            <Route
+              path="/join/:code"
+              element={
+                <RequireAuth>
+                  <GroupJoin />
+                </RequireAuth>
+              }
+            />
 
-          {/* Protected app */}
-          <Route path="/" element={<ProtectedRoutes/>}>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path='home' index element={<Home />} />
-            <Route path="voice" element={<VoiceCapture />} />
-            <Route path="manual" element={<ManualAdd />} />
-            <Route path="expenses" element={<Expenses />} />
-            <Route path="pending" element={<PendingExpenses />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="group" element={<GroupManagement />} />
-          </Route>
-        </Routes>
+            {/* Protected app */}
+            <Route path="/" element={<ProtectedRoutes/>}>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path='home' index element={<Home />} />
+              <Route path="voice" element={<VoiceCapture />} />
+              <Route path="manual" element={<ManualAdd />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="pending" element={<PendingExpenses />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="group" element={<GroupManagement />} />
+            </Route>
+          </Routes>
+        </GroupSwitchProvider>
       </AuthProvider>
     </BrowserRouter>
   )

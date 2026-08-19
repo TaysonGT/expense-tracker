@@ -214,16 +214,8 @@ export default function Expenses() {
         {/* Content */}
         {!isLoading && !isError && (
           <>
-            {/* Insights — reacts live to filters, computed client-side */}
-            {/* <ExpenseInsights */}
-            {/*   expenses={expenses} */}
-            {/*   startDate={range.startDate} */}
-            {/*   endDate={range.endDate} */}
-            {/*   currencyCode={currencyCode} */}
-            {/* /> */}
-
             {/* List */}
-            <section className="mt-6">
+            <section className="mt-4">
               {expenses.length === 0 ? (
                 <p className="rounded-xl bg-white p-4 text-center text-sm text-gray-400 ring-1 ring-gray-100">
                   {hasFilters
