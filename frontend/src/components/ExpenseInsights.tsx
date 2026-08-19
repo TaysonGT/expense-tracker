@@ -13,6 +13,9 @@ interface ExpenseInsightsProps {
   endDate?: string;
   /** ISO currency code (e.g. "EUR") for formatting money values. */
   currencyCode?: string;
+  categoryRatio?: boolean;
+  spendPerDay?: boolean;
+  isLoading?: boolean
 }
 
 // Only render the per-day chart for reasonably small ranges.
@@ -31,6 +34,9 @@ export default function ExpenseInsights({
   startDate,
   endDate,
   currencyCode,
+  categoryRatio,
+  spendPerDay,
+  isLoading
 }: ExpenseInsightsProps) {
   const stats = useMemo(() => computeStats(expenses), [expenses]);
 
@@ -41,19 +47,27 @@ export default function ExpenseInsights({
     return buildDailySeries(expenses, startDate, span);
   }, [expenses, startDate, endDate]);
 
-  if (expenses.length === 0) return null;
+  // if (expenses.length === 0) return null;
 
   return (
     <section className="mt-4 space-y-3">
       {/* Summary strip */}
-      <div className="grid grid-cols-3 gap-2">
-        <SummaryCell label="Total" value={formatCurrency(stats.total, currencyCode)} />
-        <SummaryCell label="Expenses" value={String(stats.count)} />
-        <SummaryCell label="Average" value={formatCurrency(stats.average, currencyCode)} />
-      </div>
+      {isLoading?
+        <div className="grid grid-cols-3 gap-2">
+          <Skeleton className="h-14 rounded-2xl" />
+          <Skeleton className="h-14 rounded-2xl" />
+          <Skeleton className="h-14 rounded-2xl" />
+        </div>
+        :
+        <div className="grid grid-cols-3 gap-2">
+          <SummaryCell label="Total" value={formatCurrency(stats.total, currencyCode)} />
+          <SummaryCell label="Expenses" value={String(stats.count)} />
+          <SummaryCell label="Average" value={formatCurrency(stats.average, currencyCode)} />
+        </div>
+      }
 
       {/* Category breakdown */}
-      {stats.byCategory.length > 0 && stats.total > 0 && (
+      {categoryRatio&& (stats.byCategory.length > 0 && stats.total > 0) && (
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
           <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
             By category
@@ -100,7 +114,7 @@ export default function ExpenseInsights({
       )}
 
       {/* Spend per day */}
-      {dailyChart && dailyChart.max > 0 && (
+      {spendPerDay&&(dailyChart && dailyChart.max > 0) && (
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
           <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
             Spend per day
@@ -141,6 +155,15 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
         {label}
       </div>
     </div>
+  );
+}
+
+function Skeleton({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`animate-pulse rounded-lg bg-gray-200 ${className}`}
+      aria-hidden
+    />
   );
 }
 

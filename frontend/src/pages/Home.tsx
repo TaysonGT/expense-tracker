@@ -78,18 +78,18 @@ export default function Home() {
 
   return (
     <div className="min-h-full bg-gray-50 text-gray-900 h-full flex flex-col items-center">
-      <main className="max-w-md w-full px-4 py-8 h-full">
+      <main className="max-w-md w-full px-4 py-4 h-full">
         {loading ? (
           <HomeSkeleton />
         ) : (
           <div className="flex h-full flex-col">
             {/* Header: greeting + group selector */}
             <GroupSelector currencyCode={currencyCode} />
-            <div className="mt-4 flex items-center justify-between">
-              <h1 className="text-2xl font-semibold">
-                {greetingForNow(currentUser?.name?.split(" ")[0] ?? FALLBACK_NAME)}
-              </h1>
-            </div>
+            {/* <div className="mt-4 flex items-center justify-between"> */}
+            {/*   <h1 className="text-2xl font-semibold"> */}
+            {/*     {greetingForNow(currentUser?.name?.split(" ")[0] ?? FALLBACK_NAME)} */}
+            {/*   </h1> */}
+            {/* </div> */}
 
             {/* Total-spend box — always present, even when empty */}
             <TotalSpendBox

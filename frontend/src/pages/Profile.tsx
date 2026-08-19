@@ -157,15 +157,15 @@ export default function Profile() {
               <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400">
                 My Groups
               </h3>
-              {currentGroup && (
-                <button
-                  onClick={() => nav("/group")}
-                  className="flex items-center gap-1 text-xs font-medium text-blue-600"
-                >
-                  <Settings size={13} />
-                  Manage
-                </button>
-              )}
+              {/* {currentGroup && ( */}
+              {/*   <button */}
+              {/*     onClick={() => nav("/group")} */}
+              {/*     className="flex items-center gap-1 text-xs font-medium text-blue-600" */}
+              {/*   > */}
+              {/*     <Settings size={13} /> */}
+              {/*     Manage */}
+              {/*   </button> */}
+              {/* )} */}
             </div>
             <ul className="space-y-1.5">
               {currentGroup && (
@@ -183,7 +183,14 @@ export default function Profile() {
                     <span className="min-w-0 flex-1 truncate font-medium text-gray-900">
                       {currentGroup.name}
                     </span>
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+                    <button
+                      onClick={() => nav("/group")}
+                      className="flex items-center gap-1 text-xs font-medium text-blue-600"
+                    >
+                      <Settings size={13} />
+                      Manage
+                    </button>
+                    <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs text-white">
                       Active
                     </span>
                   </button>
@@ -249,7 +256,7 @@ function GroupSwitchItem({ group }: { group: Group }) {
         <span className="min-w-0 flex-1 truncate text-gray-900">
           {group.name}
         </span>
-        <span className="text-xs text-gray-400">
+        <span className="rounded-full border border-[#989898] px-2 py-0.5 text-xs text-[#989898]">
           {activate.isPending ? "Switching…" : "Switch"}
         </span>
       </button>

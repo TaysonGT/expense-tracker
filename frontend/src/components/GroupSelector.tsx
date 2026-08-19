@@ -9,6 +9,7 @@ import JoinGroupModal from "./JoinGroupModal";
 
 interface GroupSelectorProps {
   currencyCode?: string;
+  dir?: 'left' | 'right'
 }
 
 /**
@@ -24,7 +25,7 @@ interface GroupSelectorProps {
  * The dropdown closes when clicking outside and animates in/out smoothly
  * (matching the AddMenu pattern).
  */
-export default function GroupSelector({ currencyCode }: GroupSelectorProps) {
+export default function GroupSelector({ currencyCode, dir = 'right' }: GroupSelectorProps) {
   const { currentGroup } = useAuth();
   const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -88,6 +89,7 @@ export default function GroupSelector({ currencyCode }: GroupSelectorProps) {
           setShowCreate(true);
           setOpen(false);
         }}
+        dir={dir}
         onJoin={() => {
           setShowJoin(true);
           setOpen(false);
@@ -113,11 +115,13 @@ function GroupDropdown({
   onClose,
   onCreate,
   onJoin,
+  dir='right'
 }: {
   open: boolean;
   onClose: () => void;
   onCreate: () => void;
   onJoin: () => void;
+  dir: 'right'|'left'  
 }) {
   const nav = useNavigate();
   const { currentGroup } = useAuth();
@@ -140,7 +144,7 @@ function GroupDropdown({
   return (
     <div
       role="menu"
-      className={`absolute left-0 top-full z-40 mt-2 w-64 origin-top-left rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition-all duration-200 ${
+      className={`absolute ${dir=='right'? 'left-0':'right-0'} top-full z-40 mt-2 w-64 origin-top-left rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition-all duration-200 ${
         open
           ? "translate-y-0 scale-100 opacity-100"
           : "pointer-events-none -translate-y-1 scale-95 opacity-0"

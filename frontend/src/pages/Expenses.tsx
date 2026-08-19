@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Clock, ChevronRight } from "lucide-react";
+import { ArrowLeft, Clock, ChevronRight, Calendar } from "lucide-react";
 import { useCategories, useExpenses, usePendingExpenses } from "../lib/queries";
-import ExpenseFilters, {
-  computeRange,
-  type DateRange,
-} from "../components/ExpenseFilters";
+import ExpenseFilters from "../components/ExpenseFilters";
+import { computeRange, type DateRange } from "../components/ExpenseFilters";
+import DateFilterModal from "../components/DateFilterModal";
 import ExpenseInsights from "../components/ExpenseInsights";
 import ExpenseListItem from "../components/ExpenseListItem";
 import GroupSelector from "../components/GroupSelector";
@@ -24,11 +23,27 @@ function Skeleton({ className = "" }: { className?: string }) {
 /**
  * Expenses screen.
  *
- * Pill-based filters (category + date range) drive a TanStack Query fetch. An
- * insights block (summary strip, category breakdown, per-day chart) is computed
- * client-side from the filtered result and reacts live to filter changes. Each
- * list item is inline-editable via the general PATCH /expenses/:id endpoint.
+ * Category pills (inline) drive a TanStack Query fetch. Date filtering moves
+ * into a modal opened from the header — which also displays today's day of
+ * week and date. An insights block (summary strip, category breakdown, per-day
+ * chart) is computed client-side from the filtered result and reacts live to
+ * filter changes. Each list item is inline-editable via PATCH /expenses/:id.
  */
+const RANGE_LABELS: Record<DateRange["key"], string> = {
+  all: "All",
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  custom: "Custom",
+};
+
+function formatToday(d: Date): string {
+  const weekday = d.toLocaleString("en-US", { weekday: "long" });
+  const month = d.toLocaleString("en-US", { month: "long" });
+  const day = d.getDate();
+  return `${weekday}, ${month} ${day}`;
+}
+
 export default function Expenses() {
   const nav = useNavigate();
   const { currentGroup } = useAuth();
@@ -41,7 +56,10 @@ export default function Expenses() {
     key: "all",
     ...computeRange("all"),
   }));
+  const [dateFilterOpen, setDateFilterOpen] = useState(false);
 
+  const today = useMemo(() => formatToday(new Date()), []);
+  const rangeKeyLabel = RANGE_LABELS[range.key];
   const filters = useMemo(
     () => ({
       categoryId: categoryId || undefined,
@@ -75,10 +93,27 @@ export default function Expenses() {
           </button>
           <h1 className="text-lg font-semibold">Expenses</h1>
         </div>
-        <GroupSelector currencyCode={currencyCode} />
+        <GroupSelector currencyCode={currencyCode} dir="left" />
       </header>
 
-      <main className="mx-auto max-w-md px-4 pb-28">
+       <main className="mx-auto max-w-md px-4 pb-28">
+        {/* Today's date + date filter button */}
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar size={18} className="text-gray-400" />
+            <span className="font-medium text-gray-500">
+              {today}
+            </span>
+          </div>
+          <button
+            onClick={() => setDateFilterOpen(true)}
+            className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
+          >
+            <Calendar size={14} className="text-gray-400" />
+            {rangeKeyLabel}
+          </button>
+        </div>
+
         {/* Pending review entry point */}
         {pendingCount > 0 && (
           <button
@@ -112,31 +147,46 @@ export default function Expenses() {
           </button>
         )}
 
-        {/* Filters */}
+        <ExpenseInsights
+          expenses={expenses}
+          startDate={range.startDate}
+          endDate={range.endDate}
+          currencyCode={currencyCode}
+          isLoading={isLoading}
+        />
+
+        {/* Category pills */}
         <div className="mt-4">
           <ExpenseFilters
             categories={categories}
             categoriesLoading={categoriesLoading}
             selectedCategoryId={categoryId}
             onSelectCategory={setCategoryId}
-            range={range}
-            onChangeRange={setRange}
           />
         </div>
+
+        {/* Date range filter modal */}
+        <DateFilterModal
+          open={dateFilterOpen}
+          onClose={() => setDateFilterOpen(false)}
+          range={range}
+          onChangeRange={setRange}
+        />
 
         {/* Loading: skeleton animations for insights + list */}
         {isLoading && (
           <div className="mt-4 space-y-3">
             {/* Summary strip skeletons */}
-            <div className="grid grid-cols-3 gap-2">
-              <Skeleton className="h-14 rounded-2xl" />
-              <Skeleton className="h-14 rounded-2xl" />
-              <Skeleton className="h-14 rounded-2xl" />
-            </div>
+            {/* <div className="grid grid-cols-3 gap-2"> */}
+            {/*   <Skeleton className="h-14 rounded-2xl" /> */}
+            {/*   <Skeleton className="h-14 rounded-2xl" /> */}
+            {/*   <Skeleton className="h-14 rounded-2xl" /> */}
+            {/* </div> */}
             {/* Category breakdown skeleton */}
-            <Skeleton className="h-44 rounded-2xl" />
+            {/* <Skeleton className="h-44 rounded-2xl" /> */}
             {/* Spend-per-day skeleton */}
-            <Skeleton className="h-36 rounded-2xl" />
+            {/* <Skeleton className="h-36 rounded-2xl" /> */}
+            
             {/* List item skeletons */}
             <div className="mt-6 space-y-2 pt-2">
               <Skeleton className="h-16 rounded-xl" />
@@ -165,12 +215,12 @@ export default function Expenses() {
         {!isLoading && !isError && (
           <>
             {/* Insights — reacts live to filters, computed client-side */}
-            <ExpenseInsights
-              expenses={expenses}
-              startDate={range.startDate}
-              endDate={range.endDate}
-              currencyCode={currencyCode}
-            />
+            {/* <ExpenseInsights */}
+            {/*   expenses={expenses} */}
+            {/*   startDate={range.startDate} */}
+            {/*   endDate={range.endDate} */}
+            {/*   currencyCode={currencyCode} */}
+            {/* /> */}
 
             {/* List */}
             <section className="mt-6">
