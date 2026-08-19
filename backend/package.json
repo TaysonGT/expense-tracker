@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "vercel-build": "tsc -p tsconfig.json",
     "start": "node dist/app.js",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "migration:run": "npx tsx ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
     "migration:revert": "npx tsx ./node_modules/typeorm/cli.js migration:revert -d src/data-source.ts",
     "migration:generate": "npx tsx ./node_modules/typeorm/cli.js migration:generate -d src/data-source.ts"
@@ -34,6 +34,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
     "tsx": "^4.23.12",
-    "typescript": "^6.0.3"
+    "typescript": "^5.7.2"
   }
 }
