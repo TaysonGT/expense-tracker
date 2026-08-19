@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "dist/app.js": {
-      "includeFiles": ["node_modules/pg/**", "node_modules/reflect-metadata/**"]
+      "includeFiles": "node_modules/reflect-metadata/**"
     }
   },
   "routes": [
