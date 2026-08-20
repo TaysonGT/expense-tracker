@@ -66,15 +66,15 @@ export default function GroupSelector({ currencyCode, dir = 'right' }: GroupSele
         className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium text-gray-800 ring-1 ring-gray-200 hover:bg-gray-50"
       >
         <span
-          className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
           style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
         >
           {groupName.slice(0, 1).toUpperCase() || "·"}
         </span>
-        <span className="max-w-[140px] truncate">{groupName}</span>
-        {currencyCode && (
-          <span className="text-xs text-gray-400">{currencyCode}</span>
-        )}
+        <span className="max-w-35 truncate">{groupName}</span>
+        {/* {currencyCode && ( */}
+        {/*   <span className="text-xs text-gray-400">{currencyCode}</span> */}
+        {/* )} */}
         <ChevronDown
           size={14}
           className={`text-gray-400 transition-transform duration-200 ${

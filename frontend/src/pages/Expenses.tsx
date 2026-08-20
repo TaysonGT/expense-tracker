@@ -125,7 +125,7 @@ export default function Expenses() {
             }}
           >
             <span
-              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
               style={{ background: "rgba(245,158,11,0.25)", color: "#b45309" }}
             >
               <Clock size={18} />
@@ -215,7 +215,7 @@ export default function Expenses() {
         {!isLoading && !isError && (
           <>
             {/* List */}
-            <section className="mt-4">
+            <section className="mt-2">
               {expenses.length === 0 ? (
                 <p className="rounded-xl bg-white p-4 text-center text-sm text-gray-400 ring-1 ring-gray-100">
                   {hasFilters
@@ -223,7 +223,7 @@ export default function Expenses() {
                     : "No expenses yet."}
                 </p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {expenses.map((e) => (
                     <ExpenseListItem
                       key={e.id}

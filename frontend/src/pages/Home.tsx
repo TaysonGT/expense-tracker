@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { ArrowRight, Clock, Mic, PenLine } from "lucide-react";
-import { useExpenses, usePendingExpenses } from "../lib/queries";
-import type { Expense } from "../types";
+import { useCategories, useExpenses, usePendingExpenses } from "../lib/queries";
+import type { Category, Expense } from "../types";
 import CategoryScroller from "../components/CategoryScroller";
 import GroupSelector from "../components/GroupSelector";
 import { useAuth } from "../context/AuthContext";
 import { formatCurrency } from "../lib/expenseFormat";
-import AhoraLogo from "../components/AhoraLogo";
+import ExpenseListItem from "../components/ExpenseListItem";
 
 /**
  * Home screen.
@@ -64,20 +64,23 @@ export default function Home() {
   const pendingCount = pendingQuery.data?.length ?? 0;
   const recentExpenses = (recentQuery.data ?? []).slice(0, 5);
 
+  const { data: categories = [] } =
+    useCategories();
+
   // Loading while today's data (the state discriminator) hasn't arrived.
   const loading = todayQuery.isLoading || pendingQuery.isLoading;
 
   return (
     <div className="min-h-full bg-gray-50 text-gray-900 h-full flex flex-col items-center">
-      <main className="max-w-md w-full px-4 py-4 grow">
+      <main className="max-w-md w-full px-4 py-4 grow overflow-y-hidden">
         {loading ? (
           <HomeSkeleton />
         ) : (
           <div className="flex h-full flex-col">
             {/* Header: greeting + group selector */}
               <div className="flex w-full justify-between items-center">
-                <GroupSelector currencyCode={currencyCode} />
-                <AhoraLogo/>
+                <img src="/default-monochrome.svg" className="h-7"/>
+                <GroupSelector currencyCode={currencyCode} dir="left" />
               </div>
 
             {/* Total-spend box — always present, even when empty */}
@@ -89,7 +92,7 @@ export default function Home() {
             />
 
             {/* Bottom section: empty vs. populated list */}
-            {approvedCount === 0 ? (
+            {recentExpenses.length === 0 ? (
               <EmptyState
                 onRecord={() => nav("/voice")}
                 onManual={() => nav("/manual")}
@@ -98,6 +101,7 @@ export default function Home() {
               <PopulatedState
                 recentExpenses={recentExpenses}
                 pendingCount={pendingCount}
+                categories={categories}
                 onReview={() => nav("/pending")}
                 onViewAll={() => nav("/expenses")}
                 currencyCode={currencyCode}
@@ -202,7 +206,7 @@ function InputMethodChoice({
       style={{ backgroundColor: accent }}
     >
       <span
-        className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
         style={{ background: "white", color: accent }}
       >
         {icon}
@@ -279,15 +283,17 @@ function PopulatedState({
   onReview,
   onViewAll,
   currencyCode,
+  categories,
 }: {
   recentExpenses: Expense[];
   pendingCount: number;
   onReview: () => void;
   onViewAll: () => void;
   currencyCode?: string;
+  categories: Category[];
 }) {
   return (
-    <div className="mt-2">
+    <div className="mt-2 flex flex-col grow overflow-y-auto">
       {/* Pending nudge — conversational, only when items exist */}
       {pendingCount > 0 && (
         <button
@@ -325,34 +331,41 @@ function PopulatedState({
       <CategoryScroller />
 
       {/* Recent expenses */}
-      <section className="mt-4">
+      <section className="mt-4 grow pb-12 flex flex-col min-h-0">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Recent</h2>
           <button
             onClick={onViewAll}
-            className="text-sm font-medium text-blue-600"
+            className="text-sm font-medium text-blue-600 flex items-center gap-2"
           >
             View all
+            <ArrowRight/>
           </button>
         </div>
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-3 space-y-1 grow min-h-0 overflow-y-auto pb-10">
           {recentExpenses.map((e) => (
-            <li
+            <ExpenseListItem
               key={e.id}
-              className="flex items-center justify-between rounded-xl bg-white p-4 text-sm ring-1 ring-gray-100"
-            >
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate font-medium text-gray-900">
-                  {e.title}
-                </span>
-                <span className="text-xs text-gray-400">
-                  {e.category?.name ?? "Uncategorized"} · {e.date}
-                </span>
-              </div>
-              <span className="mono flex-shrink-0 font-medium text-gray-900">
-                {e.cost != null ? formatCurrency(e.cost, currencyCode) : "—"}
-              </span>
-            </li>
+              expense={e}
+              categories={categories}
+              currencyCode={currencyCode}
+            />
+            // <li
+            //   key={e.id}
+            //   className="flex items-center justify-between rounded-xl bg-white p-4 text-sm border border-[#e6e6e6]"
+            // >
+            //   <div className="flex min-w-0 flex-col">
+            //     <span className="truncate font-medium text-gray-900">
+            //       {e.title}
+            //     </span>
+            //     <span className="text-xs text-gray-400">
+            //       {e.category?.name ?? "Uncategorized"} · {e.date}
+            //     </span>
+            //   </div>
+            //   <span className="mono flex-shrink-0 font-medium text-gray-900">
+            //     {e.cost != null ? formatCurrency(e.cost, currencyCode) : "—"}
+            //   </span>
+            // </li>
           ))}
         </ul>
       </section>
@@ -372,7 +385,7 @@ function TrendPill({ today, yesterday }: { today: number; yesterday: number }) {
   const up = diff > 0;
   const flat = diff === 0;
 
-  const color = flat ? "#9ca3af" : up ? "#f87171" : "#34d399";
+  const color = flat ? "#9ca3af" : up ? "#34d399" : "#f87171";
   const label = flat
     ? "same as yesterday"
     : `${up ? "▲" : "▼"} ${Math.abs(pct)}% vs yesterday`;

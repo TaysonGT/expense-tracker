@@ -51,6 +51,11 @@ export function getCurrency(code?: string | null): Currency {
  * Defaults to USD when no currency is provided.
  */
 export function formatCurrency(value: number, currencyCode?: string): string {
+  if(!currencyCode) return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value)
+
   const currency = getCurrency(currencyCode);
   return new Intl.NumberFormat("en-US", {
     style: "currency",

@@ -17,7 +17,7 @@ export default function CategoryScroller() {
   if (!isLoading && categories.length === 0) return null;
 
   return (
-    <section className="mt-6">
+    <section className="mt-2">
       <h2 className="mb-3 text-sm font-medium text-gray-500">Categories</h2>
       <CategoryStrip
         isLoading={isLoading}

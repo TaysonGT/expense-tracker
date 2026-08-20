@@ -53,10 +53,10 @@ function DisplayRow({
   const color = colorForCategory(expense.categoryId);
 
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-gray-100">
+    <li className="flex items-center gap-3 rounded-xl bg-white p-4 py-2 border border-[#e6e6e6]">
       {/* Category color dot */}
       <span
-        className="h-8 w-1.5 flex-shrink-0 rounded-full"
+        className="h-8 w-1.5 shrink-0 rounded-full"
         style={{ background: color }}
         aria-hidden
       />
@@ -69,7 +69,7 @@ function DisplayRow({
           {expense.source === "voice" && (
             <Mic
               size={12}
-              className="flex-shrink-0 text-gray-400"
+              className="shrink-0 text-gray-400"
               aria-label="Added by voice"
             />
           )}
@@ -87,12 +87,12 @@ function DisplayRow({
 
       {/* Cost (prominent, right-aligned) or pending badge */}
       {expense.cost != null ? (
-        <span className="mono flex-shrink-0 text-base font-semibold text-gray-900">
-          {formatCurrency(expense.cost, currencyCode)}
+        <span className="mono shrink-0 text-sm font-semibold text-gray-900">
+          {formatCurrency(expense.cost)}
         </span>
       ) : (
         <span
-          className="flex-shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium"
+          className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium"
           style={{ background: "rgba(245,158,11,0.15)", color: "#b45309" }}
         >
           Pending
@@ -102,7 +102,7 @@ function DisplayRow({
       <button
         onClick={onEdit}
         aria-label={`Edit ${expense.title}`}
-        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-gray-100"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-gray-100"
       >
         <Pencil size={14} />
       </button>

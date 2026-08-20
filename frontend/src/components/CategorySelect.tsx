@@ -43,7 +43,7 @@ export default function CategorySelect({
           }
           style={style}
         >
-          <option value="">{placeholder}</option>
+          {/* <option value="">{placeholder}</option> */}
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}

@@ -42,7 +42,7 @@ export default function CategoryManagementModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  // if (!open) return null;
 
   const handleAdd = async () => {
     const name = newName.trim();
@@ -56,16 +56,16 @@ export default function CategoryManagementModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className={`fixed h-dvh inset-0 z-50 flex items-end justify-center sm:items-center ${open? 'pointer-events-auto':'pointer-events-none'} duration-400`}>
       {/* Backdrop */}
       <button
         aria-label="Close"
         onClick={onClose}
-        className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
+        className={`absolute inset-0 w-full h-full bg-black/40 backdrop-blur-[1px] ${open? 'opacity-100':'opacity-0'} duration-300`}
       />
 
       {/* Sheet */}
-      <div className="relative z-10 flex max-h-[80vh] w-full max-w-md flex-col rounded-t-3xl bg-gray-50 shadow-xl sm:rounded-3xl">
+      <div className={`bottom-0 fixed z-10 flex max-h-[80dvh] w-full max-w-md flex-col rounded-t-3xl bg-gray-50 shadow-xl  duration-200 ${open? 'translate-y-0':'translate-y-full'}`}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <h2 className="text-lg font-semibold">Manage categories</h2>
@@ -103,13 +103,13 @@ export default function CategoryManagementModal({
         </div>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 overflow-y-auto grow px-5 py-4">
           {categories.length === 0 ? (
             <p className="rounded-xl bg-white p-4 text-center text-sm text-gray-400 ring-1 ring-gray-100">
               No categories yet — add your first above.
             </p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {categories.map((c) => (
                 <CategoryRow key={c.id} category={c} />
               ))}
@@ -153,7 +153,7 @@ function CategoryRow({ category }: { category: Category }) {
   };
 
   return (
-    <li className="flex items-center gap-2 rounded-xl bg-white p-3 ring-1 ring-gray-100">
+    <li className="flex items-center gap-2 rounded-xl bg-white p-3 border border-[#e6e6e6]">
       {editing ? (
         <input
           autoFocus
