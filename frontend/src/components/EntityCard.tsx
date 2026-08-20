@@ -48,13 +48,17 @@ function EntityCard({
   };
 
   return (
-    <div
+    <form
       className="rounded-2xl bg-white p-4 shadow-sm ring-1 transition-colors"
       style={{
         borderColor: needsAttention ? "rgba(245,158,11,0.4)" : "transparent",
         boxShadow: needsAttention
           ? "0 0 0 1px rgba(245,158,11,0.35)"
           : "0 1px 2px rgba(0,0,0,0.04)",
+      }}
+      onSubmit={(e)=>{
+        e.preventDefault()
+        onApprove(entity)
       }}
     >
       {/* Title */}
@@ -149,7 +153,7 @@ function EntityCard({
         )}
 
         <button
-          onClick={() => onApprove(entity)}
+          type="submit"
           disabled={approved}
           className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
           style={{ background: isLoading? '#d9d9d9' : approved ? "#9ca3af" : "#00c48c" }}
@@ -163,7 +167,7 @@ function EntityCard({
         open={managingCategories}
         onClose={() => setManagingCategories(false)}
       />
-    </div>
+    </form>
   );
 }
 
