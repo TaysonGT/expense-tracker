@@ -80,7 +80,7 @@ export default function Home() {
             {/* Header: greeting + group selector */}
               <div className="flex w-full justify-between items-center">
                 <img src="/default-monochrome.svg" className="h-7"/>
-                <GroupSelector currencyCode={currencyCode} dir="left" />
+                <GroupSelector dir="left" />
               </div>
 
             {/* Total-spend box — always present, even when empty */}

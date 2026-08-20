@@ -90,7 +90,7 @@ export default function PendingExpenses() {
           </button>
           <h1 className="text-lg font-semibold">Pending review</h1>
         </div>
-        <GroupSelector currencyCode={currencyCode} />
+        <GroupSelector />
       </header>
 
       <main className="mx-auto max-w-md px-4">

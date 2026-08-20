@@ -144,7 +144,7 @@ function VoiceCapture() {
           </button>
           <h1 className="text-lg font-semibold">Voice capture</h1>
         </div>
-        <GroupSelector currencyCode={currencyCode} />
+        <GroupSelector />
       </header>
 
       <main className="max-w-md w-full px-4 grow flex flex-col justify-center">

@@ -93,7 +93,7 @@ export default function Expenses() {
           </button>
           <h1 className="text-lg font-semibold">Expenses</h1>
         </div>
-        <GroupSelector currencyCode={currencyCode} dir="left" />
+        <GroupSelector dir="left" />
       </header>
 
        <main className="mx-auto max-w-md px-4 pb-28">

@@ -37,17 +37,15 @@ export default function ExpenseListItem({
       onDone={() => setEditing(false)}
     />
   ) : (
-    <DisplayRow expense={expense} currencyCode={currencyCode} onEdit={() => setEditing(true)} />
+    <DisplayRow expense={expense} onEdit={() => setEditing(true)} />
   );
 }
 
 function DisplayRow({
   expense,
-  currencyCode,
   onEdit,
 }: {
   expense: Expense;
-  currencyCode?: string;
   onEdit: () => void;
 }) {
   const color = colorForCategory(expense.categoryId);

@@ -9,15 +9,13 @@ import CreateGroupModal from "./CreateGroupModal";
 import JoinGroupModal from "./JoinGroupModal";
 
 interface GroupSelectorProps {
-  currencyCode?: string;
   dir?: 'left' | 'right'
 }
 
 /**
  * GroupSelector — a compact dropdown placed in the page header.
  *
- * Shows the active group's name (with its currency) as the trigger.
- * Opens a menu listing:
+ * Shows the active group's name as the trigger. Opens a menu listing:
  *   - "My Groups" — all groups the user belongs to, with activate on click
  *   - "Manage group" — opens the group management page
  *   - "Create new group" — opens the creation modal
@@ -26,7 +24,7 @@ interface GroupSelectorProps {
  * The dropdown closes when clicking outside and animates in/out smoothly
  * (matching the AddMenu pattern).
  */
-export default function GroupSelector({ currencyCode, dir = 'right' }: GroupSelectorProps) {
+export default function GroupSelector({ dir = 'right' }: GroupSelectorProps) {
   const { currentGroup } = useAuth();
   const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);

@@ -7,8 +7,6 @@ interface CategorySelectProps {
   categories: Category[];
   value: string; // categoryId or "" for none
   onChange: (categoryId: string) => void;
-  /** Placeholder for the empty option. */
-  placeholder?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -25,7 +23,6 @@ export default function CategorySelect({
   categories,
   value,
   onChange,
-  placeholder = "Choose…",
   className,
   style,
 }: CategorySelectProps) {
