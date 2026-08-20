@@ -189,10 +189,12 @@ JWT session cookie; data routes are scoped to the session's active group
 ## Screens (v1)
 1. **Home** — greeting, today's total spend + expense count in a prominent
    box, pending-items indicator/entry point inside that box, list of recent
-   (non-pending) expenses below, "View all" link to Expenses page. Empty vs.
-   populated states distinguished by today's approved expense count; the
-   empty state offers voice/manual input choices. Loading shows shimmer
-   skeletons.
+   (non-pending) expenses below, "View all" link to Expenses page. The recent
+   list uses the shared `ExpenseListItem` (inline-edit) rows inside a
+   scrollable container. Empty vs. populated states are keyed on the recent-
+   expenses count, not today's count; the empty state offers voice/manual
+   input choices. Loading shows shimmer skeletons. Header holds the
+   `default-monochrome.svg` logo + GroupSelector.
    *Implemented (live data).*
 2. **Expenses** — full list of all expenses, filterable by category (pill strip)
    and a date range (selected via a header button that opens DateFilterModal:
@@ -200,9 +202,17 @@ JWT session cookie; data routes are scoped to the session's active group
    rows, a reactive insights block (summary strip, category breakdown, per-day
    chart) computed client-side. Backed by PATCH /expenses/:id.
    *Implemented (routed at /expenses).*
-3. **Voice Capture** — record button, live partial captions while speaking,
-   processing state, failed state with retry, then an editable review of the
+3. **Voice Capture** — record button, live partial captions while speaking
+   (dark recording panel), processing state, then an editable review of the
    parsed entities (title/category/cost), approve per item or approve later.
+   Distinct failure states:
+   - "No text detected" (amber) — nothing was transcribed/heard; retry button
+     re-runs recording.
+   - Processing failure — retry re-runs the last transcript.
+   After the last item is approved, the review screen flips to an
+   "all caught up" state (success checkmark + "View all expenses").
+   Each `EntityCard` is a `<form>` so approving submits on Enter, and shows a
+   per-card loading state while an approval is in flight.
    *Implemented (routed at /voice).*
 4. **Approval Queue** — per pending item: editable title, editable/
    confirmable category, cost input if missing, "view original transcript"
@@ -211,9 +221,11 @@ JWT session cookie; data routes are scoped to the session's active group
    screen not yet built.*
 5. **Manual Add** — simple form: title, cost, category, date. Saves directly
    (non-pending). *Implemented (routed at /manual).*
-6. **Profile** — mock page (no auth backend yet): avatar + name/email hero,
-   this-month stats summary, My Groups quick-switch (activates via the shared
-   group-switch overlay), Settings-style action list. Routed at /profile.
+6. **Profile** — avatar + name/email hero card, the active group's badge,
+   a "My Groups" quick-switch list (activates via the shared group-switch
+   overlay), and a settings-style action list (Settings / Privacy /
+   Help / Log out). The this-month stats summary was removed; header shows
+   the monochrome logo instead of a title. Routed at /profile.
    *Implemented (v1).*
 7. **Group Management** (`/group`) — shows the active group's members (role
    badges; admin-first ordering) and an edit form for name, currency, and
@@ -224,28 +236,43 @@ JWT session cookie; data routes are scoped to the session's active group
    group by join code (name, currency, member count, admin name) and offers a
    Join button (or "already a member"). Auth required; the route is reachable
    without an active group (uses RequireAuth guard) so invitees land here,
-   sign in, then join. Redirect after success goes to /home.
+   sign in, then join. Success plays the shared switch overlay and lands on
+   /home. *Implemented.*
+9. **Settings** (`/settings`) — appearance + account actions stub, category
+   management entry. Header shows the monochrome logo.
    *Implemented.*
-9. **Settings** (`/settings`) — appearance + account actions stub.
-   *Implemented.*
-10. **Category Management** — list + add/edit/delete. *Backend CRUD done; UI
-   not yet built.*
+10. **Category Management** — list + add/edit/delete, as an animated bottom
+   sheet (`CategoryManagementModal`, slide-up + fade, close on backdrop/
+   Escape) opened from Settings or the CategorySelect "manage" button. The
+   dropdown no longer renders a placeholder option.
+   *Implemented (UI + CRUD).*
 
-**Shared group-switch overlay.** Switching the active group (via Profile's My
-Groups list, the GroupSelector dropdown, or OnboardingGroups' enter button)
-triggers a fullscreen animated overlay from `GroupSwitchProvider`:
-"Switching to \<name\>" (spinner) → "Successfully switched" (checkmark) →
-navigates to `/home`. The provider also invalidates the session query and
-TanStack Query caches for `['expenses']`/`['categories']`, so the home page
-refetches fresh data on arrival. OnboardingGroups additionally uses a direct
-activate call so its own modal flow (`onEntered`) can run after the switch.
+**Shared group-switch overlay.** *Every* path that changes the active group
+routes through `GroupSwitchProvider` (`context/GroupSwitchContext.tsx`) so the
+animated fullscreen overlay plays consistently: "Switching to \<name\>"
+(spinner) → "Successfully switched" (checkmark) → navigate to `/home`.
+
+Entry points:
+- Profile "My Groups" list and the GroupSelector dropdown → `switchToGroup(g)`
+  (runs the activate mutation itself, `POST /groups/:id/activate`).
+- OnboardingGroups "My Groups" tab → same activate path.
+- Create / Join flows (OnboardingGroups Create/Join tabs and the `/join/:code`
+  invite page) → `switchToGroup(g, { skipActivate: true })`: the backend has
+  *already* set the group active in the session, so no extra POST is made —
+  the overlay + navigation still play.
+
+On success the provider also calls `removeQueries(['expenses'])` +
+`removeQueries(['categories'])` before invalidating, so Home lands on its
+loading/empty state with no stale rows from the previously active group, then
+refetches the new tenant's data on arrival.
 
 ### Bottom navigation & header
 - Bottom nav: Home, Expenses, centered elevated (+) button (opens "Record voice"
 / "Type manually" popup — implemented with appear animation), Pending, Profile.
-- `GroupSelector` sits in page headers (Home/Profile/Expenses): shows the
-  active group's name + currency, opens a dropdown with My Groups (with the
-  shared switch overlay), a "Manage group" link to `/group`, and Create/Join
+- `GroupSelector` sits in page headers (Home/Profile/Expenses/Pending/
+  VoiceCapture): shows the active group's name (currency code is no longer
+  displayed next to it), opens a dropdown with My Groups (with the shared
+  switch overlay), a "Manage group" link to `/group`, and Create/Join
   buttons. Dropdown closes on outside click / Escape and animates with a
   scale + translate-y transition matching the `AddMenu` pattern.
 
@@ -254,9 +281,11 @@ activate call so its own modal flow (`onEntered`) can run after the switch.
 
 ### Auth & onboarding (implemented)
 OAuth (Google + Facebook) sign-in at `/auth`, then a mandatory group
-onboarding step at `/onboarding/groups` (Create / Join / My Groups) before any
-expense data is reachable. The onboarding UI is split into reusable
-`CreateGroupModal` and `JoinGroupModal` components. `AuthGuard` preserves a
+onboarding step at `/onboarding/groups` (My Groups / Create / Join tabs)
+before any expense data is reachable. The onboarding screen uses inline
+Create/Join panels; the extracted `CreateGroupModal` / `JoinGroupModal`
+components are used by the GroupSelector dropdown in the app.
+`AuthGuard` preserves a
 `location.state.from` so a visitor bounced from a protected URL (e.g. a share-
 able join link at `/join/:code`) returns to it after signing in.
 `RequireAuth` guards routes that need authentication but not an active group;
@@ -264,15 +293,27 @@ able join link at `/join/:code`) returns to it after signing in.
 is no longer wired into the data routes.
 
 ## Brand
-Product name: **Ahora — Expense Tracker with AI**. The logo/name appears in the
-auth screen hero and in the Group Management header; no standalone logo asset,
-so a styled wordmark (gradient + AI accent) is used inline.
+Product name: **WhisperTrack | Expense Tracker** (formerly "Ahora — Expense
+Tracker with AI"). Branding is delivered as SVG logo assets in
+`frontend/public/` (the `AhoraLogo` React component was removed):
+
+- `default.svg` — full-color logo, used on the auth (`/auth`) screen hero.
+- `default-monochrome.svg` — monochrome variant, used in the page headers of
+  Home, Profile, Settings, and Group Management.
+- `icon.svg` — favicon (`<link rel="icon">` in `index.html`).
+- `default-monochrome-{black,white,vertical}.svg` — additional variants kept
+  for future use (e.g. light/dark or vertical lockups).
+
+`index.html` sets the browser title to "WhisperTrack | Expense Tracker".
 
 ## Tech Stack
 - Frontend: React 19 + Vite 8 + Tailwind CSS 4 + TypeScript 7 + react-router 8;
   data fetching via axios + TanStack Query (QueryClientProvider in main.tsx).
-  Currency symbols/digits come from `frontend/src/data/currencies.json`.
-- Backend: Node.js / Express 5 + TypeScript + TypeORM
+  Currency symbols/digits come from `frontend/src/data/currencies.json`;
+  `formatCurrency()` falls back to a plain 2-decimal number when no currency
+  code is given. UI styling uses thin `#e6e6e6` borders on list rows/cards.
+- Backend: Node.js / Express 5 + TypeScript 5.7 (downgraded from TS 7 for
+  deployment compatibility) + TypeORM
 - Database: Postgres (Supabase in dev, SSL-enabled) per schema above
 - STT: client-side (Web Speech API), no audio uploaded
 - Parsing/category-matching LLM: hybrid, chosen once at startup via a single
@@ -294,5 +335,7 @@ so a styled wordmark (gradient + AI accent) is used inline.
 
 ## Development notes
 - Backend dev runs the compiled output with file watching
-  (`node --watch dist/app.js`) — `ts-node` is incompatible with TypeScript 7.
+  (`node --watch dist/app.js`); `ts-node` is incompatible with TypeScript 7,
+  so migration scripts run via `npx tsx` (`backend/src/migrations/*.ts`).
+- Backend was downgraded to TypeScript 5.7 for deployment compatibility.
 - Frontend dev proxies `/api/*` to the backend on port 4000 (Vite).
