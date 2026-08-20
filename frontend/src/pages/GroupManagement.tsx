@@ -14,7 +14,6 @@ import currencies from "../data/currencies.json";
 import type { Currency, GroupMember } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useGroupMembers, useUpdateGroup } from "../lib/authQueries";
-import AhoraLogo from "../components/AhoraLogo";
 
 /**
  * Group management page (`/group`).
@@ -39,17 +38,17 @@ export default function GroupManagement() {
   return (
     <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
-         <div className="flex items-center gap-3">
-           <button
-             onClick={() => nav(-1)}
-             aria-label="Back"
-             className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
-           >
-             <ArrowLeft size={18} />
-           </button>
-           <h1 className="text-lg font-semibold">Group settings</h1>
-         </div>
-         <AhoraLogo size="compact" />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => nav(-1)}
+            aria-label="Back"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-lg font-semibold">Group settings</h1>
+        </div>
+        <img src="/default-monochrome.svg" className="w-22 py-2"/>
        </header>
 
       <main className="mx-auto max-w-md space-y-6 px-4 pt-2">
@@ -130,7 +129,7 @@ function GroupInfoSection({ isAdmin }: { isAdmin: boolean }) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <span
-              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white"
               style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
             >
               {currentGroup.name.slice(0, 1).toUpperCase()}
@@ -199,7 +198,7 @@ function GroupInfoSection({ isAdmin }: { isAdmin: boolean }) {
           role="switch"
           aria-checked={showBalance}
           onClick={() => setShowBalance((v) => !v)}
-          className="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors"
+          className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
           style={{ background: showBalance ? "#00c48c" : "#d1d5db" }}
         >
           <span
@@ -268,7 +267,7 @@ function InviteSection({ joinCode }: { joinCode: string }) {
           </code>
           <button
             onClick={() => copy(joinCode, "code")}
-            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-gray-900 text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-900 text-white"
             aria-label="Copy join code"
           >
             {copied === "code" ? <Check size={16} /> : <Copy size={16} />}
@@ -283,12 +282,12 @@ function InviteSection({ joinCode }: { joinCode: string }) {
           onClick={() => copy(joinLink, "link")}
           className="flex w-full items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-left text-sm text-gray-600 ring-1 ring-gray-100 hover:bg-gray-100"
         >
-          <Link2 size={15} className="flex-shrink-0 text-gray-400" />
+          <Link2 size={15} className="shrink-0 text-gray-400" />
           <span className="min-w-0 flex-1 truncate">{joinLink}</span>
           {copied === "link" ? (
-            <Check size={15} className="flex-shrink-0 text-emerald-500" />
+            <Check size={15} className="shrink-0 text-emerald-500" />
           ) : (
-            <Copy size={15} className="flex-shrink-0 text-gray-400" />
+            <Copy size={15} className="shrink-0 text-gray-400" />
           )}
         </button>
       </div>
@@ -304,7 +303,7 @@ function MemberRow({ member }: { member: GroupMember }) {
 
   return (
     <li className="flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-gray-100">
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-400">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-400">
         {member.avatarUrl ? (
           <img
             src={member.avatarUrl}
@@ -331,7 +330,7 @@ function RoleBadge({ role }: { role: "admin" | "viewer" }) {
   const admin = role === "admin";
   return (
     <span
-      className="flex flex-shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+      className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
       style={{
         background: admin ? "rgba(0,196,140,0.12)" : "rgba(107,114,128,0.1)",
         color: admin ? "#047857" : "#6b7280",

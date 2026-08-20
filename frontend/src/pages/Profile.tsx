@@ -90,8 +90,10 @@ export default function Profile() {
     <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between bg-gray-50/90 px-4 py-4 backdrop-blur">
-        <h1 className="text-lg font-semibold">Profile</h1>
-        <Moon size={18} className="text-gray-400" />
+        <img src="/default-monochrome.svg" className="h-7"/>
+        {/* <h1 className="text-lg font-semibold">Profile</h1> */}
+        {/* <Moon size={18} className="text-gray-400" /> */}
+
       </header>
 
       <main className="mx-auto max-w-md px-4">
@@ -124,34 +126,34 @@ export default function Profile() {
           </section>
 
           {/* Stats summary — uses group's currency */}
-          <section>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                Your stats
-              </h3>
-              <GroupSelector currencyCode={currencyCode} dir="left" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <StatCard
-                icon={<CreditCard size={18} />}
-                label="This month"
-                value={currency(stats.total)}
-              />
-              <StatCard
-                icon={<Bell size={18} />}
-                label="Expenses"
-                value={String(stats.count)}
-              />
-              {stats.topCategory && (
-                <StatCard
-                  icon={<Bell size={18} />}
-                  label="Top category"
-                  value={stats.topCategory}
-                />
-              )}
-            </div>
-          </section>
-
+          {/* <section> */}
+          {/*   <div className="mb-3 flex items-center justify-between"> */}
+          {/*     <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400"> */}
+          {/*       Your stats */}
+          {/*     </h3> */}
+          {/*     <GroupSelector currencyCode={currencyCode} dir="left" /> */}
+          {/*   </div> */}
+          {/*   <div className="grid grid-cols-2 gap-3"> */}
+          {/*     <StatCard */}
+          {/*       icon={<CreditCard size={18} />} */}
+          {/*       label="This month" */}
+          {/*       value={currency(stats.total)} */}
+          {/*     /> */}
+          {/*     <StatCard */}
+          {/*       icon={<Bell size={18} />} */}
+          {/*       label="Expenses" */}
+          {/*       value={String(stats.count)} */}
+          {/*     /> */}
+          {/*     {stats.topCategory && ( */}
+          {/*       <StatCard */}
+          {/*         icon={<Bell size={18} />} */}
+          {/*         label="Top category" */}
+          {/*         value={stats.topCategory} */}
+          {/*       /> */}
+          {/*     )} */}
+          {/*   </div> */}
+          {/* </section> */}
+          {/**/}
           {/* My Groups — quick-switch to other groups + manage current */}
           <section>
             <div className="mb-3 flex items-center justify-between">
