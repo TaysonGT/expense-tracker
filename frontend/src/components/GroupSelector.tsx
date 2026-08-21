@@ -164,7 +164,7 @@ function GroupDropdown({
                    }`}
                  >
                    <span
-                     className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
                      style={{
                        background:
                          g.id === currentGroup?.id

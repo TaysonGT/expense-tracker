@@ -97,7 +97,7 @@ export default function Profile() {
                     className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
                   >
                     <span
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
                       style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
                     >
                       {currentGroup.name.slice(0, 1).toUpperCase()}
@@ -167,7 +167,7 @@ function GroupSwitchItem({ group }: { group: Group }) {
         className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50"
       >
         <span
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
           style={{
             background: "#d1d5db",
           }}

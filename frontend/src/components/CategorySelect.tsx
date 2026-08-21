@@ -52,7 +52,7 @@ export default function CategorySelect({
           onClick={() => setManaging(true)}
           aria-label="Manage categories"
           title="Manage categories"
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-500 ring-1 ring-gray-200"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-500 ring-1 ring-gray-200"
         >
           <Settings2 size={16} />
         </button>

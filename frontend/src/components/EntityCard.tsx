@@ -49,9 +49,9 @@ function EntityCard({
 
   return (
     <form
-      className="rounded-2xl bg-white p-4 shadow-sm ring-1 transition-colors"
+      className="rounded-2xl bg-white p-4 shadow-sm border transition-colors"
       style={{
-        borderColor: needsAttention ? "rgba(245,158,11,0.4)" : "transparent",
+        borderColor: needsAttention ? "rgba(245,158,11,0.4)" : "#d3d3d3",
         boxShadow: needsAttention
           ? "0 0 0 1px rgba(245,158,11,0.35)"
           : "0 1px 2px rgba(0,0,0,0.04)",
@@ -68,7 +68,7 @@ function EntityCard({
       <input
         value={entity.title}
         onChange={(e) => onChange({ ...entity, title: e.target.value })}
-        className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-900 focus:border-gray-900 focus:outline-none"
+        className="mt-1 w-full rounded-lg border border-[#d9d9d9] px-3 py-2 text-sm font-medium text-gray-900 focus:border-gray-900 focus:outline-none"
         placeholder="What did you buy?"
       />
 
@@ -103,7 +103,7 @@ function EntityCard({
             }
             className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
             style={{
-              borderColor: missingCategory ? "#f59e0b" : "#e5e7eb",
+              borderColor: missingCategory ? "#f59e0b" : "#d9d9d9",
               color: missingCategory ? "#b45309" : "#111827",
             }}
           >
@@ -123,7 +123,7 @@ function EntityCard({
           </label>
           <div
             className="mt-1 flex items-center rounded-lg border px-2"
-            style={{ borderColor: missingCost ? "#f59e0b" : "#e5e7eb" }}
+            style={{ borderColor: missingCost ? "#f59e0b" : "#d9d9d9" }}
           >
             <span className="text-sm text-gray-400">{currencySymbol(currencyCode)}</span>
             <input
@@ -158,7 +158,8 @@ function EntityCard({
           className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
           style={{ background: isLoading? '#d9d9d9' : approved ? "#9ca3af" : "#00c48c" }}
         >
-          <Check size={14} />
+          {isLoading? '' :  <Check size={14} /> }
+
           {isLoading? 'Approving...' : approved ? "Approved" : "Approve"}
         </button>
       </div>

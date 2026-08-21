@@ -145,7 +145,7 @@ export default function Auth() {
               "You signed up with Google or Facebook. Use that provider button to log in."
             );
           } else {
-            setError("Invalid email or password.");
+            setError(msg);
           }
         },
       }
@@ -163,12 +163,12 @@ export default function Auth() {
     <div className="flex min-h-svh flex-col items-center justify-center bg-gray-50 px-6 text-gray-900">
       <div className="w-full max-w-md">
         {/* Brand */}
-        <div className="mb-10 text-center">
-          <div className="mx-auto mb-4 flex justify-center items-center">
-            <img src="/default.svg" className="w-64"/>
+        <div className="mb-4 text-center">
+          <div className="mx-auto flex justify-center items-center">
+            <img src="/default.svg" className="w-54 sm:w-68"/>
           </div>
           {/* <h1 className="text-xl font-light">Expense Tracker with AI</h1> */}
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-6 text-sm text-gray-500">
             Sign in to track your group's spending.
           </p>
         </div>

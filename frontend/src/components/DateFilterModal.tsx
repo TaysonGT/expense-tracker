@@ -88,10 +88,10 @@ export default function DateFilterModal({
             <button
               key={p.key}
               onClick={() => selectPreset(p.key)}
-              className={`block w-full rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium shadow-sm ring-1 transition-colors ${
+              className={`block w-full rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium shadow-sm border transition-colors ${
                 range.key === p.key
-                  ? "ring-gray-900"
-                  : "ring-gray-100 hover:bg-gray-50"
+                  ? "border-gray-900"
+                  : "border-[#d9d9d9] hover:bg-gray-50"
               }`}
             >
               <span
@@ -110,10 +110,10 @@ export default function DateFilterModal({
             onClick={() =>
               onChangeRange({ key: "custom", ...computeRange("custom", range) })
             }
-            className={`block w-full rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium shadow-sm ring-1 transition-colors ${
+            className={`block w-full rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium shadow-sm border transition-colors ${
               range.key === "custom"
-                ? "ring-gray-900"
-                : "ring-gray-100 hover:bg-gray-50"
+                ? "border-gray-900"
+                : "border-[#d9d9d9] hover:bg-gray-50"
             }`}
           >
             <span

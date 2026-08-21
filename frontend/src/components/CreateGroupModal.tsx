@@ -117,7 +117,7 @@ export default function CreateGroupModal({
               role="switch"
               aria-checked={showBalance}
               onClick={() => setShowBalance((v) => !v)}
-              className="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors"
+              className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
               style={{ background: showBalance ? "#00c48c" : "#d1d5db" }}
             >
               <span

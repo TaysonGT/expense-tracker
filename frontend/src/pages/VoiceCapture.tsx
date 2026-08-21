@@ -279,7 +279,7 @@ function VoiceCapture() {
             </div>
 
             {/* Original transcript reference */}
-            <details className="mb-4 rounded-xl bg-white p-3 text-xs text-gray-500 ring-1 ring-gray-100">
+            <details className="mb-4 rounded-xl bg-white p-3 text-xs text-gray-500 border border-[#d3d3d3]">
               <summary className="cursor-pointer font-medium text-gray-600">
                 View original transcript
               </summary>
@@ -304,7 +304,7 @@ function VoiceCapture() {
             {/* Approve later — sends everything to the queue as pending */}
             <button
               onClick={() => nav("/")}
-              className="mt-6 w-full rounded-2xl border border-gray-200 bg-white py-3 text-sm font-medium text-gray-600"
+              className="mt-6 w-full rounded-2xl border border-[#d3d3d3] bg-white py-3 text-sm font-medium text-gray-600"
             >
               {pending.length > 0 ? "Approve later" : "Done"}
             </button>

@@ -28,7 +28,7 @@ export default function CategoryScroller() {
           <button
             key={c.id}
             onClick={() => nav("/expenses")}
-            className="flex-shrink-0 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 border border-[#d3d3d3] shadow-sm shadow-black/5 z-2 transition-transform active:scale-95"
+            className="shrink-0 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 border border-[#d3d3d3] shadow-sm shadow-black/5 z-2 transition-transform active:scale-95"
           >
             {c.name}
           </button>

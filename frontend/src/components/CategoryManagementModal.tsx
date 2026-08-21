@@ -94,7 +94,7 @@ export default function CategoryManagementModal({
               onClick={() => void handleAdd()}
               disabled={!newName.trim() || createCategory.isPending}
               aria-label="Add category"
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
               style={{ background: "#00c48c" }}
             >
               <Plus size={16} />

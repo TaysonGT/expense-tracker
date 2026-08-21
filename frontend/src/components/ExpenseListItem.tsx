@@ -51,7 +51,7 @@ function DisplayRow({
   const color = colorForCategory(expense.categoryId);
 
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-white p-4 py-2 border border-[#e6e6e6]">
+    <li className="flex items-center gap-3 rounded-xl bg-white p-4 py-2 border border-[#d3d3d3]">
       {/* Category color dot */}
       <span
         className="h-8 w-1.5 shrink-0 rounded-full"
@@ -100,7 +100,7 @@ function DisplayRow({
       <button
         onClick={onEdit}
         aria-label={`Edit ${expense.title}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-gray-100"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 border border-[#d3d3d3]"
       >
         <Pencil size={14} />
       </button>
@@ -155,7 +155,7 @@ function EditRow({
   };
 
   return (
-    <li className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
+    <li className="rounded-xl bg-white p-4 shadow-sm border border-[#d3d3d3]">
       <div className="space-y-3">
         <input
           value={title}

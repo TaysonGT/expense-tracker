@@ -41,7 +41,7 @@ export default function CategoryStrip({
       onClick={() => setManaging(true)}
       aria-label="Manage categories"
       title="Manage categories"
-      className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#1f1f1f] text-gray-300 ring-1 ring-gray-200"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1f1f1f] text-gray-300 ring-1 ring-gray-200"
     >
       <Settings2 size={16} />
     </button>
@@ -73,7 +73,7 @@ function SkeletonChips({ count }: { count: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`h-9 flex-shrink-0 animate-pulse rounded-full bg-gray-200 ${
+          className={`h-9 shrink-0 animate-pulse rounded-full bg-gray-200 ${
             widths[i % widths.length]
           }`}
           aria-hidden

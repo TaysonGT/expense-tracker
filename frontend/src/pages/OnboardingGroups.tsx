@@ -66,7 +66,7 @@ export default function OnboardingGroups() {
 
       <main className="mx-auto max-w-md px-5 pb-16">
         {/* Tabs */}
-        <div className="mb-5 flex gap-1.5 rounded-full bg-gray-100 p-1">
+        <div className="mb-5 flex gap-1.5 rounded-full bg-gray-100 border border-[#d9d9d9] p-0.5">
           <TabButton active={activeTab === "mine"} onClick={() => setTab("mine")}>
             My Groups
           </TabButton>
@@ -103,7 +103,7 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className="flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors"
+      className="flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors cursor-pointer"
       style={
         active
           ? { background: "#111827", color: "#fff" }
@@ -147,7 +147,7 @@ function MyGroupsPanel({
 
   if (groups.length === 0) {
     return (
-      <div className="flex flex-col items-center rounded-2xl bg-white p-8 text-center ring-1 ring-gray-100">
+      <div className="flex flex-col items-center rounded-2xl bg-white p-8 text-center border border-[#e6e6e6]">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-400">
           <Users size={26} />
         </div>
@@ -173,10 +173,10 @@ function MyGroupsPanel({
           <button
             onClick={() => enter(g)}
             disabled={switchingId === g.id}
-            className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left ring-1 ring-gray-100 transition-transform active:scale-[0.99] disabled:opacity-60"
+            className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left border border-[#e6e6e6] transition-transform active:scale-[0.99] disabled:opacity-60"
           >
             <span
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
               style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
             >
               {g.name.slice(0, 1).toUpperCase()}
@@ -221,7 +221,7 @@ function CreateGroupPanel({ onCreated }: { onCreated: (g: { id: string; name: st
   };
 
   return (
-    <div className="space-y-4 rounded-2xl bg-white p-5 ring-1 ring-gray-100">
+    <div className="space-y-4 rounded-2xl bg-white p-5 border border-[#e6e6e6] shadow-sm shadow-black/25">
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
           Group name
@@ -263,7 +263,7 @@ function CreateGroupPanel({ onCreated }: { onCreated: (g: { id: string; name: st
           role="switch"
           aria-checked={showBalance}
           onClick={() => setShowBalance((v) => !v)}
-          className="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors"
+          className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
           style={{ background: showBalance ? "#00c48c" : "#d1d5db" }}
         >
           <span
@@ -318,7 +318,7 @@ function JoinGroupPanel({ onJoined }: { onJoined: (g: { id: string; name: string
   };
 
   return (
-    <div className="space-y-4 rounded-2xl bg-white p-5 ring-1 ring-gray-100">
+    <div className="space-y-4 rounded-2xl bg-white p-5 border border-[#e6e6e6] shadow-sm shadow-black/25">
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
           Join code

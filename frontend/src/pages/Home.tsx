@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, Clock, Mic, PenLine } from "lucide-react";
+import { ArrowRight, ChevronsRight, Clock, Mic, PenLine } from "lucide-react";
 import { useCategories, useExpenses, usePendingExpenses } from "../lib/queries";
 import type { Category, Expense } from "../types";
 import CategoryScroller from "../components/CategoryScroller";
@@ -305,7 +305,7 @@ function PopulatedState({
           }}
         >
           <span
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
             style={{ background: "rgba(245,158,11,0.25)", color: "#b45309" }}
           >
             <Clock size={18} />
@@ -336,10 +336,10 @@ function PopulatedState({
           <h2 className="text-lg font-semibold">Recent</h2>
           <button
             onClick={onViewAll}
-            className="text-sm font-medium text-blue-600 flex items-center gap-2"
+            className="text-sm font-medium text-blue-600 flex items-center gap-1"
           >
             View all
-            <ArrowRight/>
+            <ChevronsRight size={20}/>
           </button>
         </div>
         <ul className="mt-3 space-y-1 grow min-h-0 overflow-y-auto pb-10">
@@ -362,7 +362,7 @@ function PopulatedState({
             //       {e.category?.name ?? "Uncategorized"} · {e.date}
             //     </span>
             //   </div>
-            //   <span className="mono flex-shrink-0 font-medium text-gray-900">
+            //   <span className="mono shrink-0 font-medium text-gray-900">
             //     {e.cost != null ? formatCurrency(e.cost, currencyCode) : "—"}
             //   </span>
             // </li>
