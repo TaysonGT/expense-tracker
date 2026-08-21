@@ -88,7 +88,7 @@ export async function createGroup(
     const membership = manager.getRepository(GroupMembership).create({
       groupId: savedGroup.id,
       userId: ownerUserId,
-      role: "admin" as GroupRole,
+      role: "admin",
     });
     await manager.getRepository(GroupMembership).save(membership);
 
@@ -160,8 +160,11 @@ export async function getGroupMembers(
       joinedAt: m.joinedAt,
     }))
     .sort((a, b) => {
-      // Admins first, then by join date.
-      if (a.role !== b.role) return a.role === "admin" ? -1 : 1;
+      // Admins first, then read_write, then readonly, then by join date.
+      const roleOrder = { admin: 0, read_write: 1, readonly: 2 };
+      const aOrder = roleOrder[a.role as keyof typeof roleOrder] ?? 3;
+      const bOrder = roleOrder[b.role as keyof typeof roleOrder] ?? 3;
+      if (aOrder !== bOrder) return aOrder - bOrder;
       return a.joinedAt.getTime() - b.joinedAt.getTime();
     });
 }
@@ -263,7 +266,7 @@ export async function joinGroupByCode(
     membership = membershipRepo.create({
       groupId: group.id,
       userId,
-      role: "viewer" as GroupRole,
+      role: "readonly",
     });
     membership = await membershipRepo.save(membership);
   }

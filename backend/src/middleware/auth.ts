@@ -102,6 +102,20 @@ export function requireAdmin(
 }
 
 /**
+ * Require the resolved group role to be one of the allowed roles.
+ * Must be used after requireGroupMembership (which sets req.groupRole).
+ */
+export function requireRole(...allowedRoles: GroupRole[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.groupRole || !allowedRoles.includes(req.groupRole)) {
+      res.status(403).json({ message: "Insufficient permissions" });
+      return;
+    }
+    next();
+  };
+}
+
+/**
  * Resolve the effective tenant context for data routes: the active group from
  * the session plus the acting user. Data routes previously used getDevContext;
  * they now use this. Returns null (and the caller 401/409s) when unavailable.

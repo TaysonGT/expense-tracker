@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { requireAuth, requireGroupMembership, requireAdmin } from "../middleware/auth";
+import { requireAuth, requireGroupMembership, requireAdmin, requireRole } from "../middleware/auth";
 import {
   createGroup,
   joinGroupByCode,
@@ -12,6 +12,7 @@ import {
 import { setSessionCookie } from "../lib/session";
 import { AppDataSource } from "../data-source";
 import { Group } from "../entities/Group";
+import { GroupMembership } from "../entities/GroupMembership";
 
 const router = Router();
 
@@ -276,13 +277,96 @@ router.patch(
         showBalance: group.showBalance,
         joinCode: group.joinCode,
         role: req.groupRole,
-      });
-    } catch (err) {
-      if (err instanceof GroupError) {
-        return res.status(err.status).json({ message: err.message });
+});
+  } catch (err) {
+    if (err instanceof GroupError) {
+      return res.status(err.status).json({ message: err.message });
+    }
+    console.error("update group error:", err);
+    return res.status(500).json({ message: "Failed to update group" });
+  }
+});
+
+/**
+ * DELETE /groups/:groupId/members/:userId
+ * Kick a member from the group. Admin only.
+ */
+router.delete(
+  "/:groupId/members/:userId",
+  requireGroupMembership,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const groupId = String(req.params.groupId);
+      const targetUserId = String(req.params.userId);
+
+      // Prevent admin from kicking themselves
+      if (targetUserId === req.session!.userId) {
+        return res.status(400).json({ message: "Cannot remove yourself from the group" });
       }
-      console.error("update group error:", err);
-      return res.status(500).json({ message: "Failed to update group" });
+
+      const membershipRepo = AppDataSource.getRepository(GroupMembership);
+      const membership = await membershipRepo.findOne({ where: { groupId, userId: targetUserId } });
+      if (!membership) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+
+      // Prevent kicking another admin (optional, but good practice)
+      if (membership.role === "admin") {
+        return res.status(400).json({ message: "Cannot remove another admin" });
+      }
+
+      await membershipRepo.remove(membership);
+      return res.status(204).send();
+    } catch (err) {
+      console.error("kick member error:", err);
+      return res.status(500).json({ message: "Failed to remove member" });
+    }
+  }
+);
+
+/**
+ * PATCH /groups/:groupId/members/:userId
+ * Change a member's role. Admin only.
+ * Body: { role: "admin" | "read_write" | "readonly" }
+ */
+router.patch(
+  "/:groupId/members/:userId",
+  requireGroupMembership,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const groupId = String(req.params.groupId);
+      const targetUserId = String(req.params.userId);
+      const { role } = req.body ?? {};
+
+      if (!["admin", "read_write", "readonly"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      // Prevent admin from changing their own role
+      if (targetUserId === req.session!.userId) {
+        return res.status(400).json({ message: "Cannot change your own role" });
+      }
+
+      const membershipRepo = AppDataSource.getRepository(GroupMembership);
+      const membership = await membershipRepo.findOne({ where: { groupId, userId: targetUserId } });
+      if (!membership) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+
+      // Prevent demoting another admin (optional)
+      if (membership.role === "admin" && role !== "admin") {
+        return res.status(400).json({ message: "Cannot demote another admin" });
+      }
+
+      membership.role = role;
+      await membershipRepo.save(membership);
+
+      return res.json({ id: membership.id, userId: membership.userId, groupId: membership.groupId, role: membership.role });
+    } catch (err) {
+      console.error("change member role error:", err);
+      return res.status(500).json({ message: "Failed to change member role" });
     }
   }
 );

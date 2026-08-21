@@ -11,7 +11,7 @@ import {
 import { Group } from "./Group";
 import { User } from "./User";
 
-export type GroupRole = "admin" | "viewer";
+export type GroupRole = "admin" | "read_write" | "readonly";
 
 /**
  * Junction table linking users to groups with a role. A user may belong to
@@ -41,7 +41,7 @@ export class GroupMembership {
   @JoinColumn({ name: "user_id" })
   user!: User;
 
-  @Column({ type: "enum", enum: ["admin", "viewer"], default: "viewer" })
+  @Column({ type: "enum", enum: ["admin", "read_write", "readonly"], default: "readonly" })
   role!: GroupRole;
 
   @CreateDateColumn({ name: "joined_at" })

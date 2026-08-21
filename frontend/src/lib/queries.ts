@@ -13,10 +13,11 @@ interface ExpenseDto extends Omit<Expense, "cost"> {
   cost: string | null;
 }
 
-function normalizeExpense(dto: ExpenseDto): Expense {
+function normalizeExpense(dto: ExpenseDto & { creator?: { name: string } }): Expense {
   return {
     ...dto,
     cost: dto.cost != null ? Number(dto.cost) : null,
+    createdByName: dto.creator?.name,
   };
 }
 
@@ -205,6 +206,22 @@ export function useUpdateExpense() {
     mutationFn: async ({ id, ...body }: UpdateExpenseInput): Promise<Expense> => {
       const { data } = await api.patch<ExpenseDto>(`/expenses/${id}`, body);
       return normalizeExpense(data);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["expenses"] });
+    },
+  });
+}
+
+/**
+ * Delete an expense.
+ * Backed by DELETE /expenses/:id.
+ */
+export function useDeleteExpense() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      await api.delete(`/expenses/${id}`);
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["expenses"] });

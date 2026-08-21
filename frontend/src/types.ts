@@ -25,6 +25,8 @@ export interface Expense {
   source: ExpenseSource;
   originalTranscript: string | null;
   date: string; // ISO yyyy-mm-dd
+  /** Creator's display name (from joined creator relation) */
+  createdByName?: string;
 }
 
 /**
@@ -43,7 +45,7 @@ export interface ParsedEntity {
 
 /* ------------------------------ Auth / Groups ----------------------------- */
 
-export type GroupRole = "admin" | "viewer";
+export type GroupRole = "admin" | "read_write" | "readonly";
 
 export interface User {
   id: string;

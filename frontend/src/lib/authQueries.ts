@@ -295,4 +295,37 @@ export function useGroupPreview(code: string | undefined) {
   });
 }
 
+/**
+ * Kick a member from the group (admin only). DELETE /groups/:groupId/members/:userId
+ */
+export function useKickMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, userId }: { groupId: string; userId: string }): Promise<void> => {
+      await api.delete(`/groups/${groupId}/members/${userId}`);
+    },
+    onSuccess: (_, { groupId }) => {
+      void qc.invalidateQueries({ queryKey: ["group", groupId, "members"] });
+      void qc.invalidateQueries({ queryKey: authKeys.groups });
+    },
+  });
+}
+
+/**
+ * Change a member's role (admin only). PATCH /groups/:groupId/members/:userId
+ */
+export function useUpdateMemberRole() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, userId, role }: { groupId: string; userId: string; role: "admin" | "read_write" | "readonly" }) => {
+      const { data } = await api.patch(`/groups/${groupId}/members/${userId}`, { role });
+      return data;
+    },
+    onSuccess: (_, { groupId }) => {
+      void qc.invalidateQueries({ queryKey: ["group", groupId, "members"] });
+      void qc.invalidateQueries({ queryKey: authKeys.groups });
+    },
+  });
+}
+
 export type { Group, GroupRole };

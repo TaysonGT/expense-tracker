@@ -9,23 +9,26 @@ import {
   Pencil,
   Shield,
   User as UserIcon,
+  MoreVertical,
+  UserCog,
 } from "lucide-react";
 import currencies from "../data/currencies.json";
-import type { Currency, GroupMember } from "../types";
+import type { Currency, GroupMember, GroupRole } from "../types";
 import { useAuth } from "../context/AuthContext";
-import { useGroupMembers, useUpdateGroup } from "../lib/authQueries";
+import { useGroupMembers, useUpdateGroup, useUpdateMemberRole } from "../lib/authQueries";
 
 /**
  * Group management page (`/group`).
  *
  * Shows the active group's members, lets an admin edit the group's info
  * (name, currency, show balance), and surfaces the join code + a shareable
- * join link. Viewers see a read-only view.
+ * join link. Admins can also kick members and change their roles.
  */
 export default function GroupManagement() {
   const nav = useNavigate();
   const { currentGroup, isAdmin } = useAuth();
   const membersQuery = useGroupMembers(currentGroup?.id);
+  const updateMemberRole = useUpdateMemberRole();
 
   if (!currentGroup) {
     return (
@@ -72,7 +75,12 @@ export default function GroupManagement() {
           ) : (
             <ul className="space-y-2">
               {(membersQuery.data ?? []).map((m: GroupMember) => (
-                <MemberRow key={m.userId} member={m} />
+                <MemberRow
+                  key={m.userId}
+                  member={m}
+                  isAdmin={isAdmin}
+                  onRoleChange={updateMemberRole.mutate}
+                />
               ))}
             </ul>
           )}
@@ -297,12 +305,27 @@ function InviteSection({ joinCode }: { joinCode: string }) {
 
 /* ------------------------------- Member row ------------------------------ */
 
-function MemberRow({ member }: { member: GroupMember }) {
+interface MemberRowProps {
+  member: GroupMember;
+  isAdmin: boolean;
+  onRoleChange: (vars: { groupId: string; userId: string; role: "admin" | "read_write" | "readonly" }) => void;
+}
+
+function MemberRow({
+  member,
+  isAdmin,
+  onRoleChange,
+}: MemberRowProps) {
   const { currentUser } = useAuth();
   const isYou = member.userId === currentUser?.id;
+  const [showActions, setShowActions] = useState<string | null>(null);
+
+  const handleRoleChange = (newRole: "admin" | "read_write" | "readonly") => {
+    onRoleChange({ groupId: "", userId: member.userId, role: newRole });
+  };
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-gray-100">
+    <li className="relative flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-gray-100">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-400">
         {member.avatarUrl ? (
           <img
@@ -322,22 +345,88 @@ function MemberRow({ member }: { member: GroupMember }) {
         <span className="truncate text-xs text-gray-400">{member.email}</span>
       </div>
       <RoleBadge role={member.role} />
+      {isAdmin && !isYou && (
+        <div className="relative">
+          <button
+            onClick={() => setShowActions(member.userId === showActions ? null : member.userId)}
+            aria-label="Member actions"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-gray-100"
+          >
+            <MoreVertical size={16} />
+          </button>
+          {showActions === member.userId && (
+            <div
+              className="absolute right-0 top-full z-10 mt-1 w-40 rounded-xl bg-white shadow-lg border border-gray-100 py-1"
+              role="menu"
+            >
+              <button
+                onClick={() => {
+                  handleRoleChange("admin");
+                  setShowActions(null);
+                }}
+                disabled={member.role === "admin"}
+                role="menuitem"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <Crown size={14} className="text-gray-400" />
+                Make admin
+              </button>
+              <button
+                onClick={() => {
+                  handleRoleChange("read_write");
+                  setShowActions(null);
+                }}
+                disabled={member.role === "read_write"}
+                role="menuitem"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <UserCog size={14} className="text-gray-400" />
+                Make read/write
+              </button>
+              <button
+                onClick={() => {
+                  handleRoleChange("readonly");
+                  setShowActions(null);
+                }}
+                disabled={member.role === "readonly"}
+                role="menuitem"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <Shield size={14} className="text-gray-400" />
+                Make readonly
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </li>
   );
 }
 
-function RoleBadge({ role }: { role: "admin" | "viewer" }) {
-  const admin = role === "admin";
+function RoleBadge({ role }: { role: GroupRole }) {
+  const isAdmin = role === "admin";
+  const isReadWrite = role === "read_write";
+  const isReadonly = role === "readonly";
   return (
     <span
       className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
       style={{
-        background: admin ? "rgba(0,196,140,0.12)" : "rgba(107,114,128,0.1)",
-        color: admin ? "#047857" : "#6b7280",
+        background: isAdmin
+          ? "rgba(0,196,140,0.12)"
+          : isReadWrite
+          ? "rgba(59,130,246,0.12)"
+          : "rgba(107,114,128,0.1)",
+        color: isAdmin
+          ? "#047857"
+          : isReadWrite
+          ? "#2563eb"
+          : "#6b7280",
       }}
     >
-      {admin ? <Crown size={11} /> : <Shield size={11} />}
-      {admin ? "Admin" : "Viewer"}
+      {isAdmin && <Crown size={11} />}
+      {isReadWrite && <UserCog size={11} />}
+      {isReadonly && <Shield size={11} />}
+      {isAdmin ? "Admin" : isReadWrite ? "Read/Write" : "Read-only"}
     </span>
   );
 }
