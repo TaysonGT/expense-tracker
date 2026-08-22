@@ -4,7 +4,13 @@ export class UpdateGroupRoleEnum1700000000003 implements MigrationInterface {
   name = "UpdateGroupRoleEnum1700000000003";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // First, create a temporary enum with the new values
+    // Drop the default first (PostgreSQL requires this before changing enum type)
+    await queryRunner.query(`
+      ALTER TABLE "group_memberships" 
+      ALTER COLUMN "role" DROP DEFAULT;
+    `);
+
+    // Create a temporary enum with the new values
     await queryRunner.query(`
       CREATE TYPE "group_role_new" AS ENUM ('admin', 'read_write', 'readonly');
     `);
@@ -40,6 +46,12 @@ export class UpdateGroupRoleEnum1700000000003 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop the default first
+    await queryRunner.query(`
+      ALTER TABLE "group_memberships" 
+      ALTER COLUMN "role" DROP DEFAULT;
+    `);
+
     // Revert: create old enum with old values
     await queryRunner.query(`
       CREATE TYPE "group_role_old" AS ENUM ('admin', 'viewer');
