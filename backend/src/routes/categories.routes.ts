@@ -1,11 +1,11 @@
 import { Router, Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
-import { requireAuth, requireActiveGroup, getRequestContext } from "../middleware/auth";
+import { requireAuth, requireActiveGroupMembership, getRequestContext } from "../middleware/auth";
 
 const router = Router();
 
-router.use(requireAuth, requireActiveGroup);
+router.use(requireAuth, requireActiveGroupMembership);
 
 /**
  * CRUD /categories — add / edit / delete categories.

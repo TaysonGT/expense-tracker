@@ -3,12 +3,12 @@ import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { Expense } from "../entities/Expense";
 import { GroupRole } from "../entities/GroupMembership";
-import { requireAuth, requireActiveGroup, getRequestContext, requireGroupMembership, requireRole } from "../middleware/auth";
+import { requireAuth, requireActiveGroupMembership, getRequestContext, requireGroupMembership, requireRole } from "../middleware/auth";
 
 const router = Router();
 
 // Every expense route requires a logged-in user with an active group.
-router.use(requireAuth, requireActiveGroup);
+router.use(requireAuth, requireActiveGroupMembership);
 
 /**
  * GET /expenses

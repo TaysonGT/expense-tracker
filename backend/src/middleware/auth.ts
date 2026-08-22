@@ -56,6 +56,38 @@ export function requireActiveGroup(
 }
 
 /**
+ * Verify the authenticated user is a member of the active group from the session.
+ * Combines requireActiveGroup + membership check on session's activeGroupId.
+ * Use for data routes (/expenses, /categories, etc.) that operate on the active group.
+ */
+export async function requireActiveGroupMembership(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.session) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+    if (!req.session.activeGroupId) {
+      res.status(409).json({ message: "No active group selected" });
+      return;
+    }
+    const membership = await getMembership(req.session.userId, req.session.activeGroupId);
+    if (!membership) {
+      res.status(403).json({ message: "Not a member of the active group" });
+      return;
+    }
+    req.groupRole = membership.role;
+    next();
+  } catch (err) {
+    console.error("active group membership check error:", err);
+    res.status(500).json({ message: "Failed to verify membership" });
+  }
+}
+
+/**
  * Verify the authenticated user is a member of the group named in the route
  * param (`:groupId`). Attaches the membership role to req for downstream role
  * checks. 403 when not a member.
@@ -70,12 +102,12 @@ export async function requireGroupMembership(
       res.status(401).json({ message: "Authentication required" });
       return;
     }
-    const groupId = String(req.params.groupId);
+    const groupId = req.params.groupId;
     if (!groupId) {
       res.status(400).json({ message: "groupId is required" });
       return;
     }
-    const membership = await getMembership(req.session.userId, groupId);
+    const membership = await getMembership(req.session.userId, String(groupId));
     if (!membership) {
       res.status(403).json({ message: "Not a member of this group" });
       return;
@@ -123,6 +155,7 @@ export function requireRole(...allowedRoles: GroupRole[]) {
 export function getRequestContext(
   req: Request
 ): { userId: string; groupId: string } | null {
+  console.log(req.session)
   if (!req.session || !req.session.activeGroupId) return null;
   return { userId: req.session.userId, groupId: req.session.activeGroupId };
 }
