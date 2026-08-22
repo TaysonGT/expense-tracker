@@ -79,6 +79,7 @@ export default function GroupManagement() {
                   key={m.userId}
                   member={m}
                   isAdmin={isAdmin}
+                  groupId={currentGroup.id}
                   onRoleChange={updateMemberRole.mutate}
                 />
               ))}
@@ -307,6 +308,7 @@ function InviteSection({ joinCode }: { joinCode: string }) {
 
 interface MemberRowProps {
   member: GroupMember;
+  groupId: string;
   isAdmin: boolean;
   onRoleChange: (vars: { groupId: string; userId: string; role: "admin" | "read_write" | "readonly" }) => void;
 }
@@ -315,13 +317,14 @@ function MemberRow({
   member,
   isAdmin,
   onRoleChange,
+  groupId
 }: MemberRowProps) {
   const { currentUser } = useAuth();
   const isYou = member.userId === currentUser?.id;
   const [showActions, setShowActions] = useState<string | null>(null);
 
   const handleRoleChange = (newRole: "admin" | "read_write" | "readonly") => {
-    onRoleChange({ groupId: "", userId: member.userId, role: newRole });
+    onRoleChange({ groupId, userId: member.userId, role: newRole });
   };
 
   return (
