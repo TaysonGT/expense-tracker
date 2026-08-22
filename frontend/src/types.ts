@@ -27,6 +27,7 @@ export interface Expense {
   date: string; // ISO yyyy-mm-dd
   /** Creator's display name (from joined creator relation) */
   createdByName?: string;
+  creator?: User;
 }
 
 /**

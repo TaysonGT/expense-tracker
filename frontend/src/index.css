@@ -37,3 +37,6 @@ body {
   font-family: 'DM Mono', monospace;
 }
 
+button {
+  cursor: pointer;
+}

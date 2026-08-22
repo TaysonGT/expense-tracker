@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check, Mic, Pencil, X, MoreVertical, Trash2, User, ExternalLink } from "lucide-react";
-import type { Category, Expense } from "../types";
+import type { Category, Expense, User as UserType } from "../types";
 import { useUpdateExpense, useDeleteExpense } from "../lib/queries";
 import {
   colorForCategory,
@@ -8,6 +8,7 @@ import {
   formatCurrency,
   formatRelativeDate,
 } from "../lib/expenseFormat";
+import { useActionOverlay } from "./ActionOverlay";
 
 interface ExpenseListItemProps {
   expense: Expense;
@@ -32,6 +33,30 @@ export default function ExpenseListItem({
   const [optionsAnchor, setOptionsAnchor] = useState<HTMLElement | null>(null);
 
   const deleteExpense = useDeleteExpense();
+  
+  const { runWithOverlay } = useActionOverlay();
+
+  const deleteEntity = () => {
+    runWithOverlay(
+      async () => {
+        try {
+          await deleteExpense.mutateAsync(expense.id);
+        } catch {
+          // Leave it un-approved so the user can retry.
+        }     
+      },
+      {
+        loadingTitle: "Removing Expense…",
+        loadingMessage: `Removing ${expense.title} ${expense.cost&& `for ${formatCurrency(expense.cost)}`}`,
+        successTitle: "Expense Removed",
+        successMessage: `Expense has been successfully removed`,
+        errorTitle: "Failed to remove expense",
+        errorMessage: "Could not remove expense. Please try again.",
+        autoCloseSuccess: true,
+        autoCloseDelay: 1200,
+      }
+    );
+  };
 
   return editing ? (
     <EditRow
@@ -56,7 +81,7 @@ export default function ExpenseListItem({
       }}
       onDelete={() => {
         if (window.confirm("Delete this expense?")) {
-          deleteExpense.mutate(expense.id);
+          deleteEntity()
         }
         setShowOptions(false);
         setOptionsAnchor(null);
@@ -83,11 +108,10 @@ function DisplayRow({
   onDelete: () => void;
 }) {
   const color = colorForCategory(expense.categoryId);
-  const creatorName = expense.createdByName ?? "Unknown";
 
   return (
     <>
-      <li className="relative flex items-center gap-3 rounded-xl bg-white p-4 py-2 border border-[#d3d3d3]">
+      <li className="relative flex items-center gap-3 rounded-xl bg-white p-4 py-2 border border-[#d9d9d9] shadow-xs shadow-black/10">
         {/* Category color dot */}
         <span
           className="h-8 w-1.5 shrink-0 rounded-full"
@@ -149,8 +173,8 @@ function DisplayRow({
               anchor={optionsAnchor}
               onClose={onCloseOptions}
               onEdit={onEdit}
+              creator={expense.creator}
               onDelete={onDelete}
-              creatorName={creatorName}
             />
           )}
         </div>
@@ -174,22 +198,33 @@ function OptionsMenu({
   onClose,
   onEdit,
   onDelete,
-  creatorName,
+  creator
 }: {
   anchor: HTMLElement;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  creatorName: string;
+  creator?:  UserType
 }) {
   const anchorRect = anchor.getBoundingClientRect();
   const menuWidth = 180;
+  useEffect(()=>{
+
+    console.log({
+      // y: anchorRect.y, 
+      // windowHeight: window.innerHeight,
+      // availableSpace: window.innerHeight - anchorRect.y,
+      // neededHeight: anchorRect.height
+      anchorRect
+    })
+  },[])
+  const availableSpace = window.innerHeight - anchorRect.top > 360
 
   return (
     <div
       className="fixed z-50 rounded-xl bg-white shadow-lg border border-gray-100 py-1"
       style={{
-        top: anchorRect.bottom + 4,
+        ...availableSpace? {bottom: 'auto', top: anchorRect.bottom + 4} : {top: anchorRect.y - 150},
         left: Math.max(8, anchorRect.right - menuWidth),
         width: menuWidth,
       }}
@@ -212,10 +247,17 @@ function OptionsMenu({
         Delete
       </button>
       <div className="border-t border-gray-100 my-1" />
-      <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
-        <User size={14} className="text-gray-400" />
-        <span className="truncate">Created by {creatorName}</span>
-        <ExternalLink size={12} className="ml-auto text-gray-300" />
+      <div className="px-3 py-1 space-y-1">
+        <p className="text-xs text-gray-400">Created by</p>
+        <div className="flex items-center gap-1 text-sm">
+          {creator?.avatarUrl?
+            <img src={creator?.avatarUrl||''} className="h-6 w-6 rounded-full border border-[#989898]"/>
+            :
+            <User size={14} className="text-gray-400" />
+          }
+          <span className="truncate text-xs"><span className="">{creator?.name}</span></span>
+          <ExternalLink size={12} className="ml-auto text-gray-300" />
+        </div>
       </div>
     </div>
   );

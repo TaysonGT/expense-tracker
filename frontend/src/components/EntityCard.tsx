@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertCircle, Check, Settings2 } from "lucide-react";
+import { AlertCircle, Check, Settings2, Trash2 } from "lucide-react";
 import type { Category, ParsedEntity } from "../types";
 import { currencySymbol } from "../lib/expenseFormat";
 import CategoryManagementModal from "./CategoryManagementModal";
@@ -9,10 +9,12 @@ interface EntityCardProps {
   categories: Category[];
   onChange: (updated: ParsedEntity) => void;
   onApprove: (entity: ParsedEntity) => void;
+  onRemove: (entity: ParsedEntity) => void;
   approved?: boolean;
   /** ISO currency code for the cost input prefix. */
   currencyCode?: string;
-  isLoading?: boolean;
+  isApproving?: boolean;
+  isRemoving?: boolean;
 }
 
 /**
@@ -25,9 +27,11 @@ function EntityCard({
   categories,
   onChange,
   onApprove,
+  onRemove,
   approved = false,
   currencyCode,
-  isLoading
+  isApproving,
+  isRemoving
 }: EntityCardProps) {
   const [costText, setCostText] = useState(
     entity.cost != null ? String(entity.cost) : ""
@@ -151,17 +155,29 @@ function EntityCard({
         ) : (
           <span />
         )}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={approved||isRemoving||isApproving}
+            onClick={()=>onRemove(entity)}
+            className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
+            style={{ background: isRemoving? '#d9d9d9' : approved ? "#9ca3af" : "#e90022" }}
+          >
+            {isRemoving? '' :  <Trash2 size={14} /> }
 
-        <button
-          type="submit"
-          disabled={approved}
-          className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
-          style={{ background: isLoading? '#d9d9d9' : approved ? "#9ca3af" : "#00c48c" }}
-        >
-          {isLoading? '' :  <Check size={14} /> }
+            {isRemoving? 'Removing...' : "Remove"}
+          </button>
+          <button
+            type="submit"
+            disabled={approved||isApproving||isRemoving}
+            className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
+            style={{ background: isApproving? '#d9d9d9' : approved ? "#9ca3af" : "#00c48c" }}
+          >
+            {isApproving? '' :  <Check size={14} /> }
 
-          {isLoading? 'Approving...' : approved ? "Approved" : "Approve"}
-        </button>
+            {isApproving? 'Approving...' : approved ? "Approved" : "Approve"}
+          </button>
+        </div>
       </div>
 
       <CategoryManagementModal

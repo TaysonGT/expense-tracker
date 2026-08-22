@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import {
   useApproveExpense,
   useCategories,
+  useDeleteExpense,
   usePendingExpenses,
 } from "../lib/queries";
 import type { Expense, ParsedEntity } from "../types";
@@ -41,6 +42,9 @@ export default function PendingExpenses() {
     refetch,
   } = usePendingExpenses();
   const approveExpense = useApproveExpense();
+  const deleteExpense = useDeleteExpense();
+  const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
 
   // Local editable copies keyed by id; seeded lazily from the query as needed.
   const [edits, setEdits] = useState<Record<string, ParsedEntity>>({});
@@ -56,6 +60,7 @@ export default function PendingExpenses() {
 
   const approveEntity = useCallback(
     async (entity: ParsedEntity) => {
+      setApprovingIds((prev)=> new Set(prev).add(entity.id)) 
       try {
         await approveExpense.mutateAsync({
           id: entity.id,
@@ -71,7 +76,39 @@ export default function PendingExpenses() {
         });
       } catch {
         // Leave it in place so the user can retry.
+      } finally {
+        setApprovingIds((prev)=> {
+          const updated = new Set(prev)
+          updated.delete(entity.id)
+          return updated
+        }) 
       }
+
+    },
+    [approveExpense]
+  );
+
+  const deleteEntity = useCallback(
+    async (entity: ParsedEntity) => {
+      setRemovingIds((prev)=> new Set(prev).add(entity.id)) 
+      try {
+        await deleteExpense.mutateAsync(entity.id);
+        // The pending query is invalidated on success, so the item drops off.
+        setEdits((prev) => {
+          const next = { ...prev };
+          delete next[entity.id];
+          return next;
+        });
+      } catch {
+        // Leave it in place so the user can retry.
+      } finally {
+        setRemovingIds((prev)=> {
+          const updated = new Set(prev)
+          updated.delete(entity.id)
+          return updated
+        }) 
+      }
+
     },
     [approveExpense]
   );
@@ -153,9 +190,12 @@ export default function PendingExpenses() {
                   key={e.id}
                   entity={entityFor(e)}
                   categories={categories}
+                  isApproving={approvingIds.has(e.id)}
+                  isRemoving={removingIds.has(e.id)}
                   currencyCode={currencyCode}
                   onChange={updateEntity}
                   onApprove={approveEntity}
+                  onRemove={deleteEntity}
                 />
               ))}
             </div>

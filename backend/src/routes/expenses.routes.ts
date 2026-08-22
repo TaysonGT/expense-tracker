@@ -2,8 +2,7 @@ import { Router, Request, Response } from "express";
 import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { Expense } from "../entities/Expense";
-import { GroupRole } from "../entities/GroupMembership";
-import { requireAuth, requireActiveGroupMembership, getRequestContext, requireGroupMembership, requireRole } from "../middleware/auth";
+import { requireAuth, requireActiveGroupMembership, getRequestContext, requireRole } from "../middleware/auth";
 
 const router = Router();
 
@@ -85,7 +84,6 @@ router.get("/pending", async (req: Request, res: Response) => {
  * Requires read_write or admin role.
  */
 router.post("/",
-  requireGroupMembership,
   requireRole("admin", "read_write"),
   async (req: Request, res: Response) => {
     try {
@@ -154,7 +152,6 @@ router.get("/pending", async (req: Request, res: Response) => {
  * read_write and admin can edit. Users can only edit their own expenses unless admin.
  */
 router.patch("/:id",
-  requireGroupMembership,
   requireRole("admin", "read_write"),
   async (req: Request, res: Response) => {
     try {
@@ -233,7 +230,6 @@ router.patch("/:id",
  * Requires read_write or admin.
  */
 router.patch("/:id/approve",
-  requireGroupMembership,
   requireRole("admin", "read_write"),
   async (req: Request, res: Response) => {
     try {
@@ -288,7 +284,6 @@ router.patch("/:id/approve",
  * readonly cannot delete.
  */
 router.delete("/:id",
-  requireGroupMembership,
   requireRole("admin", "read_write"),
   async (req: Request, res: Response) => {
     try {

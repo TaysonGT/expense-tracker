@@ -155,7 +155,6 @@ export function requireRole(...allowedRoles: GroupRole[]) {
 export function getRequestContext(
   req: Request
 ): { userId: string; groupId: string } | null {
-  console.log(req.session)
   if (!req.session || !req.session.activeGroupId) return null;
   return { userId: req.session.userId, groupId: req.session.activeGroupId };
 }

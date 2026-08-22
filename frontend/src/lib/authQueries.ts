@@ -203,6 +203,13 @@ export function useJoinGroup() {
       setLastActiveGroup(group.id);
       void qc.invalidateQueries({ queryKey: authKeys.session });
       void qc.invalidateQueries({ queryKey: authKeys.groups });
+      // Data changes tenant — clear cached expenses/categories so the next
+      // page render shows a loading/empty state instead of stale rows from
+      // the old group while the refetch is in flight.
+      void qc.removeQueries({ queryKey: ["expenses"] });
+      void qc.removeQueries({ queryKey: ["categories"] });
+      void qc.invalidateQueries({ queryKey: ["expenses"] });
+      void qc.invalidateQueries({ queryKey: ["categories"] });
     },
   });
 }

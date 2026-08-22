@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, CheckCircle2, Mic, RefreshCw, Square } from "lucide-react";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
-import { useCategories, useVoiceEntry, useApproveExpense } from "../lib/queries";
+import { useCategories, useVoiceEntry, useApproveExpense, useDeleteExpense } from "../lib/queries";
 import type { Expense, ParsedEntity } from "../types";
 import EntityCard from "../components/EntityCard";
 import GroupSelector from "../components/GroupSelector";
@@ -36,11 +36,13 @@ function VoiceCapture() {
   const { data: categories = [] } = useCategories();
   const voiceEntry = useVoiceEntry();
   const approveExpense = useApproveExpense();
+  const deleteExpense = useDeleteExpense();
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [entities, setEntities] = useState<ParsedEntity[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
-  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
+  const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [lastTranscript, setLastTranscript] = useState("");
 
   // Map a persisted Expense (from /voice-entry) into an editable ParsedEntity.
@@ -103,7 +105,7 @@ function VoiceCapture() {
 
   const approveEntity = useCallback(
     async (entity: ParsedEntity) => {
-      setLoadingIds((prev)=> new Set(prev).add(entity.id)) 
+      setApprovingIds((prev)=> new Set(prev).add(entity.id)) 
       try {
         await approveExpense.mutateAsync({
           id: entity.id,
@@ -115,7 +117,7 @@ function VoiceCapture() {
       } catch {
         // Leave it un-approved so the user can retry.
       } finally {
-        setLoadingIds((prev)=> {
+        setApprovingIds((prev)=> {
           const updated = new Set(prev)
           updated.delete(entity.id)
           return updated
@@ -123,6 +125,25 @@ function VoiceCapture() {
       }
     },
     [approveExpense]
+  );
+
+  const deleteEntity = useCallback(
+    async (entity: ParsedEntity) => {
+      setRemovingIds((prev)=> new Set(prev).add(entity.id)) 
+      try {
+        await deleteExpense.mutateAsync(entity.id);
+        setEntities((prev) => prev.filter(e=>e.id!==entity.id));
+      } catch {
+        // Leave it un-approved so the user can retry.
+      } finally {
+        setRemovingIds((prev)=> {
+          const updated = new Set(prev)
+          updated.delete(entity.id)
+          return updated
+        }) 
+      }
+    },
+    [deleteExpense]
   );
 
   const pending = useMemo(
@@ -144,7 +165,7 @@ function VoiceCapture() {
           </button>
           <h1 className="text-lg font-semibold">Voice capture</h1>
         </div>
-        <GroupSelector />
+        <GroupSelector dir="left" />
       </header>
 
       <main className="max-w-md w-full px-4 grow flex flex-col justify-center">
@@ -287,15 +308,17 @@ function VoiceCapture() {
             </details>
 
             <div className="space-y-3">
-              {entities.map((entity) => (
+              {entities.filter(e=>e.id).map((entity) => (
                 <EntityCard
                   key={entity.id}
                   entity={entity}
-                  isLoading={loadingIds.has(entity.id)}
+                  isApproving={approvingIds.has(entity.id)}
+                  isRemoving={removingIds.has(entity.id)}
                   categories={categories}
                   currencyCode={currencyCode}
                   onChange={updateEntity}
                   onApprove={approveEntity}
+                  onRemove={deleteEntity}
                   approved={approvedIds.has(entity.id)}
                 />
               ))}

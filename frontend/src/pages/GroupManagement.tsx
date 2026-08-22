@@ -16,6 +16,7 @@ import currencies from "../data/currencies.json";
 import type { Currency, GroupMember, GroupRole } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useGroupMembers, useUpdateGroup, useUpdateMemberRole } from "../lib/authQueries";
+import { useActionOverlay } from "../components/ActionOverlay";
 
 /**
  * Group management page (`/group`).
@@ -51,7 +52,7 @@ export default function GroupManagement() {
           </button>
           <h1 className="text-lg font-semibold">Group settings</h1>
         </div>
-        <img src="/default-monochrome.svg" className="w-22 py-2"/>
+        <img src="/default-monochrome.svg" className="w-30 py-2"/>
        </header>
 
       <main className="mx-auto max-w-md space-y-6 px-4 pt-2">
@@ -75,14 +76,14 @@ export default function GroupManagement() {
           ) : (
             <ul className="space-y-2">
               {(membersQuery.data ?? []).map((m: GroupMember) => (
-                <MemberRow
-                  key={m.userId}
-                  member={m}
-                  isAdmin={isAdmin}
-                  groupId={currentGroup.id}
-                  onRoleChange={updateMemberRole.mutate}
-                />
-              ))}
+              <MemberRow
+                key={m.userId}
+                member={m}
+                isAdmin={isAdmin}
+                groupId={currentGroup.id}
+                onRoleChange={updateMemberRole.mutateAsync}
+              />
+            ))}
             </ul>
           )}
         </section>
@@ -310,7 +311,7 @@ interface MemberRowProps {
   member: GroupMember;
   groupId: string;
   isAdmin: boolean;
-  onRoleChange: (vars: { groupId: string; userId: string; role: "admin" | "read_write" | "readonly" }) => void;
+  onRoleChange: (vars: { groupId: string; userId: string; role: "admin" | "read_write" | "readonly" }) => Promise<unknown>;
 }
 
 function MemberRow({
@@ -320,11 +321,25 @@ function MemberRow({
   groupId
 }: MemberRowProps) {
   const { currentUser } = useAuth();
+  const { runWithOverlay } = useActionOverlay();
   const isYou = member.userId === currentUser?.id;
   const [showActions, setShowActions] = useState<string | null>(null);
 
   const handleRoleChange = (newRole: "admin" | "read_write" | "readonly") => {
-    onRoleChange({ groupId, userId: member.userId, role: newRole });
+    setShowActions(null);
+    runWithOverlay(
+      () => onRoleChange({ groupId, userId: member.userId, role: newRole }),
+      {
+        loadingTitle: "Updating role…",
+        loadingMessage: `Changing ${member.name}'s role`,
+        successTitle: "Role updated",
+        successMessage: `${member.name} is now ${newRole.replace("_", "/")}`,
+        errorTitle: "Failed to update role",
+        errorMessage: "Could not change member's role. Please try again.",
+        autoCloseSuccess: true,
+        autoCloseDelay: 1200,
+      }
+    );
   };
 
   return (

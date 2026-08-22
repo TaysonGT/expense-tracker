@@ -16,13 +16,15 @@ import OnboardingGuard from "./routes/OnboardingGuard"
 import RequireAuth from "./routes/RequireAuth"
 import { AuthProvider } from "./context/AuthContext"
 import { GroupSwitchProvider } from "./context/GroupSwitchContext"
+import { ActionOverlayProvider } from "./components/ActionOverlay"
 
 const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
         <GroupSwitchProvider>
-          <Routes>            {/* Public auth screen */}
+          <ActionOverlayProvider>
+            <Routes>            {/* Public auth screen */}
             <Route
               path="/auth"
               element={
@@ -66,6 +68,7 @@ const App = () => {
               <Route path="group" element={<GroupManagement />} />
             </Route>
           </Routes>
+        </ActionOverlayProvider>
         </GroupSwitchProvider>
       </AuthProvider>
     </BrowserRouter>

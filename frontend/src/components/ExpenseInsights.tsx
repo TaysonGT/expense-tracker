@@ -53,13 +53,13 @@ export default function ExpenseInsights({
     <section className="mt-4 space-y-3">
       {/* Summary strip */}
       {isLoading?
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Skeleton className="h-18 rounded-2xl" />
           <Skeleton className="h-18 rounded-2xl" />
           <Skeleton className="h-18 rounded-2xl" />
         </div>
         :
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <SummaryCell label="Total" value={formatCurrency(stats.total, currencyCode)} />
           <SummaryCell label="Expenses" value={String(stats.count)} />
           <SummaryCell label="Average" value={formatCurrency(stats.average, currencyCode)} />

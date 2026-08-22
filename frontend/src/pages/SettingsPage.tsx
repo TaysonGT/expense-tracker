@@ -13,7 +13,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
       <header className="sticky top-0 z-10 bg-gray-50/90 px-4 py-4 backdrop-blur flex items-center justify-between">
         <h1 className="text-lg font-semibold">Settings</h1>
-        <img src="/default-monochrome.svg" className="h-6"/>
+        <img src="/default-monochrome.svg" className="w-30"/>
       </header>
 
       <main className="mx-auto max-w-md px-4">

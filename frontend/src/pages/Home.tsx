@@ -79,7 +79,7 @@ export default function Home() {
           <div className="flex h-full flex-col">
             {/* Header: greeting + group selector */}
               <div className="flex w-full justify-between items-center">
-                <img src="/default-monochrome.svg" className="h-7"/>
+                <img src="/default-monochrome.svg" className="w-36"/>
                 <GroupSelector dir="left" />
               </div>
 
@@ -92,14 +92,14 @@ export default function Home() {
             />
 
             {/* Bottom section: empty vs. populated list */}
-            {recentExpenses.length === 0 ? (
+            {todayExpenses.length === 0 ? (
               <EmptyState
                 onRecord={() => nav("/voice")}
                 onManual={() => nav("/manual")}
               />
             ) : (
               <PopulatedState
-                recentExpenses={recentExpenses}
+                recentExpenses={todayExpenses}
                 pendingCount={pendingCount}
                 categories={categories}
                 onReview={() => nav("/pending")}
@@ -160,9 +160,14 @@ function EmptyState({
     <div className="mt-6 grow">
       <hr className=" border-t border-[#d3d3d3] mb-4 w-7/10 mx-auto"/>
       <div className="flex h-full flex-col items-center gap-5 text-center">
-        <p className="text-sm text-gray-400">
-          No expenses recorded yet — pick a method above to get started.
-        </p>
+        <div className="space-y-1">
+          <h3 className="text-xl font-light text-[#646464]">
+            No expenses for today.
+          </h3>
+          <p className="text-sm text-[#b4b4b4]">
+            Pick a method below to get started.
+          </p>
+        </div>
         {/* Two attractive input-method choices */}
         <div className="flex flex-col items-center gap-4">
           <InputMethodChoice
