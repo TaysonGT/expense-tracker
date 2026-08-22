@@ -58,9 +58,14 @@ scoped by `group_id` for tenant isolation.
 - id (uuid)
 - group_id (FK -> groups, ON DELETE CASCADE)
 - user_id (FK -> users, ON DELETE CASCADE)
-- role (enum: 'admin' | 'viewer', default 'viewer')
+- role (enum: 'admin' | 'read_write' | 'readonly', default 'readonly')
 - joined_at
 - (unique [group_id, user_id])
+
+### Role Permissions
+- **admin**: Full access — can change member roles, kick members, delete group, create/edit/delete any expense, manage categories, all data access.
+- **read_write**: Can add/edit/remove own expenses, read all expenses, create/edit/delete categories, read all data.
+- **readonly**: Read-only access to all expenses, categories, and group data.
 
 **categories** (group-scoped)
 - id, group_id (FK -> groups, required), name
@@ -101,11 +106,18 @@ See `backend/src/lib/baseCategories.ts`.
   - `getGroupPreviewByCode(code)` returns `{ name, currency, memberCount,
     adminName }` with an `alreadyMember` flag when the session user is in the
     group.
+  - `joinGroupByCode(userId, code)` — joins group as `readonly` (default).
+  - `updateGroupMember(groupId, userId, { role })` — admin-only role change.
+  - `kickMember(groupId, userId)` — admin-only member removal.
 
 ### Migration
 - `1700000000001-GroupBasedSchema.ts` drops the v1 user-centric tables and
   creates the group-based schema. v1 had no auth and only a seeded dev user, so
   no data backfill is performed.
+- `1700000000002-AddPasswordHash.ts` adds `password_hash` column to `users`.
+- `1700000000003-UpdateGroupRoleEnum.ts` — migrates `group_role` enum from
+  `('admin', 'viewer')` to `('admin', 'read_write', 'readonly')`; converts
+  existing `'viewer'` rows to `'readonly'`; changes default to `'readonly'`.
 - Indexes: `IDX_expenses_group_id`, `IDX_categories_group_id`,
   `IDX_group_memberships_group_user` on `[group_id, user_id]`,
   `IDX_groups_join_code`, plus existing category_id/created_by/pending/date
@@ -161,12 +173,21 @@ JWT session cookie; data routes are scoped to the session's active group
   category.
 - `GET /expenses/pending` — powers the approval queue.
 - `PATCH /expenses/:id` — general field edit (title/cost/categoryId/date).
+  read_write/admin can edit; users can only edit their own expenses unless admin.
 - `PATCH /expenses/:id/approve` — body `{ title?, cost?, categoryId? }`.
-  Requires cost and category; flips `pending` to false.
+  Requires cost and category; flips `pending` to false. Requires read_write/admin.
+- `DELETE /expenses/:id` — delete an expense. Admin can delete any; read_write
+  can delete own; readonly cannot delete.
 - `GET /categories` — list the group's categories.
-- `POST /categories` — create category, body `{ name }`.
-- `PATCH /categories/:id` — rename category, body `{ name }`.
-- `DELETE /categories/:id` — delete category.
+- `POST /categories` — create category, body `{ name }`. Requires read_write/admin.
+- `PATCH /categories/:id` — rename category, body `{ name }`. Requires read_write/admin.
+- `DELETE /categories/:id` — delete category. Requires read_write/admin.
+
+### Group Member Management (admin only)
+- `DELETE /groups/:groupId/members/:userId` — kick a member from the group.
+  Admin only; cannot kick self or another admin.
+- `PATCH /groups/:groupId/members/:userId` — change member's role.
+  Body: `{ role: "admin" | "read_write" | "readonly" }`. Admin only; cannot change own role or demote another admin.
 
 ### Auth implementation notes
 - `backend/src/lib/jwt.ts` — signs/verifies the session JWT (`userId`, `email`,
@@ -179,8 +200,9 @@ JWT session cookie; data routes are scoped to the session's active group
 - `backend/src/lib/users.ts` — `findOrCreateUser()`, `findUserByEmail()`,
   `hashPassword()`, `verifyPassword()`, `setUserPassword()`.
 - `backend/src/middleware/auth.ts` — `requireAuth`, `requireActiveGroup`,
-  `requireGroupMembership` (403 non-members), `requireAdmin`, and
-  `getRequestContext()` (resolves `{ userId, groupId }` for data routes).
+  `requireActiveGroupMembership` (verifies membership on active group),
+  `requireGroupMembership` (for explicit :groupId routes), `requireAdmin`,
+  `requireRole(...roles)`, and `getRequestContext()`.
 - Frontend: `context/AuthContext.tsx` exposes `currentUser`, `currentGroup`,
   `currentRole`, `isAdmin`; `routes/ProtectedRoutes.tsx` redirects
   unauthenticated → `/auth` and authenticated-without-group →
@@ -201,6 +223,7 @@ JWT session cookie; data routes are scoped to the session's active group
    presets All/Today/This Week/This Month + custom start/end). Inline-editable
    rows, a reactive insights block (summary strip, category breakdown, per-day
    chart) computed client-side. Backed by PATCH /expenses/:id.
+   Each row has a three-dot options menu (edit / delete / created by).
    *Implemented (routed at /expenses).*
 3. **Voice Capture** — record button, live partial captions while speaking
    (dark recording panel), processing state, then an editable review of the
@@ -230,7 +253,9 @@ JWT session cookie; data routes are scoped to the session's active group
 7. **Group Management** (`/group`) — shows the active group's members (role
    badges; admin-first ordering) and an edit form for name, currency, and
    show-balance toggle. Includes the group's join code + a shareable direct
-   link (`/join/:code`). Admin-only for edits.
+   link (`/join/:code`). Admin-only for edits. Admin can change member roles
+   (admin/read_write/readonly) via dropdown; actions show loading/success
+   feedback via the shared ActionOverlay.
    *Implemented.*
 8. **Group Join** (`/join/:code`) — shareable direct-link page: previews a
    group by join code (name, currency, member count, admin name) and offers a
@@ -266,6 +291,16 @@ On success the provider also calls `removeQueries(['expenses'])` +
 loading/empty state with no stale rows from the previously active group, then
 refetches the new tenant's data on arrival.
 
+**ActionOverlay.** A reusable fullscreen loading/success/error overlay
+(`components/ActionOverlay.tsx`, provider in `App.tsx`) for any async action.
+Exposed via `useActionOverlay().runWithOverlay(action, options)`. Used for:
+- Group member role changes (GroupManagement)
+- Expense deletion (ExpenseListItem)
+- Future: group deletion, member kick, logout, etc.
+
+Overlay shows: loading spinner → success checkmark → auto-close (configurable),
+or error state with custom message.
+
 ### Bottom navigation & header
 - Bottom nav: Home, Expenses, centered elevated (+) button (opens "Record voice"
 / "Type manually" popup — implemented with appear animation), Pending, Profile.
@@ -291,6 +326,14 @@ able join link at `/join/:code`) returns to it after signing in.
 `RequireAuth` guards routes that need authentication but not an active group;
 `OnboardingGuard` guards the group-onboarding step. `backend/src/lib/devUser.ts`
 is no longer wired into the data routes.
+
+**Active group membership verification.** Data routes (`/expenses`, `/categories`)
+use `requireActiveGroupMembership` middleware which combines `requireActiveGroup`
+with a live membership check on the session's `activeGroupId`. This closes the
+gap where `requireActiveGroup` only checked for presence of `activeGroupId`
+without re-verifying the user is still a member. Group-specific routes
+(`/groups/:groupId/*`) continue to use `requireGroupMembership` on the
+explicit `:groupId` parameter.
 
 ## Brand
 Product name: **WhisperTrack | Expense Tracker** (formerly "Ahora — Expense
