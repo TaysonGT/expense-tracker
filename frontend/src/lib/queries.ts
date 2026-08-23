@@ -139,6 +139,7 @@ export function useCreateManualExpense() {
       return normalizeExpense(data);
     },
     onSuccess: () => {
+      void qc.removeQueries({ queryKey: ["expenses"] });
       void qc.invalidateQueries({ queryKey: ["expenses"] });
     },
   });
@@ -183,6 +184,7 @@ export function useApproveExpense() {
       return normalizeExpense(data);
     },
     onSuccess: () => {
+      void qc.removeQueries({ queryKey: ["expenses"] });
       void qc.invalidateQueries({ queryKey: ["expenses"] });
     },
   });
