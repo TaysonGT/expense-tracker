@@ -1,31 +1,59 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, CheckCircle2, Mic, RefreshCw, Square } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mic, RefreshCw, X } from "lucide-react";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
-import { useCategories, useVoiceEntry, useApproveExpense, useDeleteExpense } from "../lib/queries";
+import {
+  useCategories,
+  useVoiceEntry,
+  useApproveExpense,
+  useDeleteExpense,
+} from "../lib/queries";
 import type { Expense, ParsedEntity } from "../types";
 import EntityCard from "../components/EntityCard";
-import GroupSelector from "../components/GroupSelector";
-import { useAuth } from "../context/AuthContext";
 import AddNotAllowed from "../components/AddNotAllowed";
+import OrbComponent from "../components/OrbAnimation";
+import { useAuth } from "../context/AuthContext";
 
-type Phase = "idle" | "recording" | "processing" | "review" | "failed" | "no-text";
+type Phase =
+  | "idle"
+  | "recording"
+  | "processing"
+  | "review"
+  | "failed"
+  | "no-text";
+
+/* Keyframes injected once — bars breathe via CSS only (no re-render ticks),
+   and result blocks get a soft enter animation instead of popping in. */
+const KEYFRAMES = `
+@keyframes vc-bar {
+  from { transform: scaleY(0.2); }
+  to   { transform: scaleY(var(--peak, 1)); }
+}
+@keyframes vc-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+`;
+
+const BAR_COUNT = 40;
 
 /**
- * Voice Capture screen.
+ * Voice Capture — immersive dark capture stage.
  *
- * Flow (per spec):
- *  idle → recording (live partial captions) → processing (LLM parse via API)
- *       → review (editable entities, approve now or approve later)
- * A failed parse/upload lands on `failed` with a retry button — nothing lost.
+ * idle → recording (live transcript cross-fades over the prompt) →
+ * processing (Siri-style orb) → review.
+ *
+ * The stage (prompt / transcript / orb + mic + waves) stays mounted across the
+ * capture flow so everything cross-fades instead of popping. Result states
+ * (review / failed / no-text) replace it with a soft enter animation.
+ * No BottomNav here — the back button doubles as "cancel without processing".
  */
 function VoiceCapture() {
   const nav = useNavigate();
-  const { currentGroup, canWrite } = useAuth();
+  const { currentGroup, canWrite: isWriter } = useAuth();
   const currencyCode = currentGroup?.currency;
   const {
-    supported,
-    listening,
+    supported: speechSupported,
     transcript,
     interimTranscript,
     error,
@@ -45,8 +73,32 @@ function VoiceCapture() {
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [lastTranscript, setLastTranscript] = useState("");
+  const [elapsed, setElapsed] = useState(0);
 
-  // Map a persisted Expense (from /voice-entry) into an editable ParsedEntity.
+  const active = phase === "recording";
+  const processing = phase === "processing";
+  const stageOn =
+    isWriter && (phase === "idle" || phase === "recording" || phase === "processing");
+
+  /* Recording timer — drives the mm:ss caption; cleans itself up. */
+  useEffect(() => {
+    if (phase !== "recording") return;
+    setElapsed(0);
+    const id = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [phase]);
+
+  /* Per-bar motion profile, generated once. */
+  const bars = useMemo(
+    () =>
+      Array.from({ length: BAR_COUNT }, (_, i) => ({
+        peak: 0.5 + ((i * 37) % 50) / 100, // 0.5 … 1.0
+        delay: ((i * 13) % 70) / 100, // 0 … 0.7s
+        dur: 0.6 + ((i * 7) % 40) / 100, // 0.6 … 1.0s
+      })),
+    []
+  );
+
   const toParsedEntity = (e: Expense): ParsedEntity => ({
     id: e.id,
     title: e.title,
@@ -59,6 +111,8 @@ function VoiceCapture() {
     reset();
     setEntities([]);
     setApprovedIds(new Set());
+    setApprovingIds(new Set());
+    setRemovingIds(new Set());
     setPhase("recording");
     start();
   }, [reset, start]);
@@ -79,6 +133,7 @@ function VoiceCapture() {
         setPhase("failed");
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [voiceEntry]
   );
 
@@ -92,6 +147,14 @@ function VoiceCapture() {
     void runParse(text);
   }, [stop, transcript, runParse]);
 
+  /** Back button while recording → cancel without processing anything. */
+  const cancelRecording = useCallback(() => {
+    stop();
+    reset();
+    setLastTranscript("");
+    setPhase("idle");
+  }, [stop, reset]);
+
   const retry = useCallback(() => {
     if (lastTranscript) {
       void runParse(lastTranscript);
@@ -100,13 +163,19 @@ function VoiceCapture() {
     }
   }, [lastTranscript, runParse, beginRecording]);
 
+  const handleMic = useCallback(() => {
+    if (!isWriter || !speechSupported || processing) return;
+    if (active) finishRecording();
+    else beginRecording();
+  }, [isWriter, speechSupported, processing, active, finishRecording, beginRecording]);
+
   const updateEntity = useCallback((updated: ParsedEntity) => {
     setEntities((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
   }, []);
 
   const approveEntity = useCallback(
     async (entity: ParsedEntity) => {
-      setApprovingIds((prev)=> new Set(prev).add(entity.id)) 
+      setApprovingIds((prev) => new Set(prev).add(entity.id));
       try {
         await approveExpense.mutateAsync({
           id: entity.id,
@@ -116,13 +185,13 @@ function VoiceCapture() {
         });
         setApprovedIds((prev) => new Set(prev).add(entity.id));
       } catch {
-        // Leave it un-approved so the user can retry.
+        /* leave un-approved so the user can retry */
       } finally {
-        setApprovingIds((prev)=> {
-          const updated = new Set(prev)
-          updated.delete(entity.id)
-          return updated
-        }) 
+        setApprovingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(entity.id);
+          return next;
+        });
       }
     },
     [approveExpense]
@@ -130,18 +199,18 @@ function VoiceCapture() {
 
   const deleteEntity = useCallback(
     async (entity: ParsedEntity) => {
-      setRemovingIds((prev)=> new Set(prev).add(entity.id)) 
+      setRemovingIds((prev) => new Set(prev).add(entity.id));
       try {
         await deleteExpense.mutateAsync(entity.id);
-        setEntities((prev) => prev.filter(e=>e.id!==entity.id));
+        setEntities((prev) => prev.filter((e) => e.id !== entity.id));
       } catch {
-        // Leave it un-approved so the user can retry.
+        /* keep it visible so the user can retry */
       } finally {
-        setRemovingIds((prev)=> {
-          const updated = new Set(prev)
-          updated.delete(entity.id)
-          return updated
-        }) 
+        setRemovingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(entity.id);
+          return next;
+        });
       }
     },
     [deleteExpense]
@@ -152,249 +221,322 @@ function VoiceCapture() {
     [entities, approvedIds]
   );
 
+  const fmt = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  const caption = !speechSupported
+    ? "Voice input isn't supported in this browser"
+    : phase === "recording"
+      ? `Listening · ${fmt(elapsed)}`
+      : processing
+        ? "Making sense of it…"
+        : "Tap to speak";
+
+  /* Layer visibility — all three stay mounted, only opacity/transform change. */
+  const showPrompt = phase === "idle";
+  const showLive = phase === "recording";
+
   return (
-    <div className="min-h-full flex-col items-center flex bg-gray-50 pb-28">
-      {/* Header */}
-      <header className="sticky top-0 z-10 self-stretch flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => nav(-1)}
-            aria-label="Back"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <h1 className="text-lg font-semibold">Voice capture</h1>
-        </div>
-        <GroupSelector dir="left" />
+    <div className="flex min-h-svh flex-col bg-[#161616] text-white">
+      <style>{KEYFRAMES}</style>
+
+      {/* Header — back button + app logo, nothing else (no GroupSelector/nav) */}
+      <header className="sticky top-0 z-20 flex items-center gap-3 bg-[#161616]/80 px-4 py-4 backdrop-blur">
+        <button
+          onClick={() => {
+            if (active) cancelRecording();
+            else nav(-1);
+          }}
+          aria-label={active ? "Cancel recording" : "Back"}
+          className="grid h-9 w-9 place-items-center rounded-full bg-white/8 text-white/90 ring-1 ring-white/10 transition-colors hover:bg-white/15"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <img src="/default-monochrome.svg" alt="WhisperTrack" className="h-6 opacity-90" />
       </header>
 
-      <main className="max-w-md w-full px-4 grow flex flex-col justify-center">
-        {!supported && (
-          <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-100">
-            Speech recognition isn't supported in this browser. Try Chrome, or
-            use “Type manually” instead.
+      <main className="relative mx-auto flex w-full max-w-md flex-1 px-4">
+        {!speechSupported && isWriter && (
+          <p className="absolute inset-x-4 top-2 z-20 rounded-xl bg-amber-400/10 p-3 text-xs text-amber-200 ring-1 ring-amber-300/20">
+            Speech recognition isn't supported here — try Chrome, or use “Type manually”.
           </p>
         )}
-        
-        {!canWrite&&
-          <AddNotAllowed/>
-        }
 
-        {/* IDLE */}
-        {phase === "idle" && canWrite && (
-          <div className="mt-16 flex flex-col items-center">
-            <p className="mb-10 text-center text-sm text-gray-500">
-              Tap the mic and say what you bought.
-              <br />
-              e.g. “lemons and potatoes for $1.50, and some milk”
-            </p>
-            <RecordButton listening={false} onClick={beginRecording} disabled={!supported} />
-            <span className="mt-4 text-xs text-gray-400">Tap to start</span>
-          </div>
-        )}
-
-        {/* RECORDING */}
-        {phase === "recording" && canWrite && (
-          <div className="mt-10 flex flex-col items-center">
-            <div className="min-h-28 w-full rounded-2xl bg-[#1f1f1f] p-5 text-center">
-              {transcript ? (
-                <p className="text-base leading-relaxed text-gray-200">
-                  {transcript.replace(interimTranscript, "")}
-                  <span className="text-gray-400">{interimTranscript}</span>
-                </p>
-              ) : (
-                <p className="text-sm text-gray-400">Listening…</p>
-              )}
-            </div>
-
-            <div className="mt-10 flex flex-col items-center">
-              <RecordButton listening={listening} onClick={finishRecording} />
-              <span className="mt-4 flex items-center gap-2 text-xs font-medium text-gray-500">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                Recording — tap to stop
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* FAILED */}
-        {phase === "no-text" && canWrite && (
-          <div className="mt-24 flex flex-col items-center">
-            <div className="flex items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-100">
-              <RecordButton
-                listening={false}
-                failed
-                onClick={retry}
-                />
-            {/* <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-100"> */}
-            {/*   <RefreshCw size={22} /> */}
-            </div>
-            <p className="mt-5 text-sm font-medium text-gray-800">
-              No input detected
-            </p>
-            <p className="mt-1 max-w-xs text-center text-xs text-gray-400">
-              Try speaking again
-            </p>
-            {/* <button */}
-            {/*   onClick={retry} */}
-            {/*   className="mt-6 flex items-center gap-2 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white" */}
-            {/* > */}
-            {/*   <RefreshCw size={15} /> */}
-            {/*   Retry */}
-            {/* </button> */}
-          </div>
-        )}
-
-        {/* PROCESSING */}
-        {phase === "processing" && (
-          <div className="mt-24 flex flex-col items-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900" />
-            <p className="mt-6 text-sm font-medium text-gray-700">
-              Making sense of that…
-            </p>
-            <p className="mt-1 max-w-xs text-center text-xs text-gray-400">
-              “{lastTranscript}”
-            </p>
-          </div>
-        )}
-
-        {/* FAILED */}
-        {phase === "failed" && (
-          <div className="mt-24 flex flex-col items-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-100">
-              <RefreshCw size={22} />
-            </div>
-            <p className="mt-5 text-sm font-medium text-gray-800">
-              {error ? `Couldn't capture that (${error}).` : "Something went wrong."}
-            </p>
-            <p className="mt-1 max-w-xs text-center text-xs text-gray-400">
-              Nothing was lost — you can try again.
-            </p>
-            <button
-              onClick={retry}
-              className="mt-6 flex items-center gap-2 rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white"
+        {/* ------------------------- capture stage ------------------------- */}
+        <section
+          aria-hidden={!stageOn}
+          className={`absolute inset-0 flex flex-col transition-all duration-300 ${
+            stageOn ? "opacity-100" : "pointer-events-none scale-[0.98] opacity-0"
+          }`}
+        >
+          {/* Center layers: prompt ↔ live transcript ↔ orb */}
+          <div className="relative flex-1">
+            {/* Prompt */}
+            <div
+              className={`absolute inset-0 flex flex-col items-center justify-center px-6 text-center transition-all duration-500 ${
+                showPrompt ? "opacity-100 delay-150" : "-translate-y-2 opacity-0"
+              }`}
             >
-              <RefreshCw size={15} />
-              Retry
+              <h1 className="text-3xl font-light tracking-tight text-white">
+                Whisper your expenses.
+              </h1>
+              <p className="mt-3 max-w-xs text-sm text-white/40">
+                Tap the mic, say it like you'd say it out loud.
+              </p>
+            </div>
+
+            {/* Live transcript */}
+            <div
+              className={`absolute inset-0 flex items-center justify-center px-2 transition-all duration-300 ${
+                showLive ? "opacity-100" : "translate-y-2 opacity-0"
+              }`}
+            >
+              <div className="min-h-32 w-full rounded-2xl bg-black/30 p-5 text-center ring-1 ring-white/5">
+                {transcript || interimTranscript ? (
+                  <p className="text-base leading-relaxed text-white/90">
+                    {interimTranscript
+                      ? transcript.replace(interimTranscript, "")
+                      : transcript}
+                    <span className="text-white/40">{interimTranscript}</span>
+                  </p>
+                ) : (
+                  <p className="pt-4 text-sm text-white/30">Listening…</p>
+                )}
+              </div>
+            </div>
+
+            {/* Processing orb */}
+            <div
+              className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${
+                processing ? "scale-100 opacity-100" : "scale-90 opacity-0"
+              }`}
+            >
+              <OrbComponent size="128px" animationDuration={10} />
+            </div>
+          </div>
+
+          {/* Bottom controls */}
+          <div className="flex flex-col items-center gap-3 pb-16">
+            <button
+              type="button"
+              onClick={handleMic}
+              disabled={!speechSupported || !isWriter}
+              aria-label={active ? "Stop and parse" : "Start recording"}
+              className="relative grid h-16 w-16 place-items-center rounded-2xl transition-colors disabled:opacity-40"
+            >
+              {/* spinning square (recording) */}
+              <span
+                className={`absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 animate-spin rounded-sm bg-white transition-all duration-200 ${
+                  active ? "scale-100 opacity-100" : "scale-50 opacity-0"
+                }`}
+                style={{ animationDuration: "3s" }}
+              />
+              {/* mic pill (idle) */}
+              <span
+                className={`grid h-12 w-12 place-items-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/40 transition-all duration-200 hover:scale-105 ${
+                  active ? "scale-50 opacity-0" : "scale-100 opacity-100"
+                }`}
+              >
+                <Mic className="h-6 w-6" />
+              </span>
             </button>
+
+            {/* Sound waves */}
+            <div className="flex h-5 w-64 items-center justify-center gap-[3px]">
+              {bars.map((b, i) => (
+                <span
+                  key={i}
+                  className={`w-[3px] rounded-full transition-colors duration-300 ${
+                    active ? "bg-white/70" : "bg-white/15"
+                  }`}
+                  style={{
+                    height: "100%",
+                    transformOrigin: "center",
+                    ...(active
+                      ? {
+                          animation: `vc-bar ${b.dur}s ease-in-out ${b.delay}s infinite alternate`,
+                          ["--peak" as string]: b.peak,
+                        }
+                      : { transform: "scaleY(0.18)" }),
+                  }}
+                />
+              ))}
+            </div>
+
+            <p className="h-4 text-xs text-white/50">{caption}</p>
+          </div>
+        </section>
+
+        {/* ------------------------ readonly notice ----------------------- */}
+        {!isWriter && (
+          <div className="flex flex-1 items-center">
+            <AddNotAllowed />
           </div>
         )}
 
-        {/* REVIEW */}
-        {(phase === "review") &&(
-          pending.length>0? (
-          <div className="mt-6">
-            <div className="mb-4 flex items-center justify-between">
+        {/* -------------------- no input detected ------------------------- */}
+        {phase === "no-text" && (
+          <ResultBlock
+            icon={<X size={26} />}
+            tone="amber"
+            title="No input detected"
+            subtitle="We didn't catch that — try speaking a little louder."
+          >
+            <button
+              onClick={beginRecording}
+              className="mt-6 flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+            >
+              <Mic size={15} />
+              Try again
+            </button>
+          </ResultBlock>
+        )}
+
+        {/* ---------------------- processing failure ---------------------- */}
+        {phase === "failed" && (
+          <ResultBlock
+            icon={<RefreshCw size={24} />}
+            tone="red"
+            title="Couldn't process that"
+            subtitle={
+              error
+                ? `Something went wrong (${error}). Nothing was lost.`
+                : "Something went wrong on our side. Nothing was lost."
+            }
+          >
+            <div className="mt-6 flex items-center gap-3">
+              {lastTranscript && (
+                <button
+                  onClick={retry}
+                  className="flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+                >
+                  <RefreshCw size={14} />
+                  Retry parsing
+                </button>
+              )}
+              <button
+                onClick={beginRecording}
+                className="flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white/90 ring-1 ring-white/10 transition-colors hover:bg-white/20"
+              >
+                <Mic size={14} />
+                Record again
+              </button>
+            </div>
+          </ResultBlock>
+        )}
+
+        {/* ----------------------------- review --------------------------- */}
+        {phase === "review" && pending.length > 0 && (
+          <div
+            className="flex w-full flex-col"
+            style={{ animation: "vc-in 0.3s ease-out both" }}
+          >
+            <div className="mb-4 flex items-center justify-between pt-2">
               <div>
-                <h2 className="text-base font-semibold text-gray-900">
-                  Review items
-                </h2>
-                <p className="text-xs text-gray-400">
+                <h2 className="text-base font-semibold text-white">Review items</h2>
+                <p className="text-xs text-white/40">
                   {entities.length} item{entities.length === 1 ? "" : "s"} parsed
-                  {pending.length > 0 && ` · ${pending.length} to review`}
+                  {" · "}
+                  {pending.length} to review
                 </p>
               </div>
               <button
                 onClick={beginRecording}
-                className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-gray-600 ring-1 ring-gray-200"
+                className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 ring-1 ring-white/10 transition-colors hover:bg-white/20"
               >
                 <Mic size={13} />
                 Redo
               </button>
             </div>
 
-            {/* Original transcript reference */}
-            <details className="mb-4 rounded-xl bg-white p-3 text-xs text-gray-500 border border-[#d3d3d3]">
-              <summary className="cursor-pointer font-medium text-gray-600">
+            <details className="mb-4 rounded-xl bg-white/5 p-3 text-xs text-white/50 ring-1 ring-white/10">
+              <summary className="cursor-pointer font-medium text-white/70">
                 View original transcript
               </summary>
               <p className="mt-2 leading-relaxed">{lastTranscript}</p>
             </details>
 
-            <div className="space-y-3">
-              {entities.filter(e=>e.id).map((entity) => (
-                <EntityCard
-                  key={entity.id}
-                  entity={entity}
-                  isApproving={approvingIds.has(entity.id)}
-                  isRemoving={removingIds.has(entity.id)}
-                  categories={categories}
-                  currencyCode={currencyCode}
-                  onChange={updateEntity}
-                  onApprove={approveEntity}
-                  onRemove={deleteEntity}
-                  approved={approvedIds.has(entity.id)}
-                />
-              ))}
+            <div className="-mx-4 flex-1 space-y-3 overflow-y-auto px-4 pb-4">
+              {entities
+                .filter((e) => e.id)
+                .map((entity) => (
+                  <EntityCard
+                    key={entity.id}
+                    entity={entity}
+                    isApproving={approvingIds.has(entity.id)}
+                    isRemoving={removingIds.has(entity.id)}
+                    categories={categories}
+                    currencyCode={currencyCode}
+                    onChange={updateEntity}
+                    onApprove={approveEntity}
+                    onRemove={deleteEntity}
+                    approved={approvedIds.has(entity.id)}
+                  />
+                ))}
             </div>
 
-            {/* Approve later — sends everything to the queue as pending */}
             <button
               onClick={() => nav("/")}
-              className="mt-6 w-full rounded-2xl border border-[#d3d3d3] bg-white py-3 text-sm font-medium text-gray-600"
+              className="mb-6 mt-4 w-full rounded-2xl bg-white/5 py-3 text-sm font-medium text-white/70 ring-1 ring-white/10 transition-colors hover:bg-white/10"
             >
-              {pending.length > 0 ? "Approve later" : "Done"}
+              Approve later
             </button>
           </div>
-          )
-          :
-          (
-          <div className="mt-20 flex flex-col items-center text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 ring-1 ring-emerald-100">
-              <CheckCircle2 size={30} />
-            </div>
-            <p className="mt-5 text-base font-medium text-gray-800">
-              You're all caught up
-            </p>
-            <p className="mt-1 max-w-xs text-sm text-gray-500">
-              No expenses waiting for review. New voice entries will show up
-              here.
-            </p>
+        )}
+
+        {/* ------------------------ all caught up ------------------------- */}
+        {phase === "review" && pending.length === 0 && entities.length > 0 && (
+          <ResultBlock
+            icon={<CheckCircle2 size={28} />}
+            tone="emerald"
+            title="You're all caught up"
+            subtitle="Every parsed item was saved. New entries will show up here."
+          >
             <button
               onClick={() => nav("/expenses")}
-              className="mt-6 rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white"
+              className="mt-6 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
             >
               View all expenses
             </button>
-          </div>)
+          </ResultBlock>
         )}
       </main>
     </div>
   );
 }
 
-function RecordButton({
-  listening,
-  onClick,
-  disabled,
-  failed
+/* Shared centered result layout with soft enter animation. */
+function ResultBlock({
+  icon,
+  title,
+  subtitle,
+  tone,
+  children,
 }: {
-  listening: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-  failed?: boolean;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  tone: "amber" | "red" | "emerald";
+  children?: React.ReactNode;
 }) {
+  const tones: Record<typeof tone, string> = {
+    amber: "bg-amber-400/10 text-amber-300 ring-amber-300/20",
+    red: "bg-red-400/10 text-red-300 ring-red-300/20",
+    emerald: "bg-emerald-400/10 text-emerald-300 ring-emerald-300/20",
+  };
+
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={listening ? "Stop recording" : "Start recording"}
-      className="relative cursor-pointer flex hover:scale-102 duration-200 h-24 w-24 items-center justify-center rounded-full text-white transition-transform active:scale-95 disabled:opacity-40"
-      style={{
-        background: failed? '#ffc107': listening ? "#ef4444" : "#111827",
-        boxShadow: failed ? 
-          "0 0 0 8px #ffc10744"
-          : listening ? 
-            "0 0 0 8px rgba(239,68,68,0.15)"
-          : "0 8px 30px rgba(17,24,39,0.35)",
-      }}
+    <div
+      className="flex flex-1 flex-col items-center justify-center text-center"
+      style={{ animation: "vc-in 0.3s ease-out both" }}
     >
-      {listening && (
-        <span className="absolute inset-0 animate-ping rounded-full bg-red-500/30" />
-      )}
-      {listening ? <Square size={30} fill="white" /> : <Mic size={34} />}
-    </button>
+      <div className={`grid h-16 w-16 place-items-center rounded-full ring-1 ${tones[tone]}`}>
+        {icon}
+      </div>
+      <p className="mt-5 text-base font-medium text-white">{title}</p>
+      <p className="mt-1 max-w-xs text-sm text-white/45">{subtitle}</p>
+      {children}
+    </div>
   );
 }
 

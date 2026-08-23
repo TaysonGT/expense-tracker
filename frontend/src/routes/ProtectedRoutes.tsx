@@ -35,8 +35,10 @@ const ProtectedRoutes = () => {
   return (
     <div className="relative h-svh w-screen overflow-x-hidden overflow-y-auto">
       <Outlet/>
-      <BottomNav
-      />
+      {/* Immersive capture page — no bottom nav */}
+      {!location.pathname.startsWith("/voice") && (
+        <BottomNav />
+      )}
     </div>
   )
 }
