@@ -7,6 +7,7 @@ import type { Expense, ParsedEntity } from "../types";
 import EntityCard from "../components/EntityCard";
 import GroupSelector from "../components/GroupSelector";
 import { useAuth } from "../context/AuthContext";
+import AddNotAllowed from "../components/AddNotAllowed";
 
 type Phase = "idle" | "recording" | "processing" | "review" | "failed" | "no-text";
 
@@ -20,7 +21,7 @@ type Phase = "idle" | "recording" | "processing" | "review" | "failed" | "no-tex
  */
 function VoiceCapture() {
   const nav = useNavigate();
-  const { currentGroup } = useAuth();
+  const { currentGroup, canWrite } = useAuth();
   const currencyCode = currentGroup?.currency;
   const {
     supported,
@@ -175,9 +176,13 @@ function VoiceCapture() {
             use “Type manually” instead.
           </p>
         )}
+        
+        {!canWrite&&
+          <AddNotAllowed/>
+        }
 
         {/* IDLE */}
-        {phase === "idle" && (
+        {phase === "idle" && canWrite && (
           <div className="mt-16 flex flex-col items-center">
             <p className="mb-10 text-center text-sm text-gray-500">
               Tap the mic and say what you bought.
@@ -190,7 +195,7 @@ function VoiceCapture() {
         )}
 
         {/* RECORDING */}
-        {phase === "recording" && (
+        {phase === "recording" && canWrite && (
           <div className="mt-10 flex flex-col items-center">
             <div className="min-h-28 w-full rounded-2xl bg-[#1f1f1f] p-5 text-center">
               {transcript ? (
@@ -214,7 +219,7 @@ function VoiceCapture() {
         )}
 
         {/* FAILED */}
-        {phase === "no-text" && (
+        {phase === "no-text" && canWrite && (
           <div className="mt-24 flex flex-col items-center">
             <div className="flex items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-100">
               <RecordButton

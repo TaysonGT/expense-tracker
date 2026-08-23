@@ -26,6 +26,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   hasActiveGroup: boolean;
   isLoading: boolean;
+  canWrite: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       currentRole,
       isAdmin: currentRole === "admin",
       isAuthenticated: !!currentUser,
+      canWrite: !!currentRole&&['admin','read_write'].includes(currentRole),
       hasActiveGroup: activeGroupId != null,
       // Loading until the session resolves; and, when authed with an active
       // group, until the groups list is available to resolve the group object.

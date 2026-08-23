@@ -1,9 +1,10 @@
-import { Mic, PenLine } from "lucide-react";
+import { BadgeInfo, FaceAngry, FaceSlightlyFrowning, Mic, PenLine, ShieldOff } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface AddMenuProps {
   open: boolean;
   onClose: () => void;
+  canWrite: boolean
 }
 
 /**
@@ -14,7 +15,7 @@ interface AddMenuProps {
  * visibility flag that lags `open` by one frame on close — so the choices can
  * animate upward/fade out instead of vanishing instantly.
  */
-function AddMenu({ open, onClose }: AddMenuProps) {
+function AddMenu({ open, onClose, canWrite }: AddMenuProps) {
   const nav = useNavigate();
 
   const go = (path: string) => {
@@ -33,27 +34,40 @@ function AddMenu({ open, onClose }: AddMenuProps) {
       <button
         aria-label="Close menu"
         onClick={onClose}
-        className={`${backdrop} ${!open ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+        className={`${backdrop} ${!open ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"} cursor-default!`}
       />
 
       {/* Vertical choices, anchored above the center button */}
       <div
         className={`${panel} ${!open ? "translate-y-4 opacity-0 pointer-events-none" : "translate-y-0 opacity-100 pointer-events-auto"}`}
       >
-        <MenuChoice
-          icon={<Mic size={20} />}
-          title="Record voice"
-          subtitle="Speak your expenses"
-          accent="#00c48c"
-          onClick={() => go("/voice")}
-        />
-        <MenuChoice
-          icon={<PenLine size={20} />}
-          title="Type manually"
-          subtitle="Fill in the details"
-          accent="#111825"
-          onClick={() => go("/manual")}
-        />
+        {
+          canWrite?
+            <>
+              <MenuChoice
+                icon={<Mic size={20} />}
+                title="Record voice"
+                subtitle="Speak your expenses"
+                accent="#00c48c"
+                onClick={() => go("/voice")}
+              />
+              <MenuChoice
+                icon={<PenLine size={20} />}
+                title="Type manually"
+                subtitle="Fill in the details"
+                accent="#111825"
+                onClick={() => go("/manual")}
+              />
+            </>
+          :
+          (
+            <MenuChoice
+              icon={<ShieldOff size={20} />}
+              title="Not Allowed"
+              subtitle="You don't have the permissions to add expenses to this group"
+              accent="#ffaa22"
+            />
+        )}
       </div>
     </>
   );
@@ -70,12 +84,12 @@ function MenuChoice({
   title: string;
   subtitle: string;
   accent: string;
-  onClick: () => void;
+  onClick?: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 text-left shadow-lg ring-1 ring-gray-100 transition-transform active:scale-[0.98]"
+      className={`flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 text-left shadow-lg ring-1 ring-gray-100 transition-transform active:scale-[0.98] ${!onClick&&'cursor-not-allowed!'}`}
     >
       <span
         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white"

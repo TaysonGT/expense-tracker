@@ -2,6 +2,7 @@ import { House, Settings, User, Wallet } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import AddMenu from "./AddMenu";
+import { useAuth } from "../context/AuthContext";
 
 type Page = "home" | "expenses" | "profile" | "settings";
 
@@ -12,9 +13,11 @@ function BottomNav() {
   const isActive = (path: string)=> location.pathname.split('/')[1] === path
   const onNavigate=(p:Page)=>nav(p)
   const [addMenuOpen, setAddMenuOpen]= useState(false)
+  const {canWrite} = useAuth()
+
   return (
     <>
-    <AddMenu open={addMenuOpen} onClose={() => setAddMenuOpen(false)} />
+    <AddMenu canWrite={canWrite} open={addMenuOpen} onClose={() => setAddMenuOpen(false)} />
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-100 flex items-end justify-around px-2 pt-3 pb-6 z-20"
       style={{ boxShadow: "0 -1px 0 0 #e5e7eb, 0 -8px 24px rgba(0,0,0,0.04)" }}

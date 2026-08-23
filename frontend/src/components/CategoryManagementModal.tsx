@@ -7,6 +7,7 @@ import {
   useUpdateCategory,
 } from "../lib/queries";
 import type { Category } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 interface CategoryManagementModalProps {
   open: boolean;
@@ -29,6 +30,7 @@ export default function CategoryManagementModal({
 }: CategoryManagementModalProps) {
   const { data: categories = [] } = useCategories();
   const createCategory = useCreateCategory();
+  const { canWrite } = useAuth()
 
   const [newName, setNewName] = useState("");
 
@@ -79,31 +81,33 @@ export default function CategoryManagementModal({
         </div>
 
         {/* Add input */}
-        <div className="px-5 pt-4">
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-gray-900">
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void handleAdd();
-              }}
-              placeholder="Add a category…"
-              className="w-full bg-transparent py-2.5 text-sm focus:outline-none"
-            />
-            <button
-              onClick={() => void handleAdd()}
-              disabled={!newName.trim() || createCategory.isPending}
-              aria-label="Add category"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
-              style={{ background: "#00c48c" }}
-            >
-              <Plus size={16} />
-            </button>
+        {canWrite&&
+          <div className="px-5 pt-4 mb-4">
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-gray-900">
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleAdd();
+                }}
+                placeholder="Add a category…"
+                className="w-full bg-transparent py-2.5 text-sm focus:outline-none"
+              />
+              <button
+                onClick={() => void handleAdd()}
+                disabled={!newName.trim() || createCategory.isPending}
+                aria-label="Add category"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
+                style={{ background: "#00c48c" }}
+              >
+                <Plus size={16} />
+              </button>
+            </div>
           </div>
-        </div>
+        }
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto grow px-5 py-4">
+        <div className="flex-1 overflow-y-auto grow px-5 pb-4">
           {categories.length === 0 ? (
             <p className="rounded-xl bg-white p-4 text-center text-sm text-gray-400 ring-1 ring-gray-100">
               No categories yet — add your first above.
@@ -127,6 +131,8 @@ export default function CategoryManagementModal({
 function CategoryRow({ category }: { category: Category }) {
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
+  
+  const { canWrite } = useAuth()
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
@@ -138,6 +144,7 @@ function CategoryRow({ category }: { category: Category }) {
   }, [category.name]);
 
   const commitRename = async () => {
+    if(!canWrite) return
     const trimmed = name.trim();
     if (!trimmed || trimmed === category.name) {
       setName(category.name);
@@ -174,16 +181,28 @@ function CategoryRow({ category }: { category: Category }) {
         </span>
       )}
 
-      {editing ? (
-        <button
-          onClick={() => void commitRename()}
-          disabled={updateCategory.isPending}
-          aria-label="Save name"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-40"
-          style={{ background: "#00c48c" }}
-        >
-          <Check size={15} />
-        </button>
+      {!canWrite? ''
+        : editing ? (
+        <div className="flex gap-1">
+          <button
+            onClick={() => void setEditing(false)}
+            disabled={updateCategory.isPending}
+            aria-label="Save name"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-40"
+            style={{ background: "#ee5555" }}
+          >
+            <X size={15} />
+          </button>
+          <button
+            onClick={() => void commitRename()}
+            disabled={updateCategory.isPending}
+            aria-label="Save name"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-40"
+            style={{ background: "#00c48c" }}
+          >
+            <Check size={15} />
+          </button>
+        </div>
       ) : confirmingDelete ? (
         <>
           <button

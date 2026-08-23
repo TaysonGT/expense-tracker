@@ -94,7 +94,7 @@ export default function Profile() {
                 <li>
                   <button
                     onClick={() => nav("/group")}
-                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
+                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm border border-[#989898] transition-colors hover:bg-gray-50"
                   >
                     <span
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
@@ -164,7 +164,7 @@ function GroupSwitchItem({ group }: { group: Group }) {
     <li>
       <button
         onClick={() => switchToGroup(group)}
-        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm ring-1 ring-gray-100 transition-colors hover:bg-gray-50"
+        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm border border-[#e9e9e9] transition-colors hover:bg-gray-50"
       >
         <span
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
@@ -197,7 +197,7 @@ function ActionItem({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 text-left ring-1 ring-gray-100 transition-colors hover:bg-gray-50"
+      className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 text-left border border-[#e9e9e9] transition-colors hover:bg-gray-50"
     >
       <span className="flex items-center gap-3">
         <span
