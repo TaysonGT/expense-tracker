@@ -7,6 +7,7 @@ import {
   type GoogleCredentialResponse,
   type FacebookAuthResponse,
 } from "../lib/oauthClient";
+import { useActionOverlay } from "../components/ActionOverlay";
 
 type AuthMode = "login" | "register";
 
@@ -41,14 +42,30 @@ export default function Auth() {
   const facebookAppId = import.meta.env.VITE_FACEBOOK_APP_ID;
   const anyProviderConfigured = !!googleClientId || !!facebookAppId;
 
+  const { runWithOverlay } = useActionOverlay();
+
   const onToken = useCallback(
     (provider: "google" | "facebook", token: string) => {
-      setError(null);
-      login.mutate(
-        { provider, token },
+      runWithOverlay(
+        async () => {
+          setError(null);
+          login.mutate(
+            { provider, token },
+            {
+              onSuccess: () => nav("/", { replace: true }),
+              onError: () => setError("Sign-in failed. Please try again."),
+            }
+          );
+        },
         {
-          onSuccess: () => nav("/", { replace: true }),
-          onError: () => setError("Sign-in failed. Please try again."),
+          loadingTitle: "Signing in…",
+          loadingMessage: `Signing in using ${provider}`,
+          successTitle: "Signed In",
+          successMessage: `Successfully signed in using ${provider}`,
+          errorTitle: "Sign in failed",
+          errorMessage: "Could not complete OAuth connection. Please try again.",
+          autoCloseSuccess: true,
+          autoCloseDelay: 1200,
         }
       );
     },
@@ -104,7 +121,7 @@ export default function Auth() {
   }, [facebookAppId, onToken]);
 
   // --- Form handlers ---
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     register.mutate(
@@ -127,7 +144,7 @@ export default function Auth() {
     );
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     loginPwd.mutate(
@@ -152,7 +169,7 @@ export default function Auth() {
     );
   };
 
-  const isSubmitting = register.isPending || loginPwd.isPending;
+  const isSubmitting = register.isPending || loginPwd.isPending || login.isPending;
   const toggleMode = () => {
     setMode((m) => (m === "login" ? "register" : "login"));
     setError(null);
@@ -177,7 +194,7 @@ export default function Auth() {
           {/* OAuth buttons */}
           <div className="space-y-3">
             {googleClientId ? (
-              <div ref={googleBtnRef} className="flex justify-center" />
+              <div ref={googleBtnRef} className={`flex justify-center ${isSubmitting&&'pointer-events-none'}`} />
             ) : (
               <ProviderButton
                 label="Continue with Google"
@@ -187,16 +204,18 @@ export default function Auth() {
                 disabled
               />
             )}
-            <ProviderButton
-              label="Continue with Facebook"
-              onClick={handleFacebook}
-              disabled={!facebookAppId || login.isPending}
-              style={{
-                background: "#1877F2",
-                color: "#fff",
-                borderColor: "#1877F2",
-              }}
-            />
+            {facebookAppId && (
+              <ProviderButton
+                label="Continue with Facebook"
+                onClick={handleFacebook}
+                disabled={!facebookAppId || login.isPending}
+                style={{
+                  background: "#1877F2",
+                  color: "#fff",
+                  borderColor: "#1877F2",
+                }}
+              />)
+            }
           </div>
 
           {/* Divider */}
