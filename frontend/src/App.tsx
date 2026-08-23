@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router"
 import Home from "./pages/Home"
 import ProtectedRoutes from "./routes/ProtectedRoutes"
 import VoiceCapture from "./pages/VoiceCapture"
+import VoiceTest from "./pages/VoiceTest"
 import ManualAdd from "./pages/ManualAdd"
 import Expenses from "./pages/Expenses"
 import PendingExpenses from "./pages/PendingExpenses"
@@ -17,6 +18,7 @@ import RequireAuth from "./routes/RequireAuth"
 import { AuthProvider } from "./context/AuthContext"
 import { GroupSwitchProvider } from "./context/GroupSwitchContext"
 import { ActionOverlayProvider } from "./components/ActionOverlay"
+import { VolumeMeter } from "./pages/Test"
 
 const App = () => {
   return (
@@ -31,6 +33,12 @@ const App = () => {
                 <AuthGuard>
                   <Auth />
                 </AuthGuard>
+              }
+            />
+            <Route
+              path="/test"
+              element={
+                <VolumeMeter/>              
               }
             />
 
@@ -67,6 +75,7 @@ const App = () => {
               <Route path="settings" element={<SettingsPage />} />
               <Route path="group" element={<GroupManagement />} />
             </Route>
+            <Route path="/test-voice" element={<VoiceTest />} />
           </Routes>
         </ActionOverlayProvider>
         </GroupSwitchProvider>

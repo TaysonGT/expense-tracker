@@ -13,11 +13,13 @@
   --color-muted: #f4f4f5;
   --color-muted-foreground: #6b7280;
   --color-accent: #00c48c;
+  --color-accent-dark: #00b37b;
   --color-accent-light: #e6faf4;
   --color-amber: #f59e0b;
   --color-amber-light: #fef3c7;
   --color-border: #e5e7eb;
   --color-primary: #111827;
+  ----animate-glow-pulse: pulse 200ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 * {

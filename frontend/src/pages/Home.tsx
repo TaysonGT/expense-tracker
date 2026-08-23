@@ -265,7 +265,7 @@ function TotalSpendBox({
               letterSpacing: "-0.02em",
             }}
           >
-            {formatCurrency(totalToday*1000, currencyCode)}
+            {formatCurrency(totalToday, currencyCode)}
           </span>
         </div>
         <div className="mt-1 flex items-center gap-2">
