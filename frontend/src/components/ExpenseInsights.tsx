@@ -56,13 +56,13 @@ export default function ExpenseInsights({
         <div className="grid grid-cols-2 gap-2">
           <Skeleton className="h-18 rounded-2xl" />
           <Skeleton className="h-18 rounded-2xl" />
-          <Skeleton className="h-18 rounded-2xl" />
+          {/* <Skeleton className="h-18 rounded-2xl" /> */}
         </div>
         :
         <div className="grid grid-cols-2 gap-2">
           <SummaryCell label="Total" value={formatCurrency(stats.total, currencyCode)} />
           <SummaryCell label="Expenses" value={String(stats.count)} />
-          <SummaryCell label="Average" value={formatCurrency(stats.average, currencyCode)} />
+          {/* <SummaryCell label="Average" value={formatCurrency(stats.average, currencyCode)} /> */}
         </div>
       }
 
@@ -150,7 +150,7 @@ export default function ExpenseInsights({
 function SummaryCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-white p-3 text-center shadow-sm shadow-black/5 border border-[#d3d3d3]">
-      <div className="mono text-lg font-semibold text-gray-900">{value}</div>
+      <div className="font-[Oswald] text-xl font-semibold text-gray-900">{value}</div>
       <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-gray-400">
         {label}
       </div>

@@ -145,7 +145,7 @@ function DisplayRow({
 
         {/* Cost (prominent, right-aligned) or pending badge */}
         {expense.cost != null ? (
-          <span className="mono shrink-0 text-sm font-semibold text-gray-900">
+          <span className="font-[Oswald] shrink-0 text-lg font-semibold text-gray-900">
             {formatCurrency(expense.cost)}
           </span>
         ) : (
@@ -208,16 +208,7 @@ function OptionsMenu({
 }) {
   const anchorRect = anchor.getBoundingClientRect();
   const menuWidth = 180;
-  useEffect(()=>{
 
-    console.log({
-      // y: anchorRect.y, 
-      // windowHeight: window.innerHeight,
-      // availableSpace: window.innerHeight - anchorRect.y,
-      // neededHeight: anchorRect.height
-      anchorRect
-    })
-  },[])
   const availableSpace = window.innerHeight - anchorRect.top > 360
 
   return (

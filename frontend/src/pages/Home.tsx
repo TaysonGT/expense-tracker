@@ -238,7 +238,7 @@ function TotalSpendBox({
   currencyCode?: string;
 }) {
   return (
-    <div className="mt-5">
+    <div className="mt-4">
       <div
         className="relative overflow-hidden rounded-3xl p-6"
         style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)" }}
@@ -260,9 +260,8 @@ function TotalSpendBox({
         </p>
         <div className="mt-2 flex items-end gap-2">
           <span
-            className="text-5xl font-light text-white"
+            className="text-6xl text-white font-[Oswald]"
             style={{
-              fontFamily: "'DM Mono', monospace",
               letterSpacing: "-0.02em",
             }}
           >
