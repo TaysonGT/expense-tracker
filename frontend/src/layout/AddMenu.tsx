@@ -1,4 +1,4 @@
-import { BadgeInfo, FaceAngry, FaceSlightlyFrowning, Mic, PenLine, ShieldOff } from "lucide-react";
+import { Mic, PenLine, ShieldOff } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface AddMenuProps {

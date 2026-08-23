@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, Mic, Pencil, X, MoreVertical, Trash2, User, ExternalLink } from "lucide-react";
 import type { Category, Expense, User as UserType } from "../types";
 import { useUpdateExpense, useDeleteExpense } from "../lib/queries";
@@ -209,13 +209,13 @@ function OptionsMenu({
   const anchorRect = anchor.getBoundingClientRect();
   const menuWidth = 180;
 
-  const availableSpace = window.innerHeight - anchorRect.top > 360
+  const availableSpace = window.innerHeight - anchorRect.top > 320
 
   return (
     <div
       className="fixed z-50 rounded-xl bg-white shadow-lg border border-gray-100 py-1"
       style={{
-        ...availableSpace? {bottom: 'auto', top: anchorRect.bottom + 4} : {top: anchorRect.y - 150},
+        top: availableSpace? anchorRect.bottom + 4 : anchorRect.y - 150,
         left: Math.max(8, anchorRect.right - menuWidth),
         width: menuWidth,
       }}

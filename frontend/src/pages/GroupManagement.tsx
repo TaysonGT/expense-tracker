@@ -13,7 +13,7 @@ import {
   UserCog,
 } from "lucide-react";
 import currencies from "../data/currencies.json";
-import type { Currency, GroupMember, GroupRole } from "../types";
+import { GroupRoleEnum, type Currency, type GroupMember, type GroupRole } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useGroupMembers, useUpdateGroup, useUpdateMemberRole } from "../lib/authQueries";
 import { useActionOverlay } from "../components/ActionOverlay";
@@ -444,7 +444,7 @@ function RoleBadge({ role }: { role: GroupRole }) {
       {isAdmin && <Crown size={11} />}
       {isReadWrite && <UserCog size={11} />}
       {isReadonly && <Shield size={11} />}
-      {isAdmin ? "Admin" : isReadWrite ? "Read/Write" : "Read-only"}
+      {GroupRoleEnum[role]}
     </span>
   );
 }

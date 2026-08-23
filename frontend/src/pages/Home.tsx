@@ -99,7 +99,7 @@ export default function Home() {
               />
             ) : (
               <PopulatedState
-                recentExpenses={todayExpenses}
+                recentExpenses={recentExpenses}
                 pendingCount={pendingCount}
                 categories={categories}
                 onReview={() => nav("/pending")}
@@ -265,7 +265,7 @@ function TotalSpendBox({
               letterSpacing: "-0.02em",
             }}
           >
-            {formatCurrency(totalToday, currencyCode)}
+            {formatCurrency(totalToday*1000, currencyCode)}
           </span>
         </div>
         <div className="mt-1 flex items-center gap-2">

@@ -47,6 +47,11 @@ export interface ParsedEntity {
 /* ------------------------------ Auth / Groups ----------------------------- */
 
 export type GroupRole = "admin" | "read_write" | "readonly";
+export enum GroupRoleEnum {
+  "admin" = 'Admin',
+  "read_write" = 'Contributor',
+  "readonly" = 'Viewer'
+}
 
 export interface User {
   id: string;

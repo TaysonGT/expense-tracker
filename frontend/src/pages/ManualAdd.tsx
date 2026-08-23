@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Check, ShieldOff } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { useCategories, useCreateManualExpense } from "../lib/queries";
 import { currencySymbol } from "../lib/expenseFormat";
 import { useAuth } from "../context/AuthContext";

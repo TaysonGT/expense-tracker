@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLogout, useMyGroups } from "../lib/authQueries";
-import type { Group } from "../types";
+import { GroupRoleEnum, type Group } from "../types";
 import { useGroupSwitch } from "../context/GroupSwitchContext";
 
 /**
@@ -47,7 +47,7 @@ export default function Profile() {
       <main className="mx-auto max-w-md px-4">
         <div className="space-y-6">
           {/* Hero: avatar + name + group selector */}
-          <section className="flex flex-col items-center rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
+          <section className="flex flex-col items-center rounded-3xl bg-white p-8 text-center shadow-sm border border-[#e6e6e6]">
             <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-500 ring-2 ring-gray-200">
               {currentUser?.avatarUrl ? (
                 <img
@@ -67,7 +67,7 @@ export default function Profile() {
               </p>
               {currentGroup && (
                 <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                  {currentGroup.name} · {currentGroup.currency} · {currentGroup.role}
+                  {currentGroup.name} - {GroupRoleEnum[currentGroup.role]}
                 </p>
               )}
             </div>
