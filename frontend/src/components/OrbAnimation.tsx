@@ -4,8 +4,8 @@ function cn(...classes: Array<string | undefined | null | false>) {
   return classes.filter(Boolean).join(" ");
 }
 
-const SIZE_THRESHOLD_SMALL = 50;
-const SIZE_THRESHOLD_TINY = 30;
+const SIZE_THRESHOLD_SMALL = 70;
+const SIZE_THRESHOLD_TINY = 60;
 const SIZE_THRESHOLD_MEDIUM = 100;
 const BLUR_MULTIPLIER_SMALL = 0.008;
 const BLUR_MIN_SMALL = 1;
@@ -13,13 +13,13 @@ const BLUR_MULTIPLIER_LARGE = 0.015;
 const BLUR_MIN_LARGE = 4;
 const CONTRAST_MULTIPLIER_SMALL = 0.004;
 const CONTRAST_MIN_SMALL = 1.2;
-const CONTRAST_MULTIPLIER_LARGE = 0.008;
+const CONTRAST_MULTIPLIER_LARGE = 0.010;
 const CONTRAST_MIN_LARGE = 1.5;
 const DOT_SIZE_MULTIPLIER_SMALL = 0.004;
 const DOT_SIZE_MIN_SMALL = 0.05;
-const DOT_SIZE_MULTIPLIER_LARGE = 0.008;
+const DOT_SIZE_MULTIPLIER_LARGE = 0.012;
 const DOT_SIZE_MIN_LARGE = 0.1;
-const SHADOW_MULTIPLIER_SMALL = 0.004;
+const SHADOW_MULTIPLIER_SMALL = 0.006;
 const SHADOW_MIN_SMALL = 0.5;
 const SHADOW_MULTIPLIER_LARGE = 0.008;
 const SHADOW_MIN_LARGE = 2;
@@ -50,10 +50,10 @@ export const OrbComponent: React.FC<SiriOrbProps> = ({
   animationDuration = 20,
 }) => {
   const defaultColors = {
-    bg: "oklch(95% 0.02 264.695)",
-    c1: "oklch(75% 0.15 350)",
-    c2: "oklch(80% 0.12 200)",
-    c3: "oklch(78% 0.14 280)",
+    bg: "var(--warning)",
+    c1: "var(--accent)",
+    c2: "var(--link)",
+    c3: "#9999ff",
   };
 
   const finalColors = { ...defaultColors, ...colors };

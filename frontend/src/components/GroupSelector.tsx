@@ -61,7 +61,7 @@ export default function GroupSelector({ dir = 'right' }: GroupSelectorProps) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-xl bg-card px-3 py-2 text-sm font-medium text-primary border border-skeleton hover:bg-background"
+        className="flex items-center gap-2 rounded-xl bg-card px-3 py-2 text-sm font-medium text-primary border border-border hover:bg-background"
       >
         <span
           className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white border border-white"

@@ -154,7 +154,7 @@ function EntityCard({
             type="button"
             disabled={approved||isRemoving||isApproving}
             onClick={()=>onRemove(entity)}
-            className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40 ${isRemoving? 'bg-empty-subtitle' : approved ? "bg-[#9ca3af]" : "bg-danger"}`}
+            className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40 ${isRemoving||isApproving? 'bg-empty-subtitle' : approved ? "bg-[#9ca3af]" : "bg-danger"}`}
           >
             {isRemoving? '' :  <Trash2 size={14} /> }
 

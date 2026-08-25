@@ -111,7 +111,7 @@ function DisplayRow({
 
   return (
     <>
-      <li className="relative flex items-center gap-3 rounded-xl bg-accent-light p-4 py-2 border border-muted-foreground shadow-xs shadow-black/10">
+      <li className="relative flex items-center gap-3 rounded-xl bg-card p-4 py-2 border border-muted-foreground shadow-xs shadow-black/10">
         {/* Category color dot */}
         <span
           className="h-8 w-1.5 shrink-0 rounded-full"
@@ -301,7 +301,7 @@ function EditRow({
   };
 
   return (
-    <li className="rounded-xl bg-card p-4 shadow-sm border border-border">
+    <li className="rounded-xl bg-card p-4 shadow-sm border border-muted-foreground">
       <div className="space-y-3">
         <input
           value={title}
