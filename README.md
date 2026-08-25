@@ -33,15 +33,16 @@ A voice-powered expense tracking application for groups. Capture expenses instan
 
 ### User Experience
 - **Animated overlays** — Smooth loading/success/error feedback (GroupSwitchOverlay, ActionOverlay)
+- **Immersive voice capture** — Full-screen dark stage with live transcript, sound-wave animation, and an orb while the LLM parses; no bottom nav to keep you focused
+- **Theming** — Light/dark modes plus accent variants (blue/green), persisted across sessions; every screen is token-based so it re-skins instantly
 - **Responsive design** — Mobile-first, works on desktop and mobile
-- **Dark/light logos** — WhisperTrack branding with SVG assets
 - **Real-time updates** — TanStack Query for automatic cache invalidation
 
 ## Tech Stack
 
 ### Frontend
 - **React 19** + **Vite 8** + **TypeScript 7**
-- **Tailwind CSS 4** — Utility-first styling
+- **Tailwind CSS 4** — Utility-first styling backed by semantic CSS variables (light/dark + accent themes)
 - **React Router 8** — Client-side routing with guards
 - **TanStack Query** — Server state management & caching
 - **Axios** — HTTP client with interceptors
@@ -197,6 +198,20 @@ expense-tracker/
 - `POST /categories` — Create (read_write/admin)
 - `PATCH /categories/:id` — Update (read_write/admin)
 - `DELETE /categories/:id` — Delete (read_write/admin)
+
+## Theming
+
+The UI is fully themeable via CSS variables + Tailwind utilities:
+
+- **Light/dark** — `:root` holds the light palette, `.dark` the dark one.
+  `ThemeProvider` (React context) persists your choice to localStorage and
+  applies the class to `<html>`; headers automatically swap to the white logo
+  variant in dark mode.
+- **Accents** — `.theme-green` overrides the primary color (blue is the
+  default); more accents are one CSS block away.
+- **Tokens** — Screens never use hardcoded grays; they use semantic utilities
+  like `bg-background`, `bg-card`, `text-primary`, `text-empty-title`,
+  `border-border`, `text-danger`. Adding a theme = adding one CSS block.
 
 ## Development
 

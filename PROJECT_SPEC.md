@@ -225,17 +225,23 @@ JWT session cookie; data routes are scoped to the session's active group
    chart) computed client-side. Backed by PATCH /expenses/:id.
    Each row has a three-dot options menu (edit / delete / created by).
    *Implemented (routed at /expenses).*
-3. **Voice Capture** — record button, live partial captions while speaking
-   (dark recording panel), processing state, then an editable review of the
-   parsed entities (title/category/cost), approve per item or approve later.
+3. **Voice Capture** — immersive dark capture stage (no bottom nav; header is
+   back button + theme-aware logo). "Whisper your expenses." prompt, mic that
+   smoothly swaps to a spinning square while recording, CSS-animated sound
+   waves, live transcript (finalized + interim) fading in over the prompt,
+   and an orb animation during LLM processing — all as permanently-mounted
+   layers that cross-fade instead of popping.
    Distinct failure states:
-   - "No text detected" (amber) — nothing was transcribed/heard; retry button
-     re-runs recording.
-   - Processing failure — retry re-runs the last transcript.
+   - "No text detected" — nothing was transcribed/heard (or the parse came
+     back empty); Try again re-runs recording.
+   - Processing failure — Retry parsing (last transcript) + Record again.
+   Back button during recording cancels without processing anything.
+   Readonly members see AddNotAllowed instead of the stage.
+   In review, each `EntityCard` is a `<form>` so approving submits on Enter,
+   shows a per-card loading state while approving, and a removed state when
+   deleted (tracked via `removedIds` rather than immediate list filtering).
    After the last item is approved, the review screen flips to an
    "all caught up" state (success checkmark + "View all expenses").
-   Each `EntityCard` is a `<form>` so approving submits on Enter, and shows a
-   per-card loading state while an approval is in flight.
    *Implemented (routed at /voice).*
 4. **Approval Queue** — per pending item: editable title, editable/
    confirmable category, cost input if missing, "view original transcript"
@@ -304,12 +310,43 @@ or error state with custom message.
 ### Bottom navigation & header
 - Bottom nav: Home, Expenses, centered elevated (+) button (opens "Record voice"
 / "Type manually" popup — implemented with appear animation), Pending, Profile.
-- `GroupSelector` sits in page headers (Home/Profile/Expenses/Pending/
-  VoiceCapture): shows the active group's name (currency code is no longer
-  displayed next to it), opens a dropdown with My Groups (with the shared
-  switch overlay), a "Manage group" link to `/group`, and Create/Join
+  Hidden on the immersive `/voice` capture screen (opt-out in
+  `ProtectedRoutes` via pathname check).
+- `GroupSelector` sits in page headers (Home/Profile/Expenses/Pending):
+  shows the active group's name, opens a dropdown with My Groups (with the
+  shared switch overlay), a "Manage group" link to `/group`, and Create/Join
   buttons. Dropdown closes on outside click / Escape and animates with a
   scale + translate-y transition matching the `AddMenu` pattern.
+
+## Theming
+Full light/dark theming driven by CSS variables and Tailwind utilities.
+
+- **Tokens** (`frontend/src/index.css`): semantic variables — `--background`,
+  `--foreground`, `--card`, `--card-light`, `--card-hover`, `--muted`,
+  `--muted-foreground`, `--accent`, `--accent-dark`, `--accent-light`,
+  `--primary`, `--danger`, `--warning`, `--warning-secondary`, `--skeleton`,
+  `--border-primary`, `--border-light`, `--empty-title`, `--empty-subtitle`,
+  `--shadow-one`, `--link` — mapped into Tailwind utilities through `@theme`
+  (`bg-background`, `bg-card`, `text-primary`, `text-empty-title`,
+  `border-border`, `bg-skeleton`, `text-danger`, …). All screens use these
+  tokens instead of hardcoded grays/whites, so the whole app re-skins
+  automatically.
+- **Theme variants**: values defined under `:root` (light) and `.dark`.
+- **Accent variants**: `.theme-green` overrides `--primary`
+  (+ `.dark.theme-green`); more accents can be added the same way. The default
+  accent key is `theme-blue` (no override class needed).
+- **ThemeProvider** (`context/ThemeContext.tsx`): persists `theme` and
+  `accent` to localStorage (keys: `theme`, `accent`), applies both as classes
+  on `<html>`, and exposes `useTheme()` → `{ theme, toggleTheme, setAccent,
+  accent, logo }`. `logo` resolves per theme (`default-monochrome-white.svg`
+  in dark, `default-monochrome.svg` in light) so headers stay legible.
+- **Provider order** (App.tsx): `BrowserRouter > ThemeProvider > AuthProvider
+  > GroupSwitchProvider > ActionOverlayProvider > Routes`.
+
+### Test playgrounds (unauthenticated dev routes)
+- `/test` — `VolumeMeter` mic-level visualizer experiment.
+- `/test-voice` — `VoiceTest`, the design playground the production voice
+  capture stage was built from.
 
 ## Explicitly Out of Scope for v1
 - Analytics / spending insights beyond the client-computed Expenses insights.
@@ -354,7 +391,9 @@ Tracker with AI"). Branding is delivered as SVG logo assets in
   data fetching via axios + TanStack Query (QueryClientProvider in main.tsx).
   Currency symbols/digits come from `frontend/src/data/currencies.json`;
   `formatCurrency()` falls back to a plain 2-decimal number when no currency
-  code is given. UI styling uses thin `#e6e6e6` borders on list rows/cards.
+  code is given. Styling is token-based — semantic Tailwind utilities backed
+  by CSS variables (see **Theming**) with light/dark modes and accent
+  variants; no hardcoded grays in screens.
 - Backend: Node.js / Express 5 + TypeScript 5.7 (downgraded from TS 7 for
   deployment compatibility) + TypeORM
 - Database: Postgres (Supabase in dev, SSL-enabled) per schema above
