@@ -45,6 +45,8 @@ export default function PendingExpenses() {
   const deleteExpense = useDeleteExpense();
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
+  const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
 
   // Local editable copies keyed by id; seeded lazily from the query as needed.
   const [edits, setEdits] = useState<Record<string, ParsedEntity>>({});
@@ -74,6 +76,7 @@ export default function PendingExpenses() {
           delete next[entity.id];
           return next;
         });
+        setApprovedIds((prev) => new Set(prev).add(entity.id));
       } catch {
         // Leave it in place so the user can retry.
       } finally {
@@ -99,6 +102,7 @@ export default function PendingExpenses() {
           delete next[entity.id];
           return next;
         });
+        setRemovedIds((prev) => new Set(prev).add(entity.id));
       } catch {
         // Leave it in place so the user can retry.
       } finally {
@@ -185,7 +189,9 @@ export default function PendingExpenses() {
               filed.
             </p>
             <div className="space-y-3">
-              {pending.map((e) => (
+              {pending
+                .filter(e=>!removedIds.has(e.id)&&!approvedIds.has(e.id))
+                .map((e) => (
                 <EntityCard
                   key={e.id}
                   entity={entityFor(e)}

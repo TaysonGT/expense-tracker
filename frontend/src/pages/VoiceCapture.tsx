@@ -62,7 +62,7 @@ function VoiceCapture() {
   const deleteExpense = useDeleteExpense();
   const { logo } = useTheme()
 
-  const [phase, setPhase] = useState<Phase>("idle");
+  const [phase, setPhase] = useState<Phase>("processing");
   const [entities, setEntities] = useState<ParsedEntity[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
@@ -337,7 +337,7 @@ function VoiceCapture() {
               }`}
             >
               <OrbComponent size="128px" animationDuration={6} />
-              <div className="mt-4 px-4 text-center">
+              <div className="mt-6 px-4 text-center space-y-2">
                   <h3 className="text-empty-title">Making sense of it...</h3>
                   <p className="text-empty-subtitle">"{transcript}"</p>
               </div>

@@ -8,6 +8,7 @@ import {
   HelpCircle,
   LogOut,
   Moon,
+  Sun
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLogout, useMyGroups } from "../lib/authQueries";
@@ -28,7 +29,7 @@ export default function Profile() {
   const { currentUser, currentGroup } = useAuth();
   const logout = useLogout();
   const groupsQuery = useMyGroups();
-  const { toggleTheme, logo } = useTheme()
+  const { toggleTheme, logo, theme } = useTheme()
 
   const userName = currentUser?.name ?? "—";
   const userEmail = currentUser?.email ?? "";
@@ -43,8 +44,11 @@ export default function Profile() {
       <header className="sticky top-0 z-10 flex items-center justify-between bg-background/90 px-4 py-4 backdrop-blur">
         <img src={logo} className="h-7"/>
         {/* <h1 className="text-lg font-semibold">Profile</h1> */}
-        <Moon size={18} className="text-muted-foreground" onClick={toggleTheme} />
-
+        {theme==='light'?
+          <Moon size={18} className="text-primary" onClick={toggleTheme} />
+          :
+          <Sun size={18} className="text-primary" onClick={toggleTheme} />
+        }
       </header>
 
       <main className="mx-auto max-w-md px-4">
@@ -97,7 +101,7 @@ export default function Profile() {
                 <li>
                   <button
                     onClick={() => nav("/group")}
-                    className="flex w-full items-center gap-3 rounded-xl bg-card-hover px-4 py-3 text-left text-sm border border-primary transition-colors hover:bg-background"
+                    className="flex w-full items-center gap-3 rounded-xl bg-card-light px-4 py-3 text-left text-sm border border-primary transition-colors hover:bg-background"
                   >
                     <span
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white border border-primary"
@@ -128,7 +132,7 @@ export default function Profile() {
           </section>
 
           {/* Action list */}
-          <section className="space-y-1.5">
+          <section className="space-y-1.5 pt-6 border-t border-border">
             <ActionItem
               icon={<Settings size={18} />}
               label="Settings"
@@ -167,10 +171,10 @@ function GroupSwitchItem({ group }: { group: Group }) {
     <li>
       <button
         onClick={() => switchToGroup(group)}
-        className="flex w-full items-center gap-3 rounded-xl bg-card-light px-4 py-3 text-left text-sm border border-border transition-colors hover:bg-background"
+        className="flex w-full items-center gap-3 rounded-xl bg-card px-4 py-3 text-left text-sm border border-border transition-colors hover:bg-background"
       >
         <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-primary bg-primary/5 border border-primary/40"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-background bg-primary/60 border border-primary/40"
           
         >
           {group.name.slice(0, 1).toUpperCase()}
