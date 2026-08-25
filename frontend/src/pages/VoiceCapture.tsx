@@ -13,6 +13,7 @@ import EntityCard from "../components/EntityCard";
 import AddNotAllowed from "../components/AddNotAllowed";
 import OrbComponent from "../components/OrbAnimation";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 type Phase =
   | "idle"
@@ -66,11 +67,13 @@ function VoiceCapture() {
   const voiceEntry = useVoiceEntry();
   const approveExpense = useApproveExpense();
   const deleteExpense = useDeleteExpense();
+  const { logo } = useTheme()
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [entities, setEntities] = useState<ParsedEntity[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [lastTranscript, setLastTranscript] = useState("");
   const [elapsed, setElapsed] = useState(0);
@@ -202,7 +205,7 @@ function VoiceCapture() {
       setRemovingIds((prev) => new Set(prev).add(entity.id));
       try {
         await deleteExpense.mutateAsync(entity.id);
-        setEntities((prev) => prev.filter((e) => e.id !== entity.id));
+        setRemovedIds((prev) => new Set(prev).add(entity.id));
       } catch {
         /* keep it visible so the user can retry */
       } finally {
@@ -217,9 +220,14 @@ function VoiceCapture() {
   );
 
   const pending = useMemo(
-    () => entities.filter((e) => !approvedIds.has(e.id)),
-    [entities, approvedIds]
+    () => entities.filter((e) => !approvedIds.has(e.id)&&!removedIds.has(e.id)),
+    [entities, approvedIds, removedIds]
   );
+
+
+  useEffect(()=>{
+    console.log({entities: entities.length, pending: pending.length});
+  },[entities, pending])
 
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -237,27 +245,27 @@ function VoiceCapture() {
   const showLive = phase === "recording";
 
   return (
-    <div className="flex min-h-svh flex-col bg-[#161616] text-white">
+    <div className="flex h-svh overflow-y-auto flex-col bg-background text-white">
       <style>{KEYFRAMES}</style>
 
       {/* Header — back button + app logo, nothing else (no GroupSelector/nav) */}
-      <header className="sticky top-0 z-20 flex items-center gap-3 bg-[#161616]/80 px-4 py-4 backdrop-blur">
+      <header className="sticky top-0 z-20 flex items-center gap-3 bg-background/80 px-4 py-4 backdrop-blur">
         <button
           onClick={() => {
             if (active) cancelRecording();
             else nav(-1);
           }}
           aria-label={active ? "Cancel recording" : "Back"}
-          className="grid h-9 w-9 place-items-center rounded-full bg-white/8 text-white/90 ring-1 ring-white/10 transition-colors hover:bg-white/15"
+          className="grid h-9 w-9 place-items-center rounded-full bg-card/8 text-primary/90 border border-border transition-colors hover:bg-card/15"
         >
           <ArrowLeft size={18} />
         </button>
-        <img src="/default-monochrome.svg" alt="WhisperTrack" className="h-6 opacity-90" />
+        <img src={logo} alt="WhisperTrack" className="h-6 opacity-90" />
       </header>
 
       <main className="relative mx-auto flex w-full max-w-md flex-1 px-4">
         {!speechSupported && isWriter && (
-          <p className="absolute inset-x-4 top-2 z-20 rounded-xl bg-amber-400/10 p-3 text-xs text-amber-200 ring-1 ring-amber-300/20">
+          <p className="absolute inset-x-4 top-2 z-20 rounded-xl bg-amber-400/10 p-3 text-xs text-amber-200 border border-amber-300/20">
             Speech recognition isn't supported here — try Chrome, or use “Type manually”.
           </p>
         )}
@@ -277,10 +285,10 @@ function VoiceCapture() {
                 showPrompt ? "opacity-100 delay-150" : "-translate-y-2 opacity-0"
               }`}
             >
-              <h1 className="text-3xl font-light tracking-tight text-white">
+              <h1 className="text-3xl font-light tracking-tight text-primary">
                 Whisper your expenses.
               </h1>
-              <p className="mt-3 max-w-xs text-sm text-white/40">
+              <p className="mt-3 max-w-xs text-sm text-primary/40">
                 Tap the mic, say it like you'd say it out loud.
               </p>
             </div>
@@ -291,16 +299,16 @@ function VoiceCapture() {
                 showLive ? "opacity-100" : "translate-y-2 opacity-0"
               }`}
             >
-              <div className="min-h-32 w-full rounded-2xl bg-black/30 p-5 text-center ring-1 ring-white/5">
+              <div className="min-h-32 w-full text-center">
                 {transcript || interimTranscript ? (
-                  <p className="text-base leading-relaxed text-white/90">
+                  <p className="text-lg leading-relaxed text-primary">
                     {interimTranscript
                       ? transcript.replace(interimTranscript, "")
                       : transcript}
-                    <span className="text-white/40">{interimTranscript}</span>
+                    <span className="text-empty-subtitle">{interimTranscript}</span>
                   </p>
                 ) : (
-                  <p className="pt-4 text-sm text-white/30">Listening…</p>
+                  <p className="pt-4 text-sm text-primary/60">Listening…</p>
                 )}
               </div>
             </div>
@@ -326,7 +334,7 @@ function VoiceCapture() {
             >
               {/* spinning square (recording) */}
               <span
-                className={`absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 animate-spin rounded-sm bg-white transition-all duration-200 ${
+                className={`absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 animate-spin rounded-sm bg-primary transition-all duration-200 ${
                   active ? "scale-100 opacity-100" : "scale-50 opacity-0"
                 }`}
                 style={{ animationDuration: "3s" }}
@@ -347,7 +355,7 @@ function VoiceCapture() {
                 <span
                   key={i}
                   className={`w-[3px] rounded-full transition-colors duration-300 ${
-                    active ? "bg-white/70" : "bg-white/15"
+                    active ? "bg-empty-title/70" : "bg-empty-title/15"
                   }`}
                   style={{
                     height: "100%",
@@ -363,7 +371,7 @@ function VoiceCapture() {
               ))}
             </div>
 
-            <p className="h-4 text-xs text-white/50">{caption}</p>
+            <p className="h-4 text-xs text-empty-subtitle">{caption}</p>
           </div>
         </section>
 
@@ -416,7 +424,7 @@ function VoiceCapture() {
               )}
               <button
                 onClick={beginRecording}
-                className="flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white/90 ring-1 ring-white/10 transition-colors hover:bg-white/20"
+                className="flex items-center gap-2 rounded-full bg-card/10 px-5 py-2.5 text-sm font-semibold text-primary/90 border border-border transition-colors hover:bg-card/20"
               >
                 <Mic size={14} />
                 Record again
@@ -428,13 +436,13 @@ function VoiceCapture() {
         {/* ----------------------------- review --------------------------- */}
         {phase === "review" && pending.length > 0 && (
           <div
-            className="flex w-full flex-col"
+            className="flex w-full flex-col h-full overflow-y-hidden"
             style={{ animation: "vc-in 0.3s ease-out both" }}
           >
             <div className="mb-4 flex items-center justify-between pt-2">
               <div>
-                <h2 className="text-base font-semibold text-white">Review items</h2>
-                <p className="text-xs text-white/40">
+                <h2 className="text-base font-semibold text-primary">Review items</h2>
+                <p className="text-xs text-empty-subtitle">
                   {entities.length} item{entities.length === 1 ? "" : "s"} parsed
                   {" · "}
                   {pending.length} to review
@@ -442,18 +450,18 @@ function VoiceCapture() {
               </div>
               <button
                 onClick={beginRecording}
-                className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 ring-1 ring-white/10 transition-colors hover:bg-white/20"
+                className="flex items-center gap-1.5 rounded-full bg-card/10 px-3 py-1.5 text-xs font-medium text-empty-title border border-border transition-colors hover:bg-card-hover"
               >
                 <Mic size={13} />
                 Redo
               </button>
             </div>
 
-            <details className="mb-4 rounded-xl bg-white/5 p-3 text-xs text-white/50 ring-1 ring-white/10">
-              <summary className="cursor-pointer font-medium text-white/70">
+            <details className="mb-4 rounded-xl bg-card/5 p-3 text-xs  border border-border">
+              <summary className="cursor-pointer font-medium text-primary">
                 View original transcript
               </summary>
-              <p className="mt-2 leading-relaxed">{lastTranscript}</p>
+              <p className="mt-2 leading-relaxed text-empty-title">{lastTranscript}</p>
             </details>
 
             <div className="-mx-4 flex-1 space-y-3 overflow-y-auto px-4 pb-4">
@@ -477,7 +485,7 @@ function VoiceCapture() {
 
             <button
               onClick={() => nav("/")}
-              className="mb-6 mt-4 w-full rounded-2xl bg-white/5 py-3 text-sm font-medium text-white/70 ring-1 ring-white/10 transition-colors hover:bg-white/10"
+              className="mb-6 mt-4 w-full rounded-2xl bg-card/5 py-3 text-sm font-medium text-white/70 border border-white/10 transition-colors hover:bg-card/10"
             >
               Approve later
             </button>
@@ -485,7 +493,7 @@ function VoiceCapture() {
         )}
 
         {/* ------------------------ all caught up ------------------------- */}
-        {phase === "review" && pending.length === 0 && entities.length > 0 && (
+        {(phase === "review" && pending.length === 0 && entities.length > 0) && (
           <ResultBlock
             icon={<CheckCircle2 size={28} />}
             tone="emerald"
@@ -522,7 +530,7 @@ function ResultBlock({
   const tones: Record<typeof tone, string> = {
     amber: "bg-amber-400/10 text-amber-300 ring-amber-300/20",
     red: "bg-red-400/10 text-red-300 ring-red-300/20",
-    emerald: "bg-emerald-400/10 text-emerald-300 ring-emerald-300/20",
+    emerald: "bg-accent/10 text-accent ring-accent-dark/20",
   };
 
   return (
@@ -533,8 +541,8 @@ function ResultBlock({
       <div className={`grid h-16 w-16 place-items-center rounded-full ring-1 ${tones[tone]}`}>
         {icon}
       </div>
-      <p className="mt-5 text-base font-medium text-white">{title}</p>
-      <p className="mt-1 max-w-xs text-sm text-white/45">{subtitle}</p>
+      <p className="mt-5 text-base font-medium text-primary">{title}</p>
+      <p className="mt-1 max-w-xs text-sm text-primary/45">{subtitle}</p>
       {children}
     </div>
   );

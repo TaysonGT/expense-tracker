@@ -15,6 +15,7 @@ import {
 import currencies from "../data/currencies.json";
 import { GroupRoleEnum, type Currency, type GroupMember, type GroupRole } from "../types";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { useGroupMembers, useUpdateGroup, useUpdateMemberRole } from "../lib/authQueries";
 import { useActionOverlay } from "../components/ActionOverlay";
 
@@ -28,31 +29,32 @@ import { useActionOverlay } from "../components/ActionOverlay";
 export default function GroupManagement() {
   const nav = useNavigate();
   const { currentGroup, isAdmin } = useAuth();
+  const { logo } = useTheme();
   const membersQuery = useGroupMembers(currentGroup?.id);
   const updateMemberRole = useUpdateMemberRole();
 
   if (!currentGroup) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-gray-50 text-gray-500">
+      <div className="flex min-h-svh items-center justify-center bg-background text-background0">
         No active group.
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
-       <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+    <div className="min-h-screen bg-background pb-28 text-primary">
+       <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-background/90 px-4 py-4 backdrop-blur">
         <div className="flex items-center gap-3">
           <button
             onClick={() => nav(-1)}
             aria-label="Back"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-card border border-border"
           >
             <ArrowLeft size={18} />
           </button>
           <h1 className="text-lg font-semibold">Group settings</h1>
         </div>
-        <img src="/default-monochrome.svg" className="w-30 py-2"/>
+        <img src={logo} className="w-30 py-2"/>
        </header>
 
       <main className="mx-auto max-w-md space-y-6 px-4 pt-2">
@@ -64,14 +66,14 @@ export default function GroupManagement() {
 
         {/* Members */}
         <section>
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-empty-title">
             Members{" "}
             {membersQuery.data ? `(${membersQuery.data.length})` : ""}
           </h3>
           {membersQuery.isLoading ? (
             <div className="space-y-2">
-              <div className="h-16 animate-pulse rounded-2xl bg-gray-200" />
-              <div className="h-16 animate-pulse rounded-2xl bg-gray-200" />
+              <div className="h-16 animate-pulse rounded-2xl bg-skeleton" />
+              <div className="h-16 animate-pulse rounded-2xl bg-skeleton" />
             </div>
           ) : (
             <ul className="space-y-2">
@@ -135,18 +137,18 @@ function GroupInfoSection({ isAdmin }: { isAdmin: boolean }) {
 
   if (!editing) {
     return (
-      <section className="rounded-2xl bg-white p-5 ring-1 ring-gray-100">
+      <section className="rounded-2xl bg-card p-5 border border-border">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <span
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white border border-primary/20"
               style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
             >
               {currentGroup.name.slice(0, 1).toUpperCase()}
             </span>
             <div>
               <h2 className="text-lg font-semibold">{currentGroup.name}</h2>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-empty-title">
                 {currentGroup.currency} ·{" "}
                 {currentGroup.showBalance ? "Balance shown" : "Balance hidden"}
               </p>
@@ -156,7 +158,7 @@ function GroupInfoSection({ isAdmin }: { isAdmin: boolean }) {
             <button
               onClick={startEdit}
               aria-label="Edit group"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-gray-100"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-background text-background0 border border-border"
             >
               <Pencil size={14} />
             </button>
@@ -167,39 +169,39 @@ function GroupInfoSection({ isAdmin }: { isAdmin: boolean }) {
   }
 
   return (
-    <section className="space-y-4 rounded-2xl bg-white p-5 ring-1 ring-gray-100">
+    <section className="space-y-4 rounded-2xl bg-card p-5 border border-border">
       <div>
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
+        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-empty-title">
           Group name
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-lg border border-border-light bg-card-light px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
+        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-empty-title">
           Currency
         </label>
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-lg border border-border-light bg-card-light px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         >
           {list.map((c) => (
             <option key={c.code} value={c.code}>
-              {c.symbolNative} — {c.name} ({c.code})
+             {c.code} — {c.name} ({c.symbolNative})
             </option>
           ))}
         </select>
       </div>
 
-      <label className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5">
+      <label className="flex items-center justify-between rounded-lg bg-background border border-border px-3 py-2.5">
         <span className="flex flex-col">
-          <span className="text-sm font-medium text-gray-800">Show balance</span>
-          <span className="text-xs text-gray-400">
+          <span className="text-sm font-medium text-primary">Show balance</span>
+          <span className="text-xs text-empty-title">
             Display running totals to members
           </span>
         </span>
@@ -212,28 +214,28 @@ function GroupInfoSection({ isAdmin }: { isAdmin: boolean }) {
           style={{ background: showBalance ? "#00c48c" : "#d1d5db" }}
         >
           <span
-            className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
+            className="absolute top-0.5 h-5 w-5 rounded-full bg-card transition-transform"
             style={{
-              transform: showBalance ? "translateX(22px)" : "translateX(2px)",
+              transform: showBalance ? "translateX(-20px)" : "translateX(0px)",
             }}
           />
         </button>
       </label>
 
-      {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+      {error && <p className="text-xs font-medium text-danger">{error}</p>}
 
       <div className="flex gap-3">
         <button
           onClick={() => setEditing(false)}
           disabled={update.isPending}
-          className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700"
+          className="flex-1 rounded-full bg-card-hover px-4 py-2.5 text-sm font-medium text-primary"
         >
           Cancel
         </button>
         <button
           onClick={save}
           disabled={update.isPending}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-accent-dark px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
         >
           <Check size={15} />
           {update.isPending ? "Saving…" : "Save"}
@@ -263,21 +265,21 @@ function InviteSection({ joinCode }: { joinCode: string }) {
   };
 
   return (
-    <section className="rounded-2xl bg-white p-5 ring-1 ring-gray-100">
-      <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">
+    <section className="rounded-2xl bg-card p-5 border border-border">
+      <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-empty-title">
         Invite members
       </h3>
 
       {/* Join code */}
       <div className="mb-3">
-        <span className="mb-1 block text-xs text-gray-400">Join code</span>
+        <span className="mb-1 block text-xs text-empty-title">Join code</span>
         <div className="flex items-center gap-2">
-          <code className="mono flex-1 rounded-lg bg-gray-50 px-3 py-2.5 text-center text-lg tracking-[0.3em] ring-1 ring-gray-100">
+          <code className="mono flex-1 rounded-lg bg-background px-3 py-2.5 text-center text-lg tracking-[0.3em] border border-border">
             {joinCode}
           </code>
           <button
             onClick={() => copy(joinCode, "code")}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-900 text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-card-light border border-border-light text-primary"
             aria-label="Copy join code"
           >
             {copied === "code" ? <Check size={16} /> : <Copy size={16} />}
@@ -287,17 +289,17 @@ function InviteSection({ joinCode }: { joinCode: string }) {
 
       {/* Shareable link */}
       <div>
-        <span className="mb-1 block text-xs text-gray-400">Shareable link</span>
+        <span className="mb-1 block text-xs text-empty-title">Shareable link</span>
         <button
           onClick={() => copy(joinLink, "link")}
-          className="flex w-full items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-left text-sm text-gray-600 ring-1 ring-gray-100 hover:bg-gray-100"
+          className="flex w-full items-center gap-2 rounded-lg bg-background px-3 py-2.5 text-left text-sm text-gray-600 border border-border hover:bg-gray-100"
         >
-          <Link2 size={15} className="shrink-0 text-gray-400" />
+          <Link2 size={15} className="shrink-0 text-empty-title" />
           <span className="min-w-0 flex-1 truncate">{joinLink}</span>
           {copied === "link" ? (
             <Check size={15} className="shrink-0 text-emerald-500" />
           ) : (
-            <Copy size={15} className="shrink-0 text-gray-400" />
+            <Copy size={15} className="shrink-0 text-empty-title" />
           )}
         </button>
       </div>
@@ -343,8 +345,8 @@ function MemberRow({
   };
 
   return (
-    <li className="relative flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-gray-100">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-400">
+    <li className="relative flex items-center gap-3 rounded-2xl bg-card p-4 border border-border">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-empty-title">
         {member.avatarUrl ? (
           <img
             src={member.avatarUrl}
@@ -356,11 +358,11 @@ function MemberRow({
         )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm font-medium text-gray-900">
+        <span className="truncate text-sm font-medium text-primary">
           {member.name}
-          {isYou && <span className="ml-1 text-xs text-gray-400">(you)</span>}
+          {isYou && <span className="ml-1 text-xs text-empty-title">(you)</span>}
         </span>
-        <span className="truncate text-xs text-gray-400">{member.email}</span>
+        <span className="truncate text-xs text-empty-title">{member.email}</span>
       </div>
       <RoleBadge role={member.role} />
       {isAdmin && !isYou && (
@@ -368,13 +370,13 @@ function MemberRow({
           <button
             onClick={() => setShowActions(member.userId === showActions ? null : member.userId)}
             aria-label="Member actions"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-gray-100"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-background0 border border-border"
           >
             <MoreVertical size={16} />
           </button>
           {showActions === member.userId && (
             <div
-              className="absolute right-0 top-full z-10 mt-1 w-40 rounded-xl bg-white shadow-lg border border-gray-100 py-1"
+              className="absolute right-0 top-full z-10 mt-1 w-40 rounded-xl bg-card shadow-lg border border-border py-1"
               role="menu"
             >
               <button
@@ -384,9 +386,9 @@ function MemberRow({
                 }}
                 disabled={member.role === "admin"}
                 role="menuitem"
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-background disabled:opacity-50"
               >
-                <Crown size={14} className="text-gray-400" />
+                <Crown size={14} className="text-empty-title" />
                 Make admin
               </button>
               <button
@@ -396,9 +398,9 @@ function MemberRow({
                 }}
                 disabled={member.role === "read_write"}
                 role="menuitem"
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-background disabled:opacity-50"
               >
-                <UserCog size={14} className="text-gray-400" />
+                <UserCog size={14} className="text-empty-title" />
                 Make read/write
               </button>
               <button
@@ -408,9 +410,9 @@ function MemberRow({
                 }}
                 disabled={member.role === "readonly"}
                 role="menuitem"
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-background disabled:opacity-50"
               >
-                <Shield size={14} className="text-gray-400" />
+                <Shield size={14} className="text-empty-title" />
                 Make readonly
               </button>
             </div>

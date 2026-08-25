@@ -47,17 +47,17 @@ export default function OnboardingGroups() {
     switchToGroup(group, { skipActivate: true });
 
   return (
-    <div className="min-h-svh bg-gray-50 text-gray-900">
+    <div className="min-h-svh bg-background text-primary">
       <header className="flex items-center justify-between px-5 py-4">
         <div>
           <h1 className="text-lg font-semibold">Choose a group</h1>
           {currentUser && (
-            <p className="text-xs text-gray-500">Signed in as {currentUser.email}</p>
+            <p className="text-xs text-background">Signed in as {currentUser.email}</p>
           )}
         </div>
         <button
           onClick={() => logout.mutate(undefined, { onSuccess: () => nav("/auth", { replace: true }) })}
-          className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-gray-600 ring-1 ring-gray-200"
+          className="flex items-center gap-1.5 rounded-full bg-card-light border border-border-light px-3 py-1.5 text-xs font-medium text-empty-title"
         >
           <LogOut size={14} />
           Sign out
@@ -66,7 +66,7 @@ export default function OnboardingGroups() {
 
       <main className="mx-auto max-w-md px-5 pb-16">
         {/* Tabs */}
-        <div className="mb-5 flex gap-1.5 rounded-full bg-gray-100 border border-[#d9d9d9] p-0.5">
+        <div className="mb-5 flex gap-1.5 rounded-full bg-gray-100 border border-border-light p-0.5">
           <TabButton active={activeTab === "mine"} onClick={() => setTab("mine")}>
             My Groups
           </TabButton>
@@ -139,25 +139,25 @@ function MyGroupsPanel({
   if (loading) {
     return (
       <div className="space-y-2">
-        <div className="h-16 animate-pulse rounded-2xl bg-gray-200" />
-        <div className="h-16 animate-pulse rounded-2xl bg-gray-200" />
+        <div className="h-16 animate-pulse rounded-2xl bg-skeleton" />
+        <div className="h-16 animate-pulse rounded-2xl bg-skeleton" />
       </div>
     );
   }
 
   if (groups.length === 0) {
     return (
-      <div className="flex flex-col items-center rounded-2xl bg-white p-8 text-center border border-[#e6e6e6]">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+      <div className="flex flex-col items-center rounded-2xl bg-card p-8 text-center border border-[#e6e6e6]">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-empty-title">
           <Users size={26} />
         </div>
-        <p className="mt-4 text-sm font-medium text-gray-800">No groups yet</p>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-4 text-sm font-medium text-primary">No groups yet</p>
+        <p className="mt-1 text-sm text-background0">
           Create your first group or join one with a code.
         </p>
         <button
           onClick={onCreate}
-          className="mt-5 flex items-center gap-1.5 rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white"
+          className="mt-5 flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white"
         >
           <Plus size={15} />
           Create a group
@@ -173,17 +173,17 @@ function MyGroupsPanel({
           <button
             onClick={() => enter(g)}
             disabled={switchingId === g.id}
-            className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left border border-[#e6e6e6] transition-transform active:scale-[0.99] disabled:opacity-60"
+            className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left border border-border-light transition-transform active:scale-[0.99] disabled:opacity-60"
           >
             <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-light text-sm font-semibold text-white"
               style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
             >
               {g.name.slice(0, 1).toUpperCase()}
             </span>
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate font-medium text-gray-900">{g.name}</span>
-              <span className="text-xs text-gray-400">
+              <span className="truncate font-medium text-primary">{g.name}</span>
+              <span className="text-xs text-empty-title">
                 {g.currency} · {g.role}
               </span>
             </span>
@@ -221,27 +221,27 @@ function CreateGroupPanel({ onCreated }: { onCreated: (g: { id: string; name: st
   };
 
   return (
-    <div className="space-y-4 rounded-2xl bg-white p-5 border border-[#e6e6e6] shadow-sm shadow-black/25">
+    <div className="space-y-4 rounded-2xl bg-card p-5 border border-border-light shadow-sm shadow-black/25">
       <div>
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
+        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-empty-title">
           Group name
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Household, Trip to Italy"
-          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-lg border border-border bg-card-light px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
+        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-empty-title">
           Currency
         </label>
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-lg border border-border bg-card-light px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         >
           {list.map((c) => (
             <option key={c.code} value={c.code}>
@@ -251,10 +251,10 @@ function CreateGroupPanel({ onCreated }: { onCreated: (g: { id: string; name: st
         </select>
       </div>
 
-      <label className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5">
+      <label className="flex items-center justify-between rounded-lg bg-background border border-primary px-3 py-2.5">
         <span className="flex flex-col">
-          <span className="text-sm font-medium text-gray-800">Show balance</span>
-          <span className="text-xs text-gray-400">
+          <span className="text-sm font-medium text-primary">Show balance</span>
+          <span className="text-xs text-empty-title">
             Display running totals to members
           </span>
         </span>
@@ -267,18 +267,18 @@ function CreateGroupPanel({ onCreated }: { onCreated: (g: { id: string; name: st
           style={{ background: showBalance ? "#00c48c" : "#d1d5db" }}
         >
           <span
-            className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
+            className="absolute top-0.5 h-5 w-5 rounded-full bg-card transition-transform"
             style={{ transform: showBalance ? "translateX(-20px)" : "translateX(0px)" }}
           />
         </button>
       </label>
 
-      {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+      {error && <p className="text-xs font-medium text-danger">{error}</p>}
 
       <button
         onClick={submit}
         disabled={create.isPending}
-        className="flex w-full items-center justify-center gap-1.5 rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-1.5 rounded-full bg-accent-dark px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
       >
         <Plus size={16} />
         {create.isPending ? "Creating…" : "Create group"}
@@ -318,9 +318,9 @@ function JoinGroupPanel({ onJoined }: { onJoined: (g: { id: string; name: string
   };
 
   return (
-    <div className="space-y-4 rounded-2xl bg-white p-5 border border-[#e6e6e6] shadow-sm shadow-black/25">
+    <div className="space-y-4 rounded-2xl bg-card p-5 border border-[#e6e6e6] shadow-sm shadow-black/25">
       <div>
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
+        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-empty-title">
           Join code
         </label>
         <input
@@ -328,19 +328,19 @@ function JoinGroupPanel({ onJoined }: { onJoined: (g: { id: string; name: string
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           maxLength={8}
           placeholder="8-character code"
-          className="mono w-full rounded-lg border border-gray-200 px-3 py-2.5 text-center text-lg tracking-[0.3em] focus:border-gray-900 focus:outline-none"
+          className="mono w-full rounded-lg border border-border bg-card-light px-3 py-2.5 text-center text-lg tracking-[0.3em] focus:border-primary focus:outline-none"
         />
-        <p className="mt-1.5 text-xs text-gray-400">
+        <p className="mt-1.5 text-xs text-empty-title">
           Ask a group admin for the code. You'll join as a viewer.
         </p>
       </div>
 
-      {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+      {error && <p className="text-xs font-medium text-danger">{error}</p>}
 
       <button
         onClick={submit}
         disabled={join.isPending}
-        className="flex w-full items-center justify-center gap-1.5 rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-1.5 rounded-full bg-accent-dark px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
       >
         <Check size={16} />
         {join.isPending ? "Joining…" : "Join group"}

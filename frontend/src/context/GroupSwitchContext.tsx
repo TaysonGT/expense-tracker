@@ -120,22 +120,22 @@ function GroupSwitchOverlay({ state }: { state: GroupSwitchState }) {
       }`}
     >
       <div
-        className={`flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-8 shadow-xl transition-all duration-300 ${
+        className={`flex flex-col items-center justify-center gap-4 rounded-3xl bg-card p-8 shadow-xl transition-all duration-300 ${
           state.open
             ? "scale-100 opacity-100"
             : "scale-95 opacity-0"
         }`}
       >
         <div
-          className={`flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white ${
+          className={`flex h-12 w-12 items-center justify-center rounded-full bg-primary text-background ${
             spinning ? "animate-spin" : ""
           }`}
         >
           {spinning ? <Loader size={22} /> : <Check size={26} />}
         </div>
         <div className="text-center">
-          <p className="text-sm font-medium text-gray-900">{label}</p>
-          <p className="mt-0.5 text-xs text-gray-500">{sub}</p>
+          <p className="text-sm font-medium text-primary">{label}</p>
+          <p className="mt-0.5 text-xs text-empty-title">{sub}</p>
         </div>
       </div>
     </div>

@@ -61,21 +61,21 @@ export default function GroupSelector({ dir = 'right' }: GroupSelectorProps) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-medium text-gray-800 ring-1 ring-gray-200 hover:bg-gray-50"
+        className="flex items-center gap-2 rounded-xl bg-card px-3 py-2 text-sm font-medium text-primary border border-skeleton hover:bg-background"
       >
         <span
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white border border-white"
           style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
         >
           {groupName.slice(0, 1).toUpperCase() || "·"}
         </span>
         <span className="max-w-35 truncate">{groupName}</span>
         {/* {currencyCode && ( */}
-        {/*   <span className="text-xs text-gray-400">{currencyCode}</span> */}
+        {/*   <span className="text-xs text-empty-title">{currencyCode}</span> */}
         {/* )} */}
         <ChevronDown
           size={14}
-          className={`text-gray-400 transition-transform duration-200 ${
+          className={`text-empty-title transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -139,18 +139,18 @@ function GroupDropdown({
   return (
     <div
       role="menu"
-      className={`absolute ${dir=='right'? 'left-0':'right-0'} top-full z-40 mt-2 w-64 origin-top-left rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition-all duration-200 ${
+      className={`absolute ${dir=='right'? 'left-0':'right-0'} top-full z-40 mt-2 w-64 origin-top-left rounded-xl bg-card shadow-lg border border-border transition-all duration-200 ${
         open
           ? "translate-y-0 scale-100 opacity-100"
           : "pointer-events-none -translate-y-1 scale-95 opacity-0"
       }`}
     >
       <div className="p-2">
-        <div className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-400">
+        <div className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-empty-title">
           My Groups
         </div>
         {groupsQuery.isLoading ? (
-          <div className="p-3 text-center text-sm text-gray-400">Loading…</div>
+          <div className="p-3 text-center text-sm text-empty-title">Loading…</div>
         ) : (
           <ul className="max-h-56 space-y-1 overflow-y-auto">
              {(groupsQuery.data ?? []).map((g: Group) => (
@@ -159,12 +159,12 @@ function GroupDropdown({
                    onClick={() => handleActivate(g)}
                    className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
                      g.id === currentGroup?.id
-                       ? "bg-gray-100 font-medium"
-                       : "text-gray-700 hover:bg-gray-50"
+                       ? "bg-card-hover font-medium"
+                       : "text-empty-title hover:bg-background"
                    }`}
                  >
                    <span
-                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white border border-primary"
                      style={{
                        background:
                          g.id === currentGroup?.id
@@ -175,7 +175,7 @@ function GroupDropdown({
                      {g.name.slice(0, 1).toUpperCase()}
                    </span>
                    <span className="truncate">{g.name}</span>
-                   <span className="ml-auto text-xs text-gray-400">
+                   <span className="ml-auto text-xs text-empty-title">
                      {g.currency}
                    </span>
                  </button>
@@ -187,31 +187,31 @@ function GroupDropdown({
 
       {/* Manage current group */}
       {currentGroup && (
-        <div className="border-t border-gray-100 p-2">
+        <div className="border-t border-border p-2">
           <button
             onClick={() => {
               onClose();
               nav("/group");
             }}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-empty-title hover:bg-background"
           >
-            <Settings size={15} className="text-gray-400" />
+            <Settings size={15} className="text-empty-title" />
             Manage group
           </button>
         </div>
       )}
 
-      <div className="flex gap-1 border-t border-gray-100 p-2">
+      <div className="flex gap-1 border-t border-border p-2">
         <button
           onClick={onCreate}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm text-empty-title hover:bg-background"
         >
           <Plus size={14} />
           Create
         </button>
         <button
           onClick={onJoin}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm text-empty-title hover:bg-background"
         >
           <Users size={14} />
           Join

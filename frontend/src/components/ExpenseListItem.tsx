@@ -111,7 +111,7 @@ function DisplayRow({
 
   return (
     <>
-      <li className="relative flex items-center gap-3 rounded-xl bg-white p-4 py-2 border border-[#d9d9d9] shadow-xs shadow-black/10">
+      <li className="relative flex items-center gap-3 rounded-xl bg-accent-light p-4 py-2 border border-muted-foreground shadow-xs shadow-black/10">
         {/* Category color dot */}
         <span
           className="h-8 w-1.5 shrink-0 rounded-full"
@@ -121,21 +121,21 @@ function DisplayRow({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-center gap-1.5">
-            <span className="truncate font-medium text-gray-900">
+            <span className="truncate font-medium text-primary">
               {expense.title}
             </span>
             {expense.source === "voice" && (
               <Mic
                 size={12}
-                className="shrink-0 text-gray-400"
+                className="shrink-0 text-empty-title"
                 aria-label="Added by voice"
               />
             )}
           </div>
-          <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-empty-title">
             <span
-              className="rounded-full px-2 py-0.5 font-medium"
-              style={{ background: `${color}1a`, color }}
+              className="rounded-full px-2 py-0.5 font-medium border"
+              style={{ background: `${color}1a`, color, borderColor: `${color}44` }}
             >
               {expense.category?.name ?? "Uncategorized"}
             </span>
@@ -145,7 +145,7 @@ function DisplayRow({
 
         {/* Cost (prominent, right-aligned) or pending badge */}
         {expense.cost != null ? (
-          <span className="font-[Oswald] shrink-0 text-lg font-semibold text-gray-900">
+          <span className="font-[Oswald] shrink-0 text-lg font-semibold text-primary">
             {formatCurrency(expense.cost)}
           </span>
         ) : (
@@ -163,7 +163,7 @@ function DisplayRow({
             onClick={onOptionsClick}
             aria-label="More options"
             aria-expanded={showOptions}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 border border-[#d3d3d3]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card-light text-primary border border-[#d3d3d3]"
           >
             <MoreVertical size={16} />
           </button>
@@ -213,7 +213,7 @@ function OptionsMenu({
 
   return (
     <div
-      className="fixed z-50 rounded-xl bg-white shadow-lg border border-gray-100 py-1"
+      className="fixed z-50 rounded-xl bg-card shadow-lg border border-border py-1"
       style={{
         top: availableSpace? anchorRect.bottom + 4 : anchorRect.y - 150,
         left: Math.max(8, anchorRect.right - menuWidth),
@@ -224,27 +224,27 @@ function OptionsMenu({
       <button
         onClick={() => { onEdit(); onClose(); }}
         role="menuitem"
-        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-50"
+        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-background"
       >
-        <Pencil size={14} className="text-gray-400" />
+        <Pencil size={14} className="text-empty-title" />
         Edit
       </button>
       <button
         onClick={() => { onDelete(); onClose(); }}
         role="menuitem"
-        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-gray-50"
+        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-background"
       >
         <Trash2 size={14} />
         Delete
       </button>
-      <div className="border-t border-gray-100 my-1" />
+      <div className="border-t border-border my-1" />
       <div className="px-3 py-1 space-y-1">
-        <p className="text-xs text-gray-400">Created by</p>
+        <p className="text-xs text-empty-title">Created by</p>
         <div className="flex items-center gap-1 text-sm">
           {creator?.avatarUrl?
             <img src={creator?.avatarUrl||''} className="h-6 w-6 rounded-full border border-[#989898]"/>
             :
-            <User size={14} className="text-gray-400" />
+            <User size={14} className="text-empty-title" />
           }
           <span className="truncate text-xs"><span className="">{creator?.name}</span></span>
           <ExternalLink size={12} className="ml-auto text-gray-300" />
@@ -301,38 +301,38 @@ function EditRow({
   };
 
   return (
-    <li className="rounded-xl bg-white p-4 shadow-sm border border-[#d3d3d3]">
+    <li className="rounded-xl bg-card p-4 shadow-sm border border-border">
       <div className="space-y-3">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title"
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-lg bg-card-light border border-border-light px-3 py-2 text-sm font-medium focus:border-primary focus:outline-none"
         />
 
         <div className="flex gap-2">
-          <div className="flex flex-1 items-center rounded-lg border border-gray-200 px-2 focus-within:border-gray-900">
-            <span className="text-sm text-gray-400">{currencySymbol(currencyCode)}</span>
+          <div className="flex flex-1 bg-card-light items-center rounded-lg border border-border-light px-2 focus-within:border-primary">
+            <span className="text-sm text-empty-title">{currencySymbol(currencyCode)}</span>
             <input
               value={cost}
               onChange={(e) => setCost(e.target.value)}
               inputMode="decimal"
               placeholder="0.00"
-              className="mono w-full bg-transparent px-1 py-2 text-sm focus:outline-none"
+              className="mono w-full px-1 py-2 text-sm focus:outline-none"
             />
           </div>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="flex-1 rounded-lg border border-gray-200 px-2 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            className="flex-1 rounded-lg bg-card-light border border-border-light px-2 py-2 text-sm focus:border-primary focus:outline-none"
           />
         </div>
 
         <select
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-lg border border-border-light px-3 py-2 text-sm focus:border-primary focus:outline-none bg-card-light"
         >
           <option value="">Uncategorized</option>
           {categories.map((c) => (
@@ -342,7 +342,7 @@ function EditRow({
           ))}
         </select>
 
-        {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+        {error && <p className="text-xs font-medium text-danger">{error}</p>}
 
         <div className="flex justify-end gap-2">
           <button

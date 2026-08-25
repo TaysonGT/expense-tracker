@@ -30,7 +30,7 @@ export default function ExpenseFilters({
   onSelectCategory,
 }: ExpenseFiltersProps) {
   return (
-    <CategoryStrip isLoading={categoriesLoading} className="pe-4">
+    <CategoryStrip isLoading={categoriesLoading} className="">
       <Pill active={selectedCategoryId === ""} onClick={() => onSelectCategory("")}>
         All
       </Pill>
@@ -59,12 +59,12 @@ function Pill({
   return (
     <button
       onClick={onClick}
-      className="shrink-0 rounded-full px-4 py-2 text-sm font-medium shadow-sm shadow-black/5 transition-transform active:scale-95"
-      style={
-        active
-          ? { background: "#111827", color: "#ffffff", border: "1px solid #111827" }
-          : { background: "#ffffff", color: "#374151", border: "1px solid #d3d3d3" }
-      }
+      className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium shadow-xs shadow-black/15 transition-transform active:scale-95
+        ${active
+          ? 'bg-foreground text-background border border-border-primary'
+          : 'bg-card text-primary border border-border-light'
+        }
+      `}
     >
       {children}
     </button>

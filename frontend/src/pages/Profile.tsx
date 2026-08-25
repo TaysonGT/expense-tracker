@@ -7,11 +7,13 @@ import {
   User,
   HelpCircle,
   LogOut,
+  Moon,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLogout, useMyGroups } from "../lib/authQueries";
 import { GroupRoleEnum, type Group } from "../types";
 import { useGroupSwitch } from "../context/GroupSwitchContext";
+import { useTheme } from "../context/ThemeContext";
 
 /**
  * Profile page.
@@ -26,6 +28,7 @@ export default function Profile() {
   const { currentUser, currentGroup } = useAuth();
   const logout = useLogout();
   const groupsQuery = useMyGroups();
+  const { toggleTheme, logo } = useTheme()
 
   const userName = currentUser?.name ?? "—";
   const userEmail = currentUser?.email ?? "";
@@ -35,20 +38,20 @@ export default function Profile() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28 text-gray-900">
+    <div className="min-h-screen bg-background pb-28 text-primary">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-gray-50/90 px-4 py-4 backdrop-blur">
-        <img src="/default-monochrome.svg" className="h-7"/>
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-background/90 px-4 py-4 backdrop-blur">
+        <img src={logo} className="h-7"/>
         {/* <h1 className="text-lg font-semibold">Profile</h1> */}
-        {/* <Moon size={18} className="text-gray-400" /> */}
+        <Moon size={18} className="text-muted-foreground" onClick={toggleTheme} />
 
       </header>
 
       <main className="mx-auto max-w-md px-4">
         <div className="space-y-6">
           {/* Hero: avatar + name + group selector */}
-          <section className="flex flex-col items-center rounded-3xl bg-white p-8 text-center shadow-sm border border-[#e6e6e6]">
-            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-500 ring-2 ring-gray-200">
+          <section className="flex flex-col items-center rounded-3xl bg-card p-8 text-center shadow-sm border border-border-light">
+            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-background ring-2 ring-skeleton">
               {currentUser?.avatarUrl ? (
                 <img
                   src={currentUser.avatarUrl}
@@ -61,7 +64,7 @@ export default function Profile() {
             </div>
             <div className="mt-4">
               <h2 className="text-xl font-semibold">{userName}</h2>
-              <p className="mt-0.5 flex items-center justify-center gap-1.5 text-sm text-gray-500">
+              <p className="mt-0.5 flex items-center justify-center gap-1.5 text-sm text-background0">
                 <Mail size={14} />
                 {userEmail}
               </p>
@@ -76,7 +79,7 @@ export default function Profile() {
           {/* My Groups — quick-switch to other groups + manage current */}
           <section>
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 My Groups
               </h3>
               {/* {currentGroup && ( */}
@@ -94,25 +97,25 @@ export default function Profile() {
                 <li>
                   <button
                     onClick={() => nav("/group")}
-                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm border border-[#989898] transition-colors hover:bg-gray-50"
+                    className="flex w-full items-center gap-3 rounded-xl bg-card-hover px-4 py-3 text-left text-sm border border-primary transition-colors hover:bg-background"
                   >
                     <span
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white border border-primary"
                       style={{ background: "linear-gradient(135deg,#111827,#1f2937)" }}
                     >
                       {currentGroup.name.slice(0, 1).toUpperCase()}
                     </span>
-                    <span className="min-w-0 flex-1 truncate font-medium text-gray-900">
+                    <span className="min-w-0 flex-1 truncate font-medium text-primary">
                       {currentGroup.name}
                     </span>
                     <button
                       onClick={() => nav("/group")}
-                      className="flex items-center gap-1 text-xs font-medium text-blue-600"
+                      className="flex items-center gap-1 text-xs font-medium text-primary"
                     >
                       <Settings size={13} />
                       Manage
                     </button>
-                    <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs text-white">
+                    <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-card-hover">
                       Active
                     </span>
                   </button>
@@ -164,20 +167,18 @@ function GroupSwitchItem({ group }: { group: Group }) {
     <li>
       <button
         onClick={() => switchToGroup(group)}
-        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-sm border border-[#e9e9e9] transition-colors hover:bg-gray-50"
+        className="flex w-full items-center gap-3 rounded-xl bg-card-light px-4 py-3 text-left text-sm border border-border transition-colors hover:bg-background"
       >
         <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-          style={{
-            background: "#d1d5db",
-          }}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-primary bg-primary/5 border border-primary/40"
+          
         >
           {group.name.slice(0, 1).toUpperCase()}
         </span>
-        <span className="min-w-0 flex-1 truncate text-gray-900">
+        <span className="min-w-0 flex-1 truncate text-primary">
           {group.name}
         </span>
-        <span className="text-xs text-gray-400">{group.currency}</span>
+        <span className="text-xs text-muted-foreground">{group.currency}</span>
       </button>
     </li>
   );
@@ -197,18 +198,16 @@ function ActionItem({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 text-left border border-[#e9e9e9] transition-colors hover:bg-gray-50"
+      className="flex w-full items-center justify-between rounded-xl bg-card px-4 py-4 text-left border border-border-light transition-colors hover:bg-card-hover"
     >
       <span className="flex items-center gap-3">
         <span
-          className={`text-gray-500`}
-          style={{ color: danger ? "#ef4444" : undefined }}
+          className={`text-primary ${danger?'text-danger!':'text-primary!'}`}
         >
           {icon}
         </span>
         <span
-          className="text-sm font-medium"
-          style={{ color: danger ? "#ef4444" : "#111827" }}
+          className={`text-sm font-medium ${danger?'text-danger':'text-primary'}`}
         >
           {label}
         </span>

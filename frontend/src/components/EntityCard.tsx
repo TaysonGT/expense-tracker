@@ -53,9 +53,8 @@ function EntityCard({
 
   return (
     <form
-      className="rounded-2xl bg-white p-4 shadow-sm border transition-colors"
+      className={`rounded-2xl bg-card p-4 shadow-sm border transition-colors ${needsAttention? 'border-warning':'border-border-light'}`}
       style={{
-        borderColor: needsAttention ? "rgba(245,158,11,0.4)" : "#d3d3d3",
         boxShadow: needsAttention
           ? "0 0 0 1px rgba(245,158,11,0.35)"
           : "0 1px 2px rgba(0,0,0,0.04)",
@@ -66,24 +65,24 @@ function EntityCard({
       }}
     >
       {/* Title */}
-      <label className="block text-[11px] font-medium uppercase tracking-wide text-gray-400">
+      <label className="block text-[11px] font-medium uppercase tracking-wide text-empty-title">
         Item
       </label>
       <input
         value={entity.title}
         onChange={(e) => onChange({ ...entity, title: e.target.value })}
-        className="mt-1 w-full rounded-lg border border-[#d9d9d9] px-3 py-2 text-sm font-medium text-gray-900 focus:border-gray-900 focus:outline-none"
+        className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm font-medium text-empty-title focus:border-card-hover focus:outline-none bg-card-light"
         placeholder="What did you buy?"
       />
 
       <div className="mt-3 flex gap-3">
         {/* Category */}
         <div className="flex-1">
-          <label className="flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-gray-400">
+          <label className="flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-empty-title">
             <span>
               Category
               {entity.categoryUncertain && !approved && (
-                <span className="ml-1 text-amber-500">• confirm</span>
+                <span className="ml-1 text-warning-secondary">• confirm</span>
               )}
             </span>
             <button
@@ -91,7 +90,7 @@ function EntityCard({
               onClick={() => setManagingCategories(true)}
               aria-label="Manage categories"
               title="Manage categories"
-              className="flex h-5 w-5 items-center justify-center rounded text-gray-400 hover:text-gray-700"
+              className="flex h-5 w-5 items-center justify-center rounded text-empty-title hover:text-empty-subtitle"
             >
               <Settings2 size={13} />
             </button>
@@ -105,11 +104,7 @@ function EntityCard({
                 categoryUncertain: false,
               })
             }
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-            style={{
-              borderColor: missingCategory ? "#f59e0b" : "#d9d9d9",
-              color: missingCategory ? "#b45309" : "#111827",
-            }}
+            className={`mt-1 w-full bg-card-light rounded-lg border px-3 py-2 text-sm focus:outline-none ${missingCategory? 'border-warning-secondary text-warning':'border-border text-primary'}`}
           >
             <option value="">Choose…</option>
             {categories.map((c) => (
@@ -122,20 +117,19 @@ function EntityCard({
 
         {/* Cost */}
         <div className="w-28">
-          <label className="block text-[11px] font-medium uppercase tracking-wide text-gray-400">
+          <label className="block text-[11px] font-medium uppercase tracking-wide text-empty-title">
             Cost
           </label>
           <div
-            className="mt-1 flex items-center rounded-lg border px-2"
-            style={{ borderColor: missingCost ? "#f59e0b" : "#d9d9d9" }}
+            className={`mt-1 flex items-center bg-card-light rounded-lg border px-2 ${missingCost?'border-warning-secondary text-warning':'border-border text-primary'}`}
           >
-            <span className="text-sm text-gray-400">{currencySymbol(currencyCode)}</span>
+            <span className="text-sm text-empty-title">{currencySymbol(currencyCode)}</span>
             <input
               value={costText}
               onChange={(e) => commitCost(e.target.value)}
               inputMode="decimal"
               placeholder="0.00"
-              className="w-full bg-transparent px-1 py-2 text-sm focus:outline-none mono"
+              className="w-full px-1 py-2 text-sm focus:outline-none mono text-primary"
             />
           </div>
         </div>
@@ -144,7 +138,7 @@ function EntityCard({
       {/* Attention hint + approve */}
       <div className="mt-3 flex items-center justify-between">
         {needsAttention && !approved ? (
-          <span className="flex items-center gap-1 text-xs text-amber-600">
+          <span className="flex items-center gap-1 text-xs text-warning-secondary">
             <AlertCircle size={13} />
             {missingCost && missingCategory
               ? "Add cost & category"
@@ -160,8 +154,7 @@ function EntityCard({
             type="button"
             disabled={approved||isRemoving||isApproving}
             onClick={()=>onRemove(entity)}
-            className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
-            style={{ background: isRemoving? '#d9d9d9' : approved ? "#9ca3af" : "#e90022" }}
+            className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold text-white transition-opacity disabled:opacity-40 ${isRemoving? 'bg-empty-subtitle' : approved ? "bg-[#9ca3af]" : "bg-danger"}`}
           >
             {isRemoving? '' :  <Trash2 size={14} /> }
 

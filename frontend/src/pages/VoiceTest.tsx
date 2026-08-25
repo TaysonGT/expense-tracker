@@ -85,14 +85,14 @@ function AIVoiceInput({
             `group w-16 h-16 rounded-xl flex items-center justify-center transition-colors relative
             ${ submitted
               ? "bg-none"
-              : "bg-none hover:bg-black/10 dark:hover:bg-white/10"
+              : "bg-none hover:bg-black/10 dark:hover:bg-card/10"
             }`
           }
           type="button"
           onClick={handleClick}
         >
             <div
-              className={`absolute top-1/2 left-1/2 -translate-1/2 w-6 h-6 rounded-sm animate-spin bg-black dark:bg-white cursor-pointer duration-75 ${submitted? 'pointer-events-auto':'pointer-events-none opacity-0 scale-50'}`}
+              className={`absolute top-1/2 left-1/2 -translate-1/2 w-6 h-6 rounded-sm animate-spin bg-black dark:bg-card cursor-pointer duration-75 ${submitted? 'pointer-events-auto':'pointer-events-none opacity-0 scale-50'}`}
               style={{ animationDuration: "3s" }}
             />
             <div className={`p-4 rounded-full bg-accent-dark text-white duration-75 ${submitted? 'pointer-events-none opacity-0 scale-50':'pointer-events-auto'}`}>
@@ -119,8 +119,8 @@ function AIVoiceInput({
               className={
                 `w-0.5 rounded-full transition-all duration-300
                 ${submitted
-                  ? "bg-black/50 dark:bg-white/50 animate-pulse"
-                  : "bg-black/10 dark:bg-white/10 h-1"
+                  ? "bg-black/50 dark:bg-card/50 animate-pulse"
+                  : "bg-black/10 dark:bg-card/10 h-1"
                 }
               `}
               style={

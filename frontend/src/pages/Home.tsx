@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, ChevronsRight, Clock, Mic, PenLine } from "lucide-react";
+import { ChevronRight, ChevronsRight, Clock, Mic, PenLine } from "lucide-react";
 import { useCategories, useExpenses, usePendingExpenses } from "../lib/queries";
 import type { Category, Expense } from "../types";
 import CategoryScroller from "../components/CategoryScroller";
@@ -8,6 +8,7 @@ import GroupSelector from "../components/GroupSelector";
 import { useAuth } from "../context/AuthContext";
 import { formatCurrency } from "../lib/expenseFormat";
 import ExpenseListItem from "../components/ExpenseListItem";
+import { useTheme } from "../context/ThemeContext";
 
 /**
  * Home screen.
@@ -36,6 +37,7 @@ function sumCost(expenses: Expense[]): number {
 export default function Home() {
   const nav = useNavigate();
   const { currentGroup } = useAuth();
+  const { logo } = useTheme()
   const currencyCode = currentGroup?.currency;
   const today = todayIso();
   const yesterday = isoDaysAgo(1);
@@ -71,7 +73,7 @@ export default function Home() {
   const loading = todayQuery.isLoading || pendingQuery.isLoading;
 
   return (
-    <div className="min-h-full bg-gray-50 text-gray-900 h-full flex flex-col items-center">
+    <div className="min-h-full bg-background text-primary h-full flex flex-col items-center">
       <main className="max-w-md w-full px-4 py-4 grow overflow-y-hidden">
         {loading ? (
           <HomeSkeleton />
@@ -79,7 +81,7 @@ export default function Home() {
           <div className="flex h-full flex-col">
             {/* Header: greeting + group selector */}
               <div className="flex w-full justify-between items-center">
-                <img src="/default-monochrome.svg" className="w-36"/>
+                <img src={logo} className="w-36"/>
                 <GroupSelector dir="left" />
               </div>
 
@@ -121,27 +123,27 @@ function HomeSkeleton() {
     <div className="animate-pulse">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <div className="h-7 w-40 rounded-lg bg-gray-200" />
-        <div className="h-8 w-32 rounded-xl bg-gray-200" />
+        <div className="h-7 w-40 rounded-lg bg-skeleton" />
+        <div className="h-8 w-32 rounded-xl bg-skeleton" />
       </div>
 
       {/* Total box */}
-      <div className="mt-5 h-40 rounded-3xl bg-gray-200" />
+      <div className="mt-5 h-40 rounded-3xl bg-skeleton" />
 
       {/* Categories */}
-      <div className="mt-6 h-4 w-24 rounded bg-gray-200" />
+      <div className="mt-6 h-4 w-24 rounded bg-skeleton" />
       <div className="mt-3 flex gap-2.5">
-        <div className="h-9 w-24 rounded-full bg-gray-200" />
-        <div className="h-9 w-20 rounded-full bg-gray-200" />
-        <div className="h-9 w-28 rounded-full bg-gray-200" />
+        <div className="h-9 w-24 rounded-full bg-skeleton" />
+        <div className="h-9 w-20 rounded-full bg-skeleton" />
+        <div className="h-9 w-28 rounded-full bg-skeleton" />
       </div>
 
       {/* Recent list */}
-      <div className="mt-8 h-5 w-20 rounded bg-gray-200" />
+      <div className="mt-8 h-5 w-20 rounded bg-skeleton" />
       <div className="mt-3 space-y-2">
-        <div className="h-16 rounded-xl bg-gray-200" />
-        <div className="h-16 rounded-xl bg-gray-200" />
-        <div className="h-16 rounded-xl bg-gray-200" />
+        <div className="h-16 rounded-xl bg-skeleton" />
+        <div className="h-16 rounded-xl bg-skeleton" />
+        <div className="h-16 rounded-xl bg-skeleton" />
       </div>
     </div>
   );
@@ -158,30 +160,30 @@ function EmptyState({
 }) {
   return (
     <div className="mt-6 grow">
-      <hr className=" border-t border-[#d3d3d3] mb-4 w-7/10 mx-auto"/>
+      <hr className=" border-t border-border mb-4 w-7/10 mx-auto"/>
       <div className="flex h-full flex-col items-center gap-5 text-center">
         <div className="space-y-1">
-          <h3 className="text-xl font-light text-[#646464]">
+          <h3 className="text-xl font-light text-empty-title">
             No expenses for today.
           </h3>
-          <p className="text-sm text-[#b4b4b4]">
+          <p className="text-sm text-empty-subtitle">
             Pick a method below to get started.
           </p>
         </div>
         {/* Two attractive input-method choices */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-stretch gap-4">
           <InputMethodChoice
             icon={<PenLine size={22} />}
             title="Type it"
             subtitle="Enter the details manually"
-            accent="#00c48c"
             onClick={onManual}
+            variant={'light'}
           />
           <InputMethodChoice
             icon={<Mic size={26} />}
             title="Speak it"
             subtitle="Tap and narrate your expense"
-            accent="#111827"
+            variant='accent'
             onClick={onRecord}
           />
         </div>
@@ -195,30 +197,29 @@ function InputMethodChoice({
   icon,
   title,
   subtitle,
-  accent,
+  variant='light',
   onClick,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
-  accent: string;
+  variant?: string
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-4 rounded-2xl px-6 py-4 text-left border transition-all duration-150 hover:shadow-md hover:shadow-black/20 active:scale-[0.98] shadow-sm shadow-black/35 text-white"
-      style={{ backgroundColor: accent }}
+      className={`flex items-center gap-4 rounded-2xl px-6 py-4 text-left border border-white transition-all duration-150 hover:shadow-md hover:shadow-black/20 active:scale-[0.98] shadow-sm shadow-black/35 text-white ${variant==='light'?'bg-dark-card':'bg-accent-dark'}`}
     >
       <span
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-        style={{ background: "white", color: accent }}
+        // className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${variant==='light'?'bg-background text-primary':'bg-foreground text-background'} border border-foreground`}
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#111827]`}
       >
         {icon}
       </span>
       <span className="flex flex-col">
-        <span className="text-sm font-semibold text-white">{title}</span>
-        <span className="text-xs text-gray-100">{subtitle}</span>
+        <span className={`text-sm font-semibold text-white`}>{title}</span>
+        <span className={`text-xs text-white`}>{subtitle}</span>
       </span>
     </button>
   );
@@ -240,7 +241,7 @@ function TotalSpendBox({
   return (
     <div className="mt-4">
       <div
-        className="relative overflow-hidden rounded-3xl p-6"
+        className="relative overflow-hidden rounded-3xl p-6 border-white border"
         style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)" }}
       >
         <div
@@ -253,7 +254,7 @@ function TotalSpendBox({
         />
 
         <p
-          className="text-xs font-medium uppercase tracking-widest text-gray-400"
+          className="text-xs font-medium uppercase tracking-widest text-empty-title"
           style={{ letterSpacing: "0.12em" }}
         >
           Spent today
@@ -269,7 +270,7 @@ function TotalSpendBox({
           </span>
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-empty-title">
             {approvedCount} {approvedCount === 1 ? "expense" : "expenses"} logged
           </p>
           <TrendPill today={totalToday} yesterday={totalYesterday} />
@@ -309,25 +310,24 @@ function PopulatedState({
           }}
         >
           <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-            style={{ background: "rgba(245,158,11,0.25)", color: "#b45309" }}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-warning"
+            style={{ background: "rgba(245,158,11,0.25)" }}
           >
             <Clock size={18} />
           </span>
           <span className="flex flex-col">
             <span
-              className="text-sm font-semibold"
-              style={{ color: "#b45309" }}
+              className="text-sm font-semibold text-warning"
             >
               {pendingCount === 1
                 ? "1 item needs a quick review"
                 : `${pendingCount} items need a quick review`}
             </span>
-            <span className="text-xs" style={{ color: "#d97706" }}>
+            <span className="text-xs text-warning-secondary">
               Tap to confirm and file them
             </span>
           </span>
-          <ArrowRight size={18} className="ml-auto" style={{ color: "#d97706" }} />
+          <ChevronRight size={18} className="ml-auto text-warning-secondary" />
         </button>
       )}
 
@@ -340,7 +340,7 @@ function PopulatedState({
           <h2 className="text-lg font-semibold">Recent</h2>
           <button
             onClick={onViewAll}
-            className="text-sm font-medium text-blue-600 flex items-center gap-1"
+            className="text-sm font-medium text-link flex items-center gap-1"
           >
             View all
             <ChevronsRight size={20}/>
@@ -356,17 +356,17 @@ function PopulatedState({
             />
             // <li
             //   key={e.id}
-            //   className="flex items-center justify-between rounded-xl bg-white p-4 text-sm border border-[#e6e6e6]"
+            //   className="flex items-center justify-between rounded-xl bg-card p-4 text-sm border border-[#e6e6e6]"
             // >
             //   <div className="flex min-w-0 flex-col">
-            //     <span className="truncate font-medium text-gray-900">
+            //     <span className="truncate font-medium text-primary">
             //       {e.title}
             //     </span>
-            //     <span className="text-xs text-gray-400">
+            //     <span className="text-xs text-empty-title">
             //       {e.category?.name ?? "Uncategorized"} · {e.date}
             //     </span>
             //   </div>
-            //   <span className="mono shrink-0 font-medium text-gray-900">
+            //   <span className="mono shrink-0 font-medium text-primary">
             //     {e.cost != null ? formatCurrency(e.cost, currencyCode) : "—"}
             //   </span>
             // </li>

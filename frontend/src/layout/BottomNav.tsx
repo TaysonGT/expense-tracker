@@ -19,8 +19,8 @@ function BottomNav() {
     <>
     <AddMenu canWrite={canWrite} open={addMenuOpen} onClose={() => setAddMenuOpen(false)} />
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-100 flex items-end justify-around px-2 pt-3 pb-6 z-20"
-      style={{ boxShadow: "0 -1px 0 0 #e5e7eb, 0 -8px 24px rgba(0,0,0,0.04)" }}
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card border-t border-border-light flex items-end justify-around px-2 pt-3 pb-6 z-20"
+      style={{ boxShadow: "0 -1px 0 0 var(--shadow-one), 0 -8px 24px rgba(0,0,0,0.04)" }}
     >
       <NavItem icon={<House />} label="Home" active={isActive('home')} onClick={() => onNavigate("home")} />
       <NavItem icon={<Wallet />} label="Expenses" active={isActive('expenses')} onClick={() => onNavigate("expenses")} />
@@ -29,9 +29,8 @@ function BottomNav() {
       <div className="relative flex flex-col items-center -mt-6">
         <button
           onClick={onAddPress}
-          className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-transform active:scale-95 cursor-pointer"
+          className={`w-14 h-14 rounded-full flex items-center justify-center text-card shadow-lg transition-transform active:scale-95 cursor-pointer ${addMenuOpen ? "bg-foreground" : "bg-foreground"}`}
           style={{
-            background: addMenuOpen ? "#1f2937" : "#111827",
             boxShadow: "0 4px 20px rgba(17,24,39,0.35)",
           }}
           aria-label="Add expense"
@@ -43,7 +42,7 @@ function BottomNav() {
             +
           </span>
         </button>
-        <span className="text-[10px] text-gray-400 mt-1.5 font-medium">Add</span>
+        <span className="text-[10px] text-empty-title mt-1.5 font-medium">Add</span>
       </div>
 
       <NavItem icon={<User />} label="Profile" active={isActive('profile')} onClick={() => onNavigate("profile")} />

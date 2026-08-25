@@ -36,7 +36,7 @@ export default function CategorySelect({
           onChange={(e) => onChange(e.target.value)}
           className={
             className ??
-            "w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+            "w-full rounded-lg border border-skeleton px-3 py-2.5 text-sm focus:border-primary focus:outline-none bg-white"
           }
           style={style}
         >
@@ -52,7 +52,7 @@ export default function CategorySelect({
           onClick={() => setManaging(true)}
           aria-label="Manage categories"
           title="Manage categories"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-500 ring-1 ring-gray-200"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-card text-primary border border-skeleton"
         >
           <Settings2 size={16} />
         </button>

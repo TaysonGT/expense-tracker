@@ -62,7 +62,7 @@ export default function DateFilterModal({
       }`}
     >
       <div
-        className={`w-full max-w-sm rounded-t-3xl bg-gray-50 p-5 shadow-xl transition-transform duration-200 ${
+        className={`w-full max-w-sm rounded-t-3xl bg-background p-5 shadow-xl transition-transform duration-200 ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >
@@ -73,10 +73,10 @@ export default function DateFilterModal({
 
         {/* Done row */}
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-gray-500">Date range</h2>
+          <h2 className="text-sm font-medium text-background0">Date range</h2>
           <button
             onClick={onClose}
-            className="rounded-full p-1 text-gray-400 hover:text-gray-600"
+            className="rounded-full p-1 text-empty-title hover:text-gray-600"
           >
             <X size={18} />
           </button>
@@ -88,15 +88,15 @@ export default function DateFilterModal({
             <button
               key={p.key}
               onClick={() => selectPreset(p.key)}
-              className={`block w-full rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium shadow-sm border transition-colors ${
+              className={`block w-full rounded-2xl bg-card px-4 py-3 text-left text-sm font-medium shadow-sm border transition-colors ${
                 range.key === p.key
-                  ? "border-gray-900"
-                  : "border-[#d9d9d9] hover:bg-gray-50"
+                  ? "border-primary"
+                  : "border-border hover:bg-card-hover"
               }`}
             >
               <span
                 className={`mr-2 inline-block h-2 w-2 rounded-full ${
-                  range.key === p.key ? "bg-gray-900" : "bg-gray-300"
+                  range.key === p.key ? "bg-primary" : "bg-border-light"
                 }`}
               />
               {p.label}
@@ -110,34 +110,34 @@ export default function DateFilterModal({
             onClick={() =>
               onChangeRange({ key: "custom", ...computeRange("custom", range) })
             }
-            className={`block w-full rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium shadow-sm border transition-colors ${
+            className={`block w-full rounded-2xl bg-card px-4 py-3 text-left text-sm font-medium shadow-sm border transition-colors ${
               range.key === "custom"
-                ? "border-gray-900"
-                : "border-[#d9d9d9] hover:bg-gray-50"
+                ? "border-primary"
+                : "border-border-light hover:bg-background"
             }`}
           >
             <span
               className={`mr-2 inline-block h-2 w-2 rounded-full ${
-                range.key === "custom" ? "bg-gray-900" : "bg-gray-300"
+                range.key === "custom" ? "bg-primary" : "bg-border-light"
               }`}
             />
             Custom
           </button>
 
           {range.key === "custom" && (
-            <div className="flex items-center gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
+            <div className="flex items-center gap-2 rounded-2xl bg-card p-3 shadow-sm border border-border">
               <input
                 type="date"
                 value={range.startDate ?? ""}
                 onChange={handleStartChange}
-                className="min-w-0 flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
+                className="min-w-0 flex-1 rounded-lg border border-skeleton px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
               />
-              <span className="text-xs text-gray-400">to</span>
+              <span className="text-xs text-empty-title">to</span>
               <input
                 type="date"
                 value={range.endDate ?? ""}
                 onChange={handleEndChange}
-                className="min-w-0 flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
+                className="min-w-0 flex-1 rounded-lg border border-skeleton px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
               />
             </div>
           )}

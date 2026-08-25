@@ -60,14 +60,14 @@ export default function CreateGroupModal({
       onClick={onClose}
     >
       <div
-        className="mx-4 w-full max-w-md rounded-2xl bg-white p-6"
+        className="mx-4 w-full max-w-md rounded-2xl bg-card p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Create new group</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
+            className="rounded-lg p-1 text-empty-title hover:bg-gray-100"
           >
             <X size={18} />
           </button>
@@ -75,25 +75,25 @@ export default function CreateGroupModal({
 
         <div className="mt-4 space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-empty-title">
               Group name
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Household, Trip to Italy"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+              className="w-full rounded-lg border border-skeleton px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-empty-title">
               Currency
             </label>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+              className="w-full rounded-lg border border-skeleton px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             >
               {list.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -103,12 +103,12 @@ export default function CreateGroupModal({
             </select>
           </div>
 
-          <label className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5">
+          <label className="flex items-center justify-between rounded-lg bg-background px-3 py-2.5">
             <span className="flex flex-col">
-              <span className="text-sm font-medium text-gray-800">
+              <span className="text-sm font-medium text-primary">
                 Show balance
               </span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-empty-title">
                 Display running totals to members
               </span>
             </span>
@@ -121,7 +121,7 @@ export default function CreateGroupModal({
               style={{ background: showBalance ? "#00c48c" : "#d1d5db" }}
             >
               <span
-                className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
+                className="absolute top-0.5 h-5 w-5 rounded-full bg-card transition-transform"
                 style={{
                   transform: showBalance
                     ? "translateX(0px)"
@@ -132,21 +132,21 @@ export default function CreateGroupModal({
           </label>
 
           {error && (
-            <p className="text-xs font-medium text-red-500">{error}</p>
+            <p className="text-xs font-medium text-danger">{error}</p>
           )}
 
           <div className="flex gap-3">
             <button
               onClick={onClose}
               disabled={create.isPending}
-              className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700"
+              className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-sm font-medium text-empty-subtitle"
             >
               Cancel
             </button>
             <button
               onClick={submit}
               disabled={create.isPending}
-              className="flex-1 rounded-full bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
               {create.isPending ? "Creating…" : "Create group"}
             </button>

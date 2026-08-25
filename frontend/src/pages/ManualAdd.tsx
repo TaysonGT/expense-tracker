@@ -22,12 +22,12 @@ function ManualAdd() {
   const { canWrite } = useAuth()
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28 h-full">
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+    <div className="min-h-screen bg-background pb-28 h-full">
+      <header className="sticky top-0 z-10 flex items-center gap-3 bg-background/90 px-4 py-4 backdrop-blur text-primary">
         <button
           onClick={() => nav(-1)}
           aria-label="Back"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-card border border-border-light"
         >
           <ArrowLeft size={18} />
         </button>
@@ -90,21 +90,21 @@ function AddForm({}){
   const saving = createExpense.isPending;
   return (
   <>
-        <div className="mt-4 space-y-4 rounded-2xl bg-white p-5 shadow-sm shadow-black/5 border border-[#d9d9d9]">
+        <div className="mt-4 space-y-4 rounded-2xl bg-card p-5 shadow-sm shadow-black/5 border border-border-light">
           {/* Title */}
           <Field label="Title">
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Weekly groceries"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+              className="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-primary focus:outline-none bg-white"
             />
           </Field>
 
           {/* Cost */}
           <Field label="Cost">
-            <div className="flex items-center rounded-lg border border-gray-200 px-3 focus-within:border-gray-900">
-               <span className="text-sm text-gray-400">{currencySymbol(currencyCode)}</span>
+            <div className="flex items-center rounded-lg border border-border-light px-3 focus-within:border-primary bg-white">
+               <span className="text-sm text-title">{currencySymbol(currencyCode)}</span>
               <input
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
@@ -130,11 +130,11 @@ function AddForm({}){
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-900 focus:outline-none"
+              className="w-full rounded-lg border border-border-light bg-white px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </Field>
 
-          {error && <p className="text-xs font-medium text-red-500">{error}</p>}
+          {error && <p className="text-xs font-medium text-danger">{error}</p>}
         </div>
 
         <button
@@ -146,7 +146,7 @@ function AddForm({}){
           <Check size={17} />
           {saving ? "Saving…" : "Save expense"}
         </button>
-        <p className="mt-2 text-center text-xs text-gray-400">
+        <p className="mt-2 text-center text-xs text-empty-title">
           Saved directly — no approval needed.
         </p>
   </>
@@ -162,7 +162,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-gray-400">
+      <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-empty-title">
         {label}
       </span>
       {children}

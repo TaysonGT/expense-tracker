@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Clock, ChevronRight, Calendar } from "lucide-react";
+import { ArrowLeft, Clock, ChevronRight, Calendar} from "lucide-react";
 import { useCategories, useExpenses, usePendingExpenses } from "../lib/queries";
 import ExpenseFilters from "../components/ExpenseFilters";
 import { computeRange, type DateRange } from "../components/ExpenseFilters";
@@ -14,7 +14,7 @@ import { useAuth } from "../context/AuthContext";
 function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-lg bg-gray-200 ${className}`}
+      className={`animate-pulse rounded-lg bg-skeleton ${className}`}
       aria-hidden
     />
   );
@@ -80,14 +80,14 @@ export default function Expenses() {
     Boolean(categoryId) || range.key !== "all";
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-background text-primary">
       {/* Sticky header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-gray-50/90 px-4 py-4 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-background/90 px-4 py-4 backdrop-blur">
         <div className="flex items-center gap-3">
           <button
             onClick={() => nav(-1)}
             aria-label="Back"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-card border border-border"
           >
             <ArrowLeft size={18} />
           </button>
@@ -100,16 +100,16 @@ export default function Expenses() {
         {/* Today's date + date filter button */}
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
-            <Calendar size={18} className="text-gray-400" />
-            <span className="font-medium text-gray-500">
+            <Calendar size={18} className="text-empty-title" />
+            <span className="font-medium text-background0">
               {today}
             </span>
           </div>
           <button
             onClick={() => setDateFilterOpen(true)}
-            className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
+            className="flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-sm font-medium text-empty-title border border-border-light hover:bg-background"
           >
-            <Calendar size={14} className="text-gray-400" />
+            <Calendar size={14} className="text-empty-title" />
             {rangeKeyLabel}
           </button>
         </div>
@@ -117,7 +117,7 @@ export default function Expenses() {
         {/* Pending review entry point */}
         {pendingCount > 0 && (
           <button
-            onClick={() => nav("/pending")}
+            onClick={()=>nav('/pending')}
             className="mt-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity hover:opacity-90 cursor-pointer"
             style={{
               background: "rgba(245,158,11,0.12)",
@@ -125,21 +125,20 @@ export default function Expenses() {
             }}
           >
             <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-              style={{ background: "rgba(245,158,11,0.25)", color: "#b45309" }}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-warning"
+              style={{ background: "rgba(245,158,11,0.25)" }}
             >
               <Clock size={18} />
             </span>
             <span className="flex flex-col">
               <span
-                className="text-sm font-semibold"
-                style={{ color: "#b45309" }}
+                className="text-sm font-semibold text-warning"
               >
                 {pendingCount === 1
-                  ? "1 item pending review"
-                  : `${pendingCount} items pending review`}
+                  ? "1 item needs a quick review"
+                  : `${pendingCount} items need a quick review`}
               </span>
-              <span className="text-xs" style={{ color: "#d97706" }}>
+              <span className="text-xs text-warning-secondary">
                 Tap to confirm and file them
               </span>
             </span>
@@ -199,12 +198,12 @@ export default function Expenses() {
         {/* Error */}
         {isError && (
           <div className="mt-16 flex flex-col items-center">
-            <p className="text-sm font-medium text-gray-800">
+            <p className="text-sm font-medium text-primary">
               Couldn't load expenses.
             </p>
             <button
               onClick={() => void refetch()}
-              className="mt-4 rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white"
+              className="mt-4 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white"
             >
               Try again
             </button>
@@ -217,7 +216,7 @@ export default function Expenses() {
             {/* List */}
             <section className="mt-2">
               {expenses.length === 0 ? (
-                <p className="rounded-xl bg-white p-4 text-center text-sm text-gray-400 ring-1 ring-gray-100">
+                <p className="rounded-xl bg-card p-4 text-center text-sm text-empty-title border border-border">
                   {hasFilters
                     ? "No expenses match these filters."
                     : "No expenses yet."}

@@ -68,8 +68,8 @@ export default function ExpenseInsights({
 
       {/* Category breakdown */}
       {categoryRatio&& (stats.byCategory.length > 0 && stats.total > 0) && (
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
+        <div className="rounded-2xl bg-card p-4 shadow-sm border border-border">
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-empty-title">
             By category
           </h3>
 
@@ -98,13 +98,13 @@ export default function ExpenseInsights({
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ background: colorForCategory(c.id) }}
                 />
-                <span className="min-w-0 flex-1 truncate text-gray-700">
+                <span className="min-w-0 flex-1 truncate text-empty-subtitle">
                   {c.name}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-empty-title">
                   {Math.round((c.total / stats.total) * 100)}%
                 </span>
-                <span className="mono w-16 text-right font-medium text-gray-900">
+                <span className="mono w-16 text-right font-medium text-primary">
                    {formatCurrency(c.total, currencyCode)}
                 </span>
               </li>
@@ -115,8 +115,8 @@ export default function ExpenseInsights({
 
       {/* Spend per day */}
       {spendPerDay&&(dailyChart && dailyChart.max > 0) && (
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
+        <div className="rounded-2xl bg-card p-4 shadow-sm border border-border">
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-empty-title">
             Spend per day
           </h3>
           <div className="flex h-24 items-end gap-1">
@@ -137,7 +137,7 @@ export default function ExpenseInsights({
               </div>
             ))}
           </div>
-          <div className="mt-1.5 flex justify-between text-[10px] text-gray-400">
+          <div className="mt-1.5 flex justify-between text-[10px] text-empty-title">
             <span>{dailyChart.series[0]?.label}</span>
             <span>{dailyChart.series[dailyChart.series.length - 1]?.label}</span>
           </div>
@@ -149,9 +149,9 @@ export default function ExpenseInsights({
 
 function SummaryCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-accent-dark p-3 text-center shadow-xs shadow-black/25 border border-white">
-      <div className="font-[Oswald] text-2xl font-semibold text-white">{value}</div>
-      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-accent-light">
+    <div className="rounded-2xl bg-card-light p-3 text-center shadow-xs shadow-black/25 border border-primary/40">
+      <div className="font-[Oswald] text-2xl font-semibold text-primary">{value}</div>
+      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-primary">
         {label}
       </div>
     </div>
@@ -161,7 +161,7 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
 function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-lg bg-gray-200 ${className}`}
+      className={`animate-pulse rounded-lg bg-skeleton ${className}`}
       aria-hidden
     />
   );

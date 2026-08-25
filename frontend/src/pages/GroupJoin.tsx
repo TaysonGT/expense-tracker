@@ -39,29 +39,29 @@ export default function GroupJoin() {
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-gray-50 px-6 text-gray-900">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-6 text-primary">
       <div className="w-full max-w-sm">
         {previewQuery.isLoading && (
           <div className="flex flex-col items-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900" />
-            <p className="mt-4 text-sm text-gray-400">Loading invite…</p>
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-skeleton border-t-primary" />
+            <p className="mt-4 text-sm text-empty-title">Loading invite…</p>
           </div>
         )}
 
         {previewQuery.isError && (
           <div className="flex flex-col items-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-100">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-danger border border-red-100">
               <AlertCircle size={26} />
             </div>
-            <p className="mt-5 text-base font-medium text-gray-800">
+            <p className="mt-5 text-base font-medium text-primary">
               Invalid invite link
             </p>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-background0">
               This group code doesn't exist or the link is broken.
             </p>
             <button
               onClick={() => nav("/home", { replace: true })}
-              className="mt-6 rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white"
+              className="mt-6 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white"
             >
               Go home
             </button>
@@ -78,13 +78,13 @@ export default function GroupJoin() {
               {preview.name.slice(0, 1).toUpperCase()}
             </span>
 
-            <p className="mt-4 text-xs font-medium uppercase tracking-wider text-gray-400">
+            <p className="mt-4 text-xs font-medium uppercase tracking-wider text-empty-title">
               You've been invited to join
             </p>
             <h1 className="mt-1 text-2xl font-semibold">{preview.name}</h1>
 
             {/* Meta */}
-            <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
+            <div className="mt-4 flex items-center gap-4 text-sm text-background0">
               <span className="flex items-center gap-1.5">
                 <Users size={15} />
                 {preview.memberCount}{" "}
@@ -105,12 +105,12 @@ export default function GroupJoin() {
             {/* Action */}
             {preview.alreadyMember ? (
               <div className="mt-8 w-full">
-                <p className="mb-3 text-sm text-gray-500">
+                <p className="mb-3 text-sm text-background0">
                   You're already a member of this group.
                 </p>
                 <button
                   onClick={() => nav("/home", { replace: true })}
-                  className="w-full rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white"
+                  className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white"
                 >
                   {currentGroup?.id === preview.id
                     ? "Go to group"
@@ -121,7 +121,7 @@ export default function GroupJoin() {
               <button
                 onClick={handleJoin}
                 disabled={join.isPending}
-                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
+                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
               >
                 {join.isPending ? (
                   <>
@@ -139,13 +139,13 @@ export default function GroupJoin() {
 
             <button
               onClick={() => nav("/home", { replace: true })}
-              className="mt-3 text-sm font-medium text-gray-500 hover:text-gray-700"
+              className="mt-3 text-sm font-medium text-background0 hover:text-empty-subtitle"
             >
               Not now
             </button>
 
             {error && (
-              <p className="mt-4 text-sm text-red-500">{error}</p>
+              <p className="mt-4 text-sm text-danger">{error}</p>
             )}
           </div>
         )}

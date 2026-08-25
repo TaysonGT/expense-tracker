@@ -177,7 +177,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-gray-50 px-6 text-gray-900">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-6 text-primary">
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="mb-4 text-center">
@@ -185,7 +185,7 @@ export default function Auth() {
             <img src="/default.svg" className="w-54 sm:w-68"/>
           </div>
           {/* <h1 className="text-xl font-light">Expense Tracker with AI</h1> */}
-          <p className="mt-6 text-sm text-gray-500">
+          <p className="mt-6 text-sm text-primary">
             Sign in to track your group's spending.
           </p>
         </div>
@@ -221,10 +221,10 @@ export default function Auth() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-skeleton" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-50 px-2 text-gray-400">or</span>
+              <span className="bg-background px-2 text-empty-title">or</span>
             </div>
           </div>
 
@@ -234,7 +234,7 @@ export default function Auth() {
               <div className="mb-3">
                 <label
                   htmlFor="name"
-                  className="block text-xs font-medium text-gray-700"
+                  className="block text-xs font-medium text-empty-title"
                 >
                   Name
                 </label>
@@ -244,7 +244,7 @@ export default function Auth() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             )}
@@ -252,7 +252,7 @@ export default function Auth() {
             <div className="mb-3">
               <label
                 htmlFor="email"
-                className="block text-xs font-medium text-gray-700"
+                className="block text-xs font-medium text-empty-title"
               >
                 Email
               </label>
@@ -262,14 +262,14 @@ export default function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full bg-card text-primary rounded-xl border border-border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div className="mb-3">
               <label
                 htmlFor="password"
-                className="block text-xs font-medium text-gray-700"
+                className="block text-xs font-medium text-empty-title"
               >
                 Password
               </label>
@@ -280,14 +280,14 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={mode === "register" ? 8 : 1}
-                className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full bg-card text-primary rounded-xl border border-border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-gray-900 py-2.5 text-sm font-medium text-white transition-opacity hover:bg-gray-800 disabled:opacity-60"
+              className="w-full rounded-xl bg-accent-dark py-2.5 text-sm font-medium text-foreground transition-opacity hover:bg-primary disabled:opacity-60"
             >
               {mode === "register"
                 ? isSubmitting
@@ -303,7 +303,7 @@ export default function Auth() {
           <div className="text-center text-sm">
             <button
               onClick={toggleMode}
-              className="font-medium text-gray-700 underline-offset-2 hover:underline"
+              className="font-medium text-empty-title underline-offset-2 hover:underline"
             >
               {mode === "login"
                 ? "Need an account? Register"
@@ -313,14 +313,14 @@ export default function Auth() {
         </div>
 
         {!anyProviderConfigured && (
-          <p className="mt-6 rounded-xl bg-amber-50 p-3 text-center text-xs text-amber-700 ring-1 ring-amber-100">
+          <p className="mt-6 rounded-xl bg-amber-50 p-3 text-center text-xs text-amber-700 border border-amber-100">
             No OAuth providers are configured. Set VITE_GOOGLE_CLIENT_ID and/or
             VITE_FACEBOOK_APP_ID to enable social sign-in.
           </p>
         )}
 
         {error && (
-          <p className="mt-4 text-center text-sm text-red-500">{error}</p>
+          <p className="mt-4 text-center text-sm text-danger">{error}</p>
         )}
       </div>
     </div>
@@ -344,7 +344,7 @@ function ProviderButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 transition-opacity disabled:opacity-40"
+      className="flex w-full items-center justify-center rounded-xl border border-skeleton bg-card px-4 py-3 text-sm font-medium text-primary transition-opacity disabled:opacity-40"
       style={style}
     >
       {label}

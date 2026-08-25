@@ -67,14 +67,14 @@ export default function CategoryManagementModal({
       />
 
       {/* Sheet */}
-      <div className={`bottom-0 fixed z-10 flex max-h-[80dvh] w-full max-w-md flex-col rounded-t-3xl bg-gray-50 shadow-xl  duration-200 ${open? 'translate-y-0':'translate-y-full'}`}>
+      <div className={`bottom-0 fixed z-10 flex max-h-[80dvh] w-full max-w-md flex-col rounded-t-3xl bg-background shadow-xl  duration-200 ${open? 'translate-y-0':'translate-y-full'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-lg font-semibold">Manage categories</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-gray-100"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-card border border-border"
           >
             <X size={16} />
           </button>
@@ -83,7 +83,7 @@ export default function CategoryManagementModal({
         {/* Add input */}
         {canWrite&&
           <div className="px-5 pt-4 mb-4">
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-gray-900">
+            <div className="flex items-center gap-2 rounded-xl border border-skeleton bg-card px-3 focus-within:border-primary">
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -109,7 +109,7 @@ export default function CategoryManagementModal({
         {/* List */}
         <div className="flex-1 overflow-y-auto grow px-5 pb-4">
           {categories.length === 0 ? (
-            <p className="rounded-xl bg-white p-4 text-center text-sm text-gray-400 ring-1 ring-gray-100">
+            <p className="rounded-xl bg-card p-4 text-center text-sm text-empty-title border border-border">
               No categories yet — add your first above.
             </p>
           ) : (
@@ -160,7 +160,7 @@ function CategoryRow({ category }: { category: Category }) {
   };
 
   return (
-    <li className="flex items-center gap-2 rounded-xl bg-white p-3 border border-[#e6e6e6]">
+    <li className="flex items-center gap-2 rounded-xl bg-card p-3 border border-border-light">
       {editing ? (
         <input
           autoFocus
@@ -173,10 +173,10 @@ function CategoryRow({ category }: { category: Category }) {
               setEditing(false);
             }
           }}
-          className="min-w-0 flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-sm focus:border-gray-900 focus:outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-skeleton px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
         />
       ) : (
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900">
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">
           {category.name}
         </span>
       )}
@@ -208,7 +208,7 @@ function CategoryRow({ category }: { category: Category }) {
           <button
             onClick={() => deleteCategory.mutate(category.id)}
             disabled={deleteCategory.isPending}
-            className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
+            className="rounded-full bg-danger px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
           >
             Delete
           </button>
@@ -224,14 +224,14 @@ function CategoryRow({ category }: { category: Category }) {
           <button
             onClick={() => setEditing(true)}
             aria-label={`Rename ${category.name}`}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-gray-100"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-background text-background0 border border-border"
           >
             <Pencil size={14} />
           </button>
           <button
             onClick={() => setConfirmingDelete(true)}
             aria-label={`Delete ${category.name}`}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-red-500 ring-1 ring-gray-100"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-background text-danger border border-border"
           >
             <Trash2 size={14} />
           </button>

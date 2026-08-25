@@ -49,6 +49,7 @@ function AddMenu({ open, onClose, canWrite }: AddMenuProps) {
                 title="Record voice"
                 subtitle="Speak your expenses"
                 accent="#00c48c"
+                variant='accent'
                 onClick={() => go("/voice")}
               />
               <MenuChoice
@@ -56,6 +57,7 @@ function AddMenu({ open, onClose, canWrite }: AddMenuProps) {
                 title="Type manually"
                 subtitle="Fill in the details"
                 accent="#111825"
+                variant="light"
                 onClick={() => go("/manual")}
               />
             </>
@@ -66,6 +68,7 @@ function AddMenu({ open, onClose, canWrite }: AddMenuProps) {
               title="Not Allowed"
               subtitle="You don't have the permissions to add expenses to this group"
               accent="#ffaa22"
+              variant='warning'
             />
         )}
       </div>
@@ -79,27 +82,36 @@ function MenuChoice({
   subtitle,
   accent,
   onClick,
+  variant='light'
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   accent: string;
   onClick?: () => void;
+  variant?: 'light' | 'accent' | 'warning';
 }) {
+  const tones = {
+    'light': ` text-[#fff]`,
+    'accent':'',
+    warning: ''
+  }
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 text-left shadow-lg ring-1 ring-gray-100 transition-transform active:scale-[0.98] ${!onClick&&'cursor-not-allowed!'}`}
+      className={`flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 text-left shadow-lg border border-border transition-transform active:scale-[0.98] ${!onClick&&'cursor-not-allowed!'}`}
     >
       <span
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white"
-        style={{ background: accent }}
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white border border-white ${tones[variant]}`}
+        style={{
+          background: accent
+        }}
       >
         {icon}
       </span>
       <span className="flex flex-col">
-        <span className="text-sm font-semibold text-gray-900">{title}</span>
-        <span className="text-xs text-gray-400">{subtitle}</span>
+        <span className="text-sm font-semibold text-primary">{title}</span>
+        <span className="text-xs text-empty-title">{subtitle}</span>
       </span>
     </button>
   );

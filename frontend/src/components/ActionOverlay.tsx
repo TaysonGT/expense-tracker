@@ -179,7 +179,7 @@ function ActionOverlayRenderer({ state }: { state: ActionOverlayState }) {
     ? <Check size={26} />
     : <X size={26} />;
 
-  const iconBg = isError ? "bg-red-500" : "bg-gray-900";
+  const iconBg = isError ? "bg-danger" : "bg-primary";
 
   return (
     <div
@@ -188,19 +188,19 @@ function ActionOverlayRenderer({ state }: { state: ActionOverlayState }) {
       }`}
     >
       <div
-        className={`flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-8 shadow-xl transition-all duration-300 ${
+        className={`flex flex-col items-center justify-center gap-4 rounded-3xl bg-card p-8 shadow-xl transition-all duration-300 ${
           state.open
             ? "scale-100 opacity-100"
             : "scale-95 opacity-0"
         }`}
       >
-        <div className={`flex h-12 w-12 items-center justify-center rounded-full text-white ${iconBg}`}>
+        <div className={`flex h-12 w-12 items-center justify-center rounded-full text-background ${iconBg}`}>
           {icon}
         </div>
         <div className="text-center">
-          <p className="text-sm font-medium text-gray-900">{state.title}</p>
+          <p className="text-sm font-medium text-primary">{state.title}</p>
           {state.message && (
-            <p className="mt-0.5 text-xs text-gray-500">{state.message}</p>
+            <p className="mt-0.5 text-xs text-empty-title">{state.message}</p>
           )}
         </div>
       </div>

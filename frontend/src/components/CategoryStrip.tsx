@@ -41,7 +41,7 @@ export default function CategoryStrip({
       onClick={() => setManaging(true)}
       aria-label="Manage categories"
       title="Manage categories"
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1f1f1f] text-gray-300 ring-1 ring-gray-200"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-card text-empty-title border border-border"
     >
       <Settings2 size={16} />
     </button>
@@ -50,12 +50,12 @@ export default function CategoryStrip({
   return (
     <div className={`flex w-full gap-1.5 ${className}`}>
       {dividerAfterManage ? (
-        <div className="pe-1 border-e border-[#d3d3d3]">{manageButton}</div>
+        <div className="pe-1 border-e border-border-light">{manageButton}</div>
       ) : (
         manageButton
       )}
 
-      <div className="flex grow min-w-0 gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
+      <div className="flex grow min-w-0 gap-1.5 overflow-x-auto pb-1 px-0.5 [scrollbar-width:none]">
         {isLoading ? <SkeletonChips count={skeletonCount} /> : children}
       </div>
 
@@ -73,7 +73,7 @@ function SkeletonChips({ count }: { count: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`h-9 shrink-0 animate-pulse rounded-full bg-gray-200 ${
+          className={`h-9 shrink-0 animate-pulse rounded-full bg-skeleton ${
             widths[i % widths.length]
           }`}
           aria-hidden
