@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, CheckCircle2, Mic, RefreshCw, X } from "lucide-react";
+import { DEFAULT_SPEECH_LANG } from "../lib/speechLanguages";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
 import {
   useCategories,
@@ -12,6 +13,7 @@ import type { Expense, ParsedEntity } from "../types";
 import EntityCard from "../components/EntityCard";
 import AddNotAllowed from "../components/AddNotAllowed";
 import OrbComponent from "../components/OrbAnimation";
+import LanguageSelector from "../components/LanguageSelector";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -53,15 +55,6 @@ function VoiceCapture() {
   const nav = useNavigate();
   const { currentGroup, canWrite: isWriter } = useAuth();
   const currencyCode = currentGroup?.currency;
-  const {
-    supported: speechSupported,
-    transcript,
-    interimTranscript,
-    error,
-    start,
-    stop,
-    reset,
-  } = useSpeechRecognition();
 
   const { data: categories = [] } = useCategories();
   const voiceEntry = useVoiceEntry();
@@ -77,6 +70,23 @@ function VoiceCapture() {
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [lastTranscript, setLastTranscript] = useState("");
   const [elapsed, setElapsed] = useState(0);
+  const [lang, setLang] = useState<string>(
+    () => localStorage.getItem("voiceLang") || DEFAULT_SPEECH_LANG
+  );
+  
+  const {
+    supported: speechSupported,
+    transcript,
+    interimTranscript,
+    error,
+    start,
+    stop,
+    reset,
+  } = useSpeechRecognition(lang);
+  
+  useEffect(() => {
+    localStorage.setItem("voiceLang", lang);
+  }, [lang]);
 
   const active = phase === "recording";
   const processing = phase === "processing";
@@ -248,7 +258,7 @@ function VoiceCapture() {
     <div className="flex h-svh overflow-y-auto flex-col bg-background text-white">
       <style>{KEYFRAMES}</style>
 
-      {/* Header — back button + app logo, nothing else (no GroupSelector/nav) */}
+      {/* Header — back button + app logo, language picker on the right */}
       <header className="sticky top-0 z-20 flex items-center gap-3 bg-background/80 px-4 py-4 backdrop-blur">
         <button
           onClick={() => {
@@ -261,6 +271,13 @@ function VoiceCapture() {
           <ArrowLeft size={18} />
         </button>
         <img src={logo} alt="WhisperTrack" className="h-6 opacity-90" />
+        <div className="ml-auto">
+          <LanguageSelector
+            value={lang}
+            onChange={setLang}
+            disabled={active || processing}
+          />
+        </div>
       </header>
 
       <main className="relative mx-auto flex w-full max-w-md flex-1 px-4">
@@ -319,12 +336,16 @@ function VoiceCapture() {
                 processing ? "scale-100 opacity-100" : "scale-90 opacity-0"
               }`}
             >
-              <OrbComponent size="128px" animationDuration={10} />
+              <OrbComponent size="128px" animationDuration={6} />
+              <div className="mt-4 px-4 text-center">
+                  <h3 className="text-empty-title">Making sense of it...</h3>
+                  <p className="text-empty-subtitle">"{transcript}"</p>
+              </div>
             </div>
           </div>
 
           {/* Bottom controls */}
-          <div className="flex flex-col items-center gap-3 pb-16">
+          <div className={`flex flex-col items-center gap-3 pb-16 duration-200 ${phase==='processing'?'translate-y-1/2 opacity-0 scale-95':''}`}>
             <button
               type="button"
               onClick={handleMic}
@@ -466,7 +487,7 @@ function VoiceCapture() {
 
             <div className="-mx-4 flex-1 space-y-3 overflow-y-auto px-4 pb-4">
               {entities
-                .filter((e) => e.id)
+                .filter((e) => e.id&&!removedIds.has(e.id))
                 .map((entity) => (
                   <EntityCard
                     key={entity.id}
