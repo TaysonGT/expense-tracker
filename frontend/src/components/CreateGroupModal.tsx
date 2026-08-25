@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import currencies from "../data/currencies.json";
 import type { Currency } from "../types";
@@ -34,6 +34,10 @@ export default function CreateGroupModal({
     setError(null);
   };
 
+  useEffect(()=>{
+    reset()
+  },[open])
+
   const submit = () => {
     if (!name.trim()) {
       setError("Group name is required.");
@@ -52,15 +56,13 @@ export default function CreateGroupModal({
     );
   };
 
-  if (!open) return null;
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className={`fixed h-dvh w-dvw inset-0 z-50 flex items-center justify-center bg-black/40 duration-150 ${open?'pointer-events-auto opacity-100':'pointer-events-none opacity-0'}`}
       onClick={onClose}
     >
       <div
-        className="mx-4 w-full max-w-md rounded-2xl bg-card p-6"
+        className={`mx-4 w-full max-w-md rounded-2xl bg-card border border-border-light p-6 duration-150 ${open?'pointer-events-auto scale-100':'pointer-events-none scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -82,7 +84,7 @@ export default function CreateGroupModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Household, Trip to Italy"
-              className="w-full rounded-lg border border-skeleton px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border-light bg-card-light px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             />
           </div>
 
@@ -93,17 +95,17 @@ export default function CreateGroupModal({
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full rounded-lg border border-skeleton px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border-light bg-card-light px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
             >
               {list.map((c) => (
                 <option key={c.code} value={c.code}>
-                  {c.symbolNative} — {c.name} ({c.code})
+                   {c.code} — {c.name} ({c.symbolNative})
                 </option>
               ))}
             </select>
           </div>
 
-          <label className="flex items-center justify-between rounded-lg bg-background px-3 py-2.5">
+          <label className="flex items-center justify-between rounded-lg bg-background border border-accent px-3 py-2.5">
             <span className="flex flex-col">
               <span className="text-sm font-medium text-primary">
                 Show balance
@@ -146,7 +148,7 @@ export default function CreateGroupModal({
             <button
               onClick={submit}
               disabled={create.isPending}
-              className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="flex-1 rounded-full bg-accent-dark px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
               {create.isPending ? "Creating…" : "Create group"}
             </button>

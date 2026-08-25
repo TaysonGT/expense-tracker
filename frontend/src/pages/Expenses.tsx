@@ -82,7 +82,7 @@ export default function Expenses() {
   return (
     <div className="min-h-screen bg-background text-primary">
       {/* Sticky header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-background/90 px-4 py-4 backdrop-blur">
+      <header className="sticky top-0 z-50 flex items-center justify-between gap-3 bg-background/90 px-4 py-4 backdrop-blur">
         <div className="flex items-center gap-3">
           <button
             onClick={() => nav(-1)}

@@ -62,7 +62,7 @@ function VoiceCapture() {
   const deleteExpense = useDeleteExpense();
   const { logo } = useTheme()
 
-  const [phase, setPhase] = useState<Phase>("processing");
+  const [phase, setPhase] = useState<Phase>("idle");
   const [entities, setEntities] = useState<ParsedEntity[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());

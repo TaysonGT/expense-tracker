@@ -186,6 +186,10 @@ export function useCreateGroup() {
     },
     onSuccess: (group) => {
       setLastActiveGroup(group.id);
+      void qc.removeQueries({ queryKey: ["expenses"] });
+      void qc.removeQueries({ queryKey: ["categories"] });
+      void qc.invalidateQueries({ queryKey: ["expenses"] });
+      void qc.invalidateQueries({ queryKey: ["categories"] });
       void qc.invalidateQueries({ queryKey: authKeys.session });
       void qc.invalidateQueries({ queryKey: authKeys.groups });
     },
