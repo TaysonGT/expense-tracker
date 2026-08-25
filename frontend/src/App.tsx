@@ -19,67 +19,70 @@ import { AuthProvider } from "./context/AuthContext"
 import { GroupSwitchProvider } from "./context/GroupSwitchContext"
 import { ActionOverlayProvider } from "./components/ActionOverlay"
 import { VolumeMeter } from "./pages/Test"
+import { ThemeProvider } from "./context/ThemeContext"
 
 const App = () => {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <GroupSwitchProvider>
-          <ActionOverlayProvider>
-            <Routes>            {/* Public auth screen */}
-            <Route
-              path="/auth"
-              element={
-                <AuthGuard>
-                  <Auth />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/test"
-              element={
-                <VolumeMeter/>              
-              }
-            />
+      <ThemeProvider>
+        <AuthProvider>
+          <GroupSwitchProvider>
+            <ActionOverlayProvider>
+              <Routes>            {/* Public auth screen */}
+              <Route
+                path="/auth"
+                element={
+                  <AuthGuard>
+                    <Auth />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/test"
+                element={
+                  <VolumeMeter/>              
+                }
+              />
 
-            {/* Group onboarding (authenticated, no active group) */}
-            <Route
-              path="/onboarding/groups"
-              element={
-                <OnboardingGuard>
-                  <OnboardingGroups />
-                </OnboardingGuard>
-              }
-            />
+              {/* Group onboarding (authenticated, no active group) */}
+              <Route
+                path="/onboarding/groups"
+                element={
+                  <OnboardingGuard>
+                    <OnboardingGroups />
+                  </OnboardingGuard>
+                }
+              />
 
-            {/* Shareable group join link — reachable without an active group
-                  (auth required). Lets an invited user preview + join. */}
-            <Route
-              path="/join/:code"
-              element={
-                <RequireAuth>
-                  <GroupJoin />
-                </RequireAuth>
-              }
-            />
+              {/* Shareable group join link — reachable without an active group
+                    (auth required). Lets an invited user preview + join. */}
+              <Route
+                path="/join/:code"
+                element={
+                  <RequireAuth>
+                    <GroupJoin />
+                  </RequireAuth>
+                }
+              />
 
-            {/* Protected app */}
-            <Route path="/" element={<ProtectedRoutes/>}>
-              <Route path="/" element={<Navigate to="/home" replace />} />
-              <Route path='home' index element={<Home />} />
-              <Route path="voice" element={<VoiceCapture />} />
-              <Route path="manual" element={<ManualAdd />} />
-              <Route path="expenses" element={<Expenses />} />
-              <Route path="pending" element={<PendingExpenses />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="group" element={<GroupManagement />} />
-            </Route>
-            <Route path="/test-voice" element={<VoiceTest />} />
-          </Routes>
-        </ActionOverlayProvider>
-        </GroupSwitchProvider>
-      </AuthProvider>
+              {/* Protected app */}
+              <Route path="/" element={<ProtectedRoutes/>}>
+                <Route path="/" element={<Navigate to="/home" replace />} />
+                <Route path='home' index element={<Home />} />
+                <Route path="voice" element={<VoiceCapture />} />
+                <Route path="manual" element={<ManualAdd />} />
+                <Route path="expenses" element={<Expenses />} />
+                <Route path="pending" element={<PendingExpenses />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="group" element={<GroupManagement />} />
+              </Route>
+              <Route path="/test-voice" element={<VoiceTest />} />
+            </Routes>
+          </ActionOverlayProvider>
+          </GroupSwitchProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }
