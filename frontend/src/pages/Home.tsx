@@ -241,7 +241,7 @@ function TotalSpendBox({
   return (
     <div className="mt-4">
       <div
-        className="relative overflow-hidden rounded-3xl p-6 border-white border"
+        className="relative overflow-hidden rounded-3xl p-6 border-white/10 border"
         style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)" }}
       >
         <div

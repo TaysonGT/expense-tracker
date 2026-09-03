@@ -101,7 +101,7 @@ export default function Profile() {
                 <li>
                   <button
                     onClick={() => nav("/group")}
-                    className="flex w-full items-center gap-3 rounded-xl bg-card-light px-4 py-3 text-left text-sm border border-primary transition-colors hover:bg-background"
+                    className="flex w-full items-center gap-3 rounded-xl bg-card-light px-4 py-3 text-left text-sm border border-primary transition-colors hover:bg-card"
                   >
                     <span
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white border border-primary"

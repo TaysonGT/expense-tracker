@@ -19,7 +19,7 @@ function BottomNav() {
     <>
     <AddMenu canWrite={canWrite} open={addMenuOpen} onClose={() => setAddMenuOpen(false)} />
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card border-t border-border-light flex items-end justify-around px-2 pt-3 pb-6 z-20"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card border-t border-border-light flex items-end justify-around px-2 pt-3 pb-2 z-20"
       style={{ boxShadow: "0 -1px 0 0 var(--shadow-one), 0 -8px 24px rgba(0,0,0,0.04)" }}
     >
       <NavItem icon={<House />} label="Home" active={isActive('home')} onClick={() => onNavigate("home")} />

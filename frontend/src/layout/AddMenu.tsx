@@ -92,26 +92,29 @@ function MenuChoice({
   variant?: 'light' | 'accent' | 'warning';
 }) {
   const tones = {
-    'light': ` text-[#fff]`,
+    'light': ``,
     'accent':'',
     warning: ''
   }
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 text-left shadow-lg border border-border transition-transform active:scale-[0.98] ${!onClick&&'cursor-not-allowed!'}`}
+      className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left shadow-lg border border-border transition-transform active:scale-[0.98] ${!onClick&&'cursor-not-allowed!'}`}
+      style={{
+        background: accent
+      }}
     >
       <span
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white border border-white ${tones[variant]}`}
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-black border border-white bg-white ${tones[variant]}`}
         style={{
-          background: accent
+          // background: accent
         }}
       >
         {icon}
       </span>
       <span className="flex flex-col">
-        <span className="text-sm font-semibold text-primary">{title}</span>
-        <span className="text-xs text-empty-title">{subtitle}</span>
+        <span className="text-sm font-semibold text-white">{title}</span>
+        <span className="text-xs text-white/80">{subtitle}</span>
       </span>
     </button>
   );

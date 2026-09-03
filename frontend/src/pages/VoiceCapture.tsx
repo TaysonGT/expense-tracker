@@ -478,7 +478,7 @@ function VoiceCapture() {
               </button>
             </div>
 
-            <details className="mb-4 rounded-xl bg-card/5 p-3 text-xs  border border-border">
+            <details className="mb-4 rounded-xl bg-card-light p-3 text-xs  border border-border">
               <summary className="cursor-pointer font-medium text-primary">
                 View original transcript
               </summary>
@@ -506,7 +506,7 @@ function VoiceCapture() {
 
             <button
               onClick={() => nav("/")}
-              className="mb-6 mt-4 w-full rounded-2xl bg-card/5 py-3 text-sm font-medium text-white/70 border border-white/10 transition-colors hover:bg-card/10"
+              className="mb-6 mt-4 w-full rounded-2xl bg-accent-dark py-3 text-sm font-medium text-white border border-white/10 transition-colors hover:bg-card/10"
             >
               Approve later
             </button>

@@ -149,9 +149,9 @@ export default function ExpenseInsights({
 
 function SummaryCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-accent-light p-3 text-center shadow-xs shadow-black/25 border-2 border-primary">
-      <div className="font-[Oswald] text-2xl font-semibold text-primary">{value}</div>
-      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-primary">
+    <div className="rounded-2xl bg-accent-dark p-3 text-center shadow-xs shadow-black/25 border-2 border-border-light">
+      <div className="font-[Oswald] text-2xl font-semibold text-white">{value}</div>
+      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-white">
         {label}
       </div>
     </div>

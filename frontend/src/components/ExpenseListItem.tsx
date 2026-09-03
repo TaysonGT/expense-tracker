@@ -111,7 +111,7 @@ function DisplayRow({
 
   return (
     <>
-      <li className="relative flex items-center gap-3 rounded-xl bg-card p-4 py-2 border border-muted-foreground shadow-xs shadow-black/10">
+      <li className="relative flex items-center gap-3 rounded-xl bg-card p-4 py-2 border border-border-light shadow-xs shadow-black/10">
         {/* Category color dot */}
         <span
           className="h-8 w-1.5 shrink-0 rounded-full"
